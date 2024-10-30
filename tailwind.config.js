@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
@@ -11,7 +12,7 @@ export default {
         'text-dark-blue': '#01567f'
       },
       width: {
-        1200: '1280px'
+        1200: '1200px'
       },
       maxWidth: {
         1200: '1200px'
