@@ -1,11 +1,16 @@
-import { Button } from 'primereact/button'
-function App() {
-  return (
-    <div>
-      <h1 className='text-red-400'>Admin</h1>
+import { RouterProvider } from 'react-router-dom'
+import { PrimeReactProvider } from 'primereact/api'
 
-      <Button label='Submit' />
-    </div>
+import { router } from '@/routes'
+
+function App() {
+  const value = {
+    ripple: true
+  }
+  return (
+    <PrimeReactProvider value={value}>
+      <RouterProvider router={router} />
+    </PrimeReactProvider>
   )
 }
 

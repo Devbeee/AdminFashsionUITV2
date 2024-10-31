@@ -1,2 +1,2 @@
-export * from './CustomButton'
-export * from './CustomInput'
+export * from './CustomComponents/CustomButton'
+export * from './CustomComponents/CustomInput'
