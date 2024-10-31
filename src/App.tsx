@@ -1,6 +1,7 @@
 import { RouterProvider } from 'react-router-dom'
-import { router } from '@/routes'
 import { PrimeReactProvider } from 'primereact/api'
+
+import { router } from '@/routes'
 
 function App() {
   const value = {

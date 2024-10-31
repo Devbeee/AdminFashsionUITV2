@@ -4,10 +4,6 @@ import { InputNumber } from 'primereact/inputnumber'
 import { InputText } from 'primereact/inputtext'
 import { Password } from 'primereact/password'
 
-import { InputNumber } from 'primereact/inputnumber'
-import { InputText } from 'primereact/inputtext'
-import { Password } from 'primereact/password'
-
 type CustomInputProps = {
   name?: string
   placeholder?: string
@@ -30,47 +26,64 @@ export const Input: React.FC<CustomInputProps> = ({
   disabled = false,
   status
 }) => {
+  const INPUT_SIZE_CLASS = {
+    small: 'p-inputtext-sm',
+    medium: '',
+    large: 'p-inputtext-lg '
+  }
+
   const inputClassNames = ` py-2
-  ${size === 'small' ? 'p-inputtext-sm' : size === 'large' ? 'p-inputtext-lg ' : ''} 
+  ${INPUT_SIZE_CLASS[size]} 
   ${className}`
 
-  return type === 'number' ? (
-    <InputNumber
-      placeholder={placeholder}
-      id={name}
-      name={name}
-      pt={{
-        input: {
-          root: () => ({
-            className: inputClassNames
-          })
-        }
-      }}
-      invalid={status === 'error' ? true : false}
-      onChange={onChange}
-      disabled={disabled}
-      useGrouping={false}
-    />
-  ) : type === 'password' ? (
-    <Password
-      placeholder={placeholder}
-      id={name}
-      name={name}
-      pt={{ input: { className: inputClassNames } }}
-      invalid={status === 'error' ? true : false}
-      onChange={onChange}
-      disabled={disabled}
-      feedback={false}
-    />
-  ) : (
-    <InputText
-      placeholder={placeholder}
-      id={name}
-      name={name}
-      className={inputClassNames}
-      invalid={status === 'error' ? true : false}
-      onChange={onChange}
-      disabled={disabled}
-    />
-  )
+  const INPUT_ELEMENT = {
+    number: (
+      <InputNumber
+        placeholder={placeholder}
+        id={name}
+        name={name}
+        pt={{
+          input: {
+            root: () => ({
+              className: inputClassNames
+            })
+          }
+        }}
+        invalid={status === 'error' ? true : false}
+        onChange={onChange}
+        disabled={disabled}
+        useGrouping={false}
+      />
+    ),
+    password: (
+      <Password
+        placeholder={placeholder}
+        id={name}
+        name={name}
+        pt={{
+          input: {
+            root: () => ({
+              className: inputClassNames
+            })
+          }
+        }}
+        invalid={status === 'error' ? true : false}
+        onChange={onChange}
+        disabled={disabled}
+        feedback={false}
+      />
+    ),
+    text: (
+      <InputText
+        placeholder={placeholder}
+        id={name}
+        name={name}
+        className={inputClassNames}
+        invalid={status === 'error' ? true : false}
+        onChange={onChange}
+        disabled={disabled}
+      />
+    )
+  }
+  return type ? INPUT_ELEMENT[type] : INPUT_ELEMENT['text']
 }

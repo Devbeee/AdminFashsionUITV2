@@ -1,10 +1,10 @@
+import { Link } from 'react-router-dom'
 import { Button as Btn } from 'primereact/button'
-import { useNavigate } from 'react-router-dom'
 import { ProgressSpinner } from 'primereact/progressspinner'
 
 type CustomButtonProps = {
   className?: string
-  size?: 'small'
+  size?: 'small' | 'large'
   type?: 'success' | 'warning' | 'danger' | undefined
   htmlType?: 'button' | 'submit' | 'reset' | undefined
   to?: string
@@ -29,33 +29,39 @@ export const Button: React.FC<CustomButtonProps> = ({
   disabled = false,
   children
 }) => {
-  const navigate = useNavigate()
-
-  const handleClick = () => {
-    if (onClick) {
-      onClick()
-      if (to) {
-        navigate(to)
-      }
-    }
-  }
   const btnClassNames = ` flex items-center justify-center
   ${className}`
   const childrenClassNames = `
-  ${loading ? 'invisible' : ''}
+  ${loading && 'invisible'}
   `
-  return (
+  return to ? (
+    <Link to={to}>
+      <Btn
+        type={htmlType}
+        severity={type}
+        disabled={loading ? loading : disabled}
+        className={btnClassNames}
+        onClick={onClick}
+        raised={shadow}
+        size={size}
+        rounded={rounded}
+      >
+        {loading && <ProgressSpinner className='absolute w-5 h-5 ' />}
+        <div className={childrenClassNames}>{children}</div>
+      </Btn>
+    </Link>
+  ) : (
     <Btn
       type={htmlType}
       severity={type}
       disabled={loading ? loading : disabled}
       className={btnClassNames}
-      onClick={handleClick}
+      onClick={onClick}
       raised={shadow}
       size={size}
       rounded={rounded}
     >
-      {loading ? <ProgressSpinner className='absolute w-5 h-5 ' /> : undefined}
+      {loading && <ProgressSpinner className='absolute w-5 h-5 ' />}
       <div className={childrenClassNames}>{children}</div>
     </Btn>
   )
