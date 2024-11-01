@@ -34,13 +34,16 @@ export const Input: React.FC<CustomInputProps> = ({
   status
 }) => {
   const isInvalid = status === 'error' || !!errors?.[name]
-  const inputClassNames = `py-2 ${className} ${
-    {
-      small: 'p-inputtext-sm',
-      medium: '',
-      large: 'p-inputtext-lg'
-    }[size]
-  } ${isInvalid ? 'p-invalid' : ''}`
+  const inputSizes = {
+    small: 'p-inputtext-sm',
+    medium: '',
+    large: 'p-inputtext-lg'
+  }
+  const inputClassNames = `py-2 
+  ${className} 
+  ${inputSizes[size]} 
+  ${isInvalid && 'p-invalid'}
+  `
 
   const inputCommonProps = {
     placeholder,
