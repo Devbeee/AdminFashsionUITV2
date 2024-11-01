@@ -9,7 +9,14 @@ export default {
         yellow: '#ffc107',
         primary: '#007bff',
         'off-white': '#f7f8f9',
-        'text-dark-blue': '#01567f'
+        'text-dark-blue': '#01567f',
+        'white-blue': '#F1F4F9',
+        'black-light': '#202224',
+        red: '#dc3545',
+        'primary-dark': '#0006b3',
+        'red-dark': '#8a0c19',
+        green: '#28a745',
+        'green-dark': '#0b6623'
       },
       width: {
         1200: '1200px'
