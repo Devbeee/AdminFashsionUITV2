@@ -7,9 +7,8 @@ import { Button as Btn } from 'primereact/button';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 
-import { CategoryPopup } from '@/components';
+import { CategoryPopup, Button } from '@/components';
 import { ICategory } from '@/interfaces';
-import { Button } from '@/components'
 import { icons } from '@/utils';
 import { useApi, useBoolean } from '@/hooks';
 import { manageCategoryApi } from '@/apis';
@@ -19,7 +18,7 @@ export function ManageCategory() {
     const { loading, errorMessage, callApi: callApiManageCategory } = useApi<void>()
     const [categories, setCategories] = useState<ICategory[]>([])
     const { value: isModalVisible, setTrue: showModal, setFalse: hideModal } = useBoolean(false);
-    const { value: isCategoryChange, toggle: toggleIsCategoryChange } = useBoolean(false);
+    const { value: isCategoryChange, toggle: toggleCategoryChange } = useBoolean(false);
     const [selectedCategories, setSelectedCategories] = useState<ICategory[] | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<ICategory | null>(null);
 
@@ -31,10 +30,25 @@ export function ManageCategory() {
     const removeCategory = async (id: string) => {
         setCategories(prevData => prevData.filter(item => item.id !== id))
         callApiManageCategory(async () => {
+            const { data } = await manageCategoryApi.delete(id)
+            if (data) {
+                toggleCategoryChange()
+                toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Xóa thành công', life: 3000 });
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
+            }
+
+        })
+    }
+
+    const removeMultipleCaregories = async () => {
+        const ids = selectedCategories?.map(category => category.id) || [];
+        callApiManageCategory(async () => {
             try {
-                const { data } = await manageCategoryApi.delete(id)
+                const { data } = await manageCategoryApi.removeMultiple(ids)
                 if (data) {
-                    toggleIsCategoryChange()
+                    toggleCategoryChange()
+                    setSelectedCategories(null)
                     toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Xóa thành công', life: 3000 });
                 } else {
                     toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
@@ -47,31 +61,6 @@ export function ManageCategory() {
                     life: 3000,
                 });
             }
-
-        })
-    }
-
-    const removeMultipleCaregories = async () => {
-        const ids = selectedCategories?.map(category => category.id) || [];
-        callApiManageCategory(async () => {
-            try {
-                const { data } = await manageCategoryApi.removeMultiple(ids)
-            if (data) {
-                toggleIsCategoryChange()
-                setSelectedCategories(null)
-                toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Xóa thành công', life: 3000 });
-            } else {
-                toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
-            }
-            } catch (error) {
-                toast.current?.show({
-                    severity: 'error',
-                    summary: 'Lỗi',
-                    detail: `${errorMessage}`,
-                    life: 3000,
-                });
-            }
-            
         })
     }
 
@@ -110,6 +99,16 @@ export function ManageCategory() {
     useEffect(() => {
         getAllCategories()
     }, [isCategoryChange])
+
+    useEffect(() => {
+        if (errorMessage)
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Lỗi',
+                detail: `${errorMessage}`,
+                life: 3000,
+            });
+    }, [errorMessage])
     return (
         <>
             <Toast ref={toast} />
@@ -117,11 +116,9 @@ export function ManageCategory() {
             <CategoryPopup
                 visible={isModalVisible}
                 setHide={hideModal}
-                toggle={toggleIsCategoryChange}
-                id={selectedCategory?.id}
-                gender={selectedCategory?.gender}
-                type={selectedCategory?.type}
-                resetUpdateValue={selectedCategory ? () => setSelectedCategory(null) : undefined}
+                toggleCategoryChange={toggleCategoryChange}
+                category={selectedCategory}
+                resetUpdateCategoryValue={selectedCategory ? () => setSelectedCategory(null) : undefined}
             />
             <Card className='m-3'>
                 <DataTable
@@ -132,7 +129,7 @@ export function ManageCategory() {
                     rowsPerPageOptions={[5, 10, 25, 50]}
                     selection={selectedCategories}
                     onSelectionChange={(e: any) => setSelectedCategories(e.value)}
-                    dataKey="id"
+                    dataKey='id'
                     header={
                         <div className='flex justify-between items-center'>
                             <div className='uppercase'>
@@ -149,7 +146,7 @@ export function ManageCategory() {
                                     onClick={showModal}
                                 />
                                 <Button
-                                    type="danger"
+                                    type='danger'
                                     children={
                                         <div className='flex items-center gap-2'>
                                             {icons.delete}
@@ -163,17 +160,17 @@ export function ManageCategory() {
                         </div>
                     }
                 >
-                    <Column selectionMode="multiple" headerStyle={{ width: '7%' }}></Column>
-                    <Column field="gender" header="Giới tính" bodyClassName={'capitalize'} headerStyle={{ width: '31%' }}></Column>
-                    <Column field="type" header="Loại" bodyClassName={'capitalize'} headerStyle={{ width: '31%' }}></Column>
+                    <Column selectionMode='multiple' headerStyle={{ width: '7%' }}></Column>
+                    <Column field='gender' header='Giới tính' bodyClassName={'capitalize'} headerStyle={{ width: '31%' }}></Column>
+                    <Column field='type' header='Loại' bodyClassName={'capitalize'} headerStyle={{ width: '31%' }}></Column>
                     <Column
-                        header="Hành động"
+                        header='Hành động'
                         headerStyle={{ width: '31%' }}
                         body={(rowData) => (
                             <>
                                 <Btn
                                     icon={icons.update}
-                                    severity="success"
+                                    severity='success'
                                     rounded
                                     text
                                     raised
@@ -183,7 +180,7 @@ export function ManageCategory() {
                                 />
                                 <Btn
                                     icon={icons.delete}
-                                    severity="danger"
+                                    severity='danger'
                                     rounded
                                     text
                                     raised

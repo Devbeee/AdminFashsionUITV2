@@ -4,22 +4,22 @@ import * as yup from 'yup'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
-import { Button } from './CustomComponents/CustomButton'
-import { Input } from './CustomComponents/CustomInput'
+import { Dialog } from 'primereact/dialog'
+import { Toast } from 'primereact/toast';
 
 import { useApi } from '@/hooks'
 import { manageCategoryApi } from '@/apis'
-import { Dialog } from 'primereact/dialog'
-import { ICategoryInput } from '@/interfaces'
-import { Toast } from 'primereact/toast';
+import { ICategoryInput, ICategory } from '@/interfaces'
+
+import { Button } from './CustomComponents/CustomButton'
+import { Input } from './CustomComponents/CustomInput'
+
 type DialogComp = {
     visible: boolean,
     setHide: () => void;
-    toggle: () => void;
-    id?: string;
-    gender?: string;
-    type?: string;
-    resetUpdateValue?: () => void;
+    toggleCategoryChange: () => void;
+    category: ICategory | null,
+    resetUpdateCategoryValue?: () => void;
 }
 
 const categorySchema = yup.object().shape({
@@ -30,11 +30,9 @@ const categorySchema = yup.object().shape({
 export const CategoryPopup: React.FC<DialogComp> = ({
     visible,
     setHide,
-    toggle,
-    id,
-    gender,
-    type,
-    resetUpdateValue
+    toggleCategoryChange,
+    category,
+    resetUpdateCategoryValue
 }) => {
     const toast = useRef<Toast>(null);
     const { loading, errorMessage, callApi: callApiManageCategory } = useApi<void>()
@@ -42,20 +40,17 @@ export const CategoryPopup: React.FC<DialogComp> = ({
         control,
         handleSubmit,
         reset,
+        setValue,
         formState: { errors }
     } = useForm({
         resolver: yupResolver(categorySchema),
-        defaultValues: {
-            gender: '',
-            type: '',
-        }
     })
 
     const handleClose = () => {
         setHide();
         reset();
-        if (resetUpdateValue) {
-            resetUpdateValue();
+        if (resetUpdateCategoryValue) {
+            resetUpdateCategoryValue();
         }
     }
 
@@ -65,11 +60,11 @@ export const CategoryPopup: React.FC<DialogComp> = ({
             if (data) {
                 reset();
                 setHide();
-                toggle();
+                toggleCategoryChange();
                 toast.current?.show({
                     severity: 'success',
                     summary: 'Thành công',
-                    detail: 'Thêm thành công',
+                    detail: 'Thêm danh mục thành công',
                     life: 3000,
                 });
             }
@@ -83,13 +78,11 @@ export const CategoryPopup: React.FC<DialogComp> = ({
                 if (data) {
                     reset()
                     setHide()
-                    toggle()
-                    if (resetUpdateValue) {
-                        resetUpdateValue();
+                    toggleCategoryChange()
+                    if (resetUpdateCategoryValue) {
+                        resetUpdateCategoryValue();
                     }
-                    toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Sửa thành công', life: 3000 });
-                } else {
-                    toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: 'Danh mục đã tồn tại', life: 3000 });
+                    toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Sửa danh mục thành công', life: 3000 });
                 }
             } catch (error) {
                 toast.current?.show({
@@ -103,19 +96,22 @@ export const CategoryPopup: React.FC<DialogComp> = ({
     }
 
     const handleSubmitForm = (categoryData: ICategoryInput) => {
-        if (id) {
-            handleUpdateCategory(id, categoryData);
+        if (category?.id) {
+            handleUpdateCategory(category.id, categoryData);
         } else {
             handleAddCategory(categoryData);
         }
     };
 
     useEffect(() => {
-        reset({
-            gender: gender || '',
-            type: type || '',
-        });
-    }, [gender, type, reset]);
+        if (category) {
+            setValue('gender', category.gender)
+            setValue('type', category.type)
+        } else {
+            setValue('gender', '')
+            setValue('type', '')
+        }
+    }, [category]);
 
     useEffect(() => {
         if (errorMessage)
@@ -129,7 +125,7 @@ export const CategoryPopup: React.FC<DialogComp> = ({
     return (
         <>
             <Toast ref={toast} />
-            <Dialog visible={visible} onHide={handleClose} header={id ? 'Sửa danh mục sản phẩm' : 'Thêm danh mục sản phẩm'} style={{ width: '30vw' }}>
+            <Dialog visible={visible} onHide={handleClose} header={category?.id ? 'Sửa danh mục sản phẩm' : 'Thêm danh mục sản phẩm'} style={{ width: '30vw' }}>
                 <form onSubmit={handleSubmit(handleSubmitForm)}>
                     <div className='p-1 mb-3'>
                         <Input
@@ -161,7 +157,7 @@ export const CategoryPopup: React.FC<DialogComp> = ({
                             onClick={handleClose}
                         />
                         <Button
-                            children={id ? 'Sửa' : 'Thêm'}
+                            children={category?.id ? 'Sửa' : 'Thêm'}
                             loading={loading}
                             disabled={loading}
                             htmlType='submit'
