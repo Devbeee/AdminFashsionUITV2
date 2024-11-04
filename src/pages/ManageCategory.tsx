@@ -43,25 +43,26 @@ export function ManageCategory() {
 
     const removeMultipleCaregories = async () => {
         const ids = selectedCategories?.map(category => category.id) || [];
-        callApiManageCategory(async () => {
-            try {
-                const { data } = await manageCategoryApi.removeMultiple(ids)
-                if (data) {
-                    toggleCategoryChange()
-                    setSelectedCategories(null)
-                    toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Xóa thành công', life: 3000 });
-                } else {
-                    toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
+        if (ids.length)
+            callApiManageCategory(async () => {
+                try {
+                    const { data } = await manageCategoryApi.removeMultiple(ids)
+                    if (data) {
+                        toggleCategoryChange()
+                        setSelectedCategories(null)
+                        toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Xóa thành công', life: 3000 });
+                    } else {
+                        toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
+                    }
+                } catch (error) {
+                    toast.current?.show({
+                        severity: 'error',
+                        summary: 'Lỗi',
+                        detail: `${errorMessage}`,
+                        life: 3000,
+                    });
                 }
-            } catch (error) {
-                toast.current?.show({
-                    severity: 'error',
-                    summary: 'Lỗi',
-                    detail: `${errorMessage}`,
-                    life: 3000,
-                });
-            }
-        })
+            })
     }
 
     const confirmRemove = (id: string) => {
