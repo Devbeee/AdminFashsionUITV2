@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Controller } from 'react-hook-form'
-
-import { icons } from '@/utils'
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
+
+import { icons } from '@/utils'
 
 type SearchProps = {
   placeholder?: string

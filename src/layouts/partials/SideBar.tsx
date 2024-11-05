@@ -1,8 +1,9 @@
+import { Menu } from 'primereact/menu'
+import { Sidebar } from 'primereact/sidebar'
+
 import { SideBarMenuItem } from '@/components/SideBarMenuItem'
 import { IUseBooleanReturn } from '@/interfaces'
 import { SIDE_BAR_ITEM_LIST } from '@/utils/constants'
-import { Menu } from 'primereact/menu'
-import { Sidebar } from 'primereact/sidebar'
 
 type ISideBar = {
   sideBarVisible: IUseBooleanReturn

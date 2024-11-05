@@ -1,6 +1,5 @@
 import { SideBarItem } from '@/components/SideBarItem'
 import React, { ReactElement } from 'react'
-import { Link, useLocation } from 'react-router-dom'
 
 type SideBarMenuItemProps = {
   title: string
