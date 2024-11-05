@@ -53,26 +53,26 @@ export const Input: React.FC<CustomInputProps> = ({
     disabled,
     invalid: isInvalid
   }
-  const inputPtProps = {
-    pt: {
-      input: {
-        root: () => ({
-          className: inputClassNames
-        })
-      }
-    }
-  }
 
   const getInputElement = (field?: ControllerRenderProps) => {
-    const elementProps = { ...inputCommonProps, ...(field || {}) }
+    const elementProps = { ...inputCommonProps, ...(field || undefined) }
     switch (type) {
       case 'number':
-        return <InputNumber {...elementProps} {...inputPtProps} useGrouping={false} />
+        return (
+          <InputNumber
+            {...elementProps}
+            inputClassName={inputClassNames}
+            className={inputClassNames}
+            useGrouping={false}
+          />
+        )
       case 'password':
-        return <Password {...elementProps} {...inputPtProps} feedback={false} />
+        return (
+          <Password {...elementProps} className={inputClassNames} inputClassName={inputClassNames} feedback={false} />
+        )
       case 'text':
       default:
-        return <InputText {...inputCommonProps} {...(field || {})} className={inputClassNames} />
+        return <InputText {...elementProps} className={inputClassNames} />
     }
   }
 
