@@ -49,18 +49,29 @@ export const Input: React.FC<CustomInputProps> = ({
     placeholder,
     id: name,
     name,
-    onChange,
     disabled,
     invalid: isInvalid
   }
 
   const getInputElement = (field?: ControllerRenderProps) => {
-    const elementProps = { ...inputCommonProps, ...(field || undefined) }
+    const elementProps = { ...inputCommonProps, ...(field || { onChange: onChange }) }
     switch (type) {
       case 'number':
-        return (
+        return field ? (
           <InputNumber
-            {...elementProps}
+            {...inputCommonProps}
+            ref={field.ref}
+            value={field.value}
+            onBlur={field.onBlur}
+            onValueChange={(e) => field.onChange(e)}
+            inputClassName={inputClassNames}
+            className={inputClassNames}
+            useGrouping={false}
+          />
+        ) : (
+          <InputNumber
+            {...inputCommonProps}
+            onValueChange={onChange}
             inputClassName={inputClassNames}
             className={inputClassNames}
             useGrouping={false}
