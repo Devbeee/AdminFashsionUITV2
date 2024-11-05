@@ -1,0 +1,152 @@
+import { useEffect, useRef, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+
+import { Avatar } from 'primereact/avatar';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Toast } from 'primereact/toast';
+
+import { Button } from "@/components";
+import { convertStringDate } from '@/utils/helpers';
+import { blogApi } from "@/apis";
+import { IBlog } from "@/interfaces";
+
+type Comment = {
+    id: string,
+    user: string,
+    createAt: string,
+    content: string
+}
+
+const CommmentsData: Comment[] = [
+    {
+        id: '1',
+        user: 'Ma Seo Sầu',
+        createAt: '2022-04-05T12:22:12',
+        content: 'Bài viết rất ý nghĩa. Cảm ơn Admin đã chia sẽ'
+    },
+    {
+        id: '2',
+        user: 'Ma Seo Sầu',
+        createAt: '2022-04-05T12:22:12',
+        content: 'Bài viết rất ý nghĩa. Cảm ơn Admin đã chia sẽ'
+    },
+    {
+        id: '3',
+        user: 'Ma Seo Sầu',
+        createAt: '2022-04-05T12:22:12',
+        content: 'Bài viết rất ý nghĩa. Cảm ơn Admin đã chia sẽ'
+    },
+    {
+        id: '4',
+        user: 'Ma Seo Sầu',
+        createAt: '2022-04-05T12:22:12',
+        content: 'Bài viết rất ý nghĩa. Cảm ơn Admin đã chia sẽ'
+    },
+];
+
+export function BlogDetail() {
+    const [blog, setBlog] = useState<IBlog | null>(null);
+    const slug = useParams<{ slug: string }>().slug;
+    const toast = useRef<Toast>(null);
+    const [isNavigating, setIsNavigating] = useState<boolean>(false);
+    const navigate = useNavigate();
+
+    const acceptDelete = async () => {
+        try {
+            if (blog) {
+                const res = await blogApi.delete(blog.slug);
+                if (res.status === 204) {
+                    toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Blog này đã bị xóa', life: 3000 });
+                    setIsNavigating(true);
+                    setTimeout(() => {
+                        navigate('/blog/list');
+                    }, 3000);
+                }
+                else {
+                    toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: 'Bị lỗi khi xóa blog', life: 3000 });
+                }
+            }
+        }
+        catch (error) {
+            console.error('Failed to delete blog: ', error);
+            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: 'Bị lỗi khi xóa blog', life: 3000 });
+        }
+    }
+
+    const rejectDelete = () => {
+        toast.current?.show({ severity: 'warn', summary: 'Đã hủy', detail: 'Bạn đã hủy xóa blog', life: 3000 });
+    }
+
+    const confirmDelete = () => {
+        confirmDialog({
+            message: 'Bạn có chắc muốn xóa blog này?',
+            header: 'Xóa blog',
+            defaultFocus: 'reject',
+            acceptClassName: 'p-button-danger',
+            accept: acceptDelete,
+            reject: rejectDelete
+        });
+    };
+    
+    const getBlog = async () => {
+        if (slug) {
+            const res = await blogApi.getOne(slug);
+            if (res.status === 200) {
+                setBlog(res.data);
+            }
+        }
+    }
+    
+    useEffect(() => {
+        getBlog();
+    },[]);
+
+    if (!blog) {
+      return <></>;
+    }
+
+    return (
+        <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
+            <Toast ref={toast} />
+            <ConfirmDialog />
+            <div className="flex flex-wrap flex-col-reverse md:flex-row gap-6 justify-between w-full px-4 mt-5 mb-5">
+                <div className='flex flex-wrap w-full justify-end gap-4'>
+                    <Button disabled={isNavigating} to={'/blog/update/' + blog.slug} className="font-bold w-32">Cập nhật</Button>
+                    <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold w-32 border-red-500 bg-red-500 hover:bg-red-600">Xóa</Button>
+                </div>
+                {blog && (
+                    <div className='w-full'>
+                        <div className="w-full flex justify-between items-end text-left">
+                            <span className="font-bold text-3xl text-primary">{blog.title}</span>
+                        </div>
+                        <div className="flex flex-row gap-4 justify-start">
+                            <div className="flex flex-row items-center gap-1">
+                                {/* <span className="text-gray-400 text-lg">{icons.watch}</span> */}
+                                <span className="text-gray-400">{convertStringDate(blog.createdAt)}</span>
+                            </div>
+                            <div className="flex flex-row items-center gap-1">
+                                {/* <span className="text-gray-400 text-sm">{icons.faUser}</span> */}
+                                <span className="text-gray-400">{blog.user}</span>
+                            </div>
+                        </div>
+                        <div dangerouslySetInnerHTML={{ __html: blog.description }} className="flex flex-col items-start mt-2"></div>
+                        <div className="mt-8">
+                            <h3 className="text-left text-lg">Bình luận ({CommmentsData.length})</h3>
+                            <div className="flex flex-col gap-4 mt-2">
+                                {CommmentsData.map((cmt: Comment) => (
+                                    <div key={cmt.id} className='flex justify-start items-center'>
+                                        <Avatar image={'https://bizweb.dktcdn.net/100/451/884/articles/4-kieu-trang-phuc-demin-hot-nhat.jpg?v=1649173718847'} className="mr-2 border border-primary p-0.5" size="large" shape="circle" />
+                                        <div className='flex flex-col text-left'>
+                                            <span className='font-bold text-primary'>{cmt.user}</span>
+                                            <span className='text-gray-400 text-sm'>{cmt.content}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
