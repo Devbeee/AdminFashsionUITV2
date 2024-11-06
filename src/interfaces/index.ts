@@ -1,4 +1,3 @@
-export * from './IProduct.interface';
-export * from './ICreateProduct.interface';
-export * from './IUpdateProduct.interface';
-export * from './IProductStore.interface';
+export * from './errorResponse.interface';
+export * from './ICategory.interface';
+export * from './Product.interface';
