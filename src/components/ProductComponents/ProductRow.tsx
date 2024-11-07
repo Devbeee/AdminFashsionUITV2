@@ -129,7 +129,8 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                     const imgUrl = updateProductData.imgUrls[colorIndex + sizeIndex * updateProductData.colors.length];
                     const stock = updateProductData.stocks[colorIndex + sizeIndex * updateProductData.colors.length];
                     color = color || '#000000';
-                    productDetails.push({size, color, imgUrl, stock})
+                    const id = productInfo.productDetails.find(detail => detail.size === size && detail.color === color)?.id;
+                    productDetails.push({id, size, color, imgUrl, stock})
                 })
             })
             const {numberOfColor, categoryId, sizes, colors, stocks, imgUrls, ...updateProductInfo} = updateProductData;

@@ -1,6 +1,7 @@
 import { ICategory } from "./ICategory.interface";
 
 export interface ICreateProductDetail {
+    id?: string,
     size: string,
     color: string,
     imgUrl: string,
