@@ -49,30 +49,41 @@ export const Input: React.FC<CustomInputProps> = ({
     placeholder,
     id: name,
     name,
-    onChange,
     disabled,
     invalid: isInvalid
   }
-  const inputPtProps = {
-    pt: {
-      input: {
-        root: () => ({
-          className: inputClassNames
-        })
-      }
-    }
-  }
 
   const getInputElement = (field?: ControllerRenderProps) => {
-    const elementProps = { ...inputCommonProps, ...(field || {}) }
+    const elementProps = { ...inputCommonProps, ...(field || { onChange: onChange }) }
     switch (type) {
       case 'number':
-        return <InputNumber {...elementProps} {...inputPtProps} useGrouping={false} />
+        return field ? (
+          <InputNumber
+            {...inputCommonProps}
+            ref={field.ref}
+            value={field.value}
+            onBlur={field.onBlur}
+            onValueChange={(e) => field.onChange(e)}
+            inputClassName={inputClassNames}
+            className={inputClassNames}
+            useGrouping={false}
+          />
+        ) : (
+          <InputNumber
+            {...inputCommonProps}
+            onValueChange={onChange}
+            inputClassName={inputClassNames}
+            className={inputClassNames}
+            useGrouping={false}
+          />
+        )
       case 'password':
-        return <Password {...elementProps} {...inputPtProps} feedback={false} />
+        return (
+          <Password {...elementProps} className={inputClassNames} inputClassName={inputClassNames} feedback={false} />
+        )
       case 'text':
       default:
-        return <InputText {...inputCommonProps} {...(field || {})} className={inputClassNames} />
+        return <InputText {...elementProps} className={inputClassNames} />
     }
   }
 
