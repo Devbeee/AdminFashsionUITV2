@@ -1,5 +1,6 @@
 export * from './CustomComponents/CustomButton'
 export * from './CustomComponents/CustomInput'
+export * from './CategoryPopup'
 export * from './Search'
 export * from './SideBarItem'
 export * from './SideBarMenuItem'

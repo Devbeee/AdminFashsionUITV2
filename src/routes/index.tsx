@@ -1,25 +1,21 @@
 import { createBrowserRouter } from 'react-router-dom'
-import { Dashboard } from '@/pages'
+import { ManageCategory } from '@/pages'
 import { DefaultLayout } from '@/layouts/DefaultLayout'
-import path from 'path'
+import { PATH } from '@/utils'
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <DefaultLayout />,
     children: [
+      // {
+      //   path: '/',
+      //   element: <Dashboard />
+      // },
       {
-        path: '/',
-        element: <Dashboard />
+        path: PATH.manageCategory,
+        element: <ManageCategory />
       },
-      {
-        path: '/test',
-        element: <Dashboard />
-      },
-      {
-        path: '/test/test2',
-        element: <Dashboard />
-      }
     ]
   }
 ])

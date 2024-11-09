@@ -2,6 +2,9 @@ import { FaGear, FaRegUser } from 'react-icons/fa6'
 import { IoHomeOutline, IoSearch } from 'react-icons/io5'
 import { MdMenu } from 'react-icons/md'
 import { RxSlash } from 'react-icons/rx'
+import { FaPlus, FaRegTrashAlt } from "react-icons/fa";
+import { CgDanger } from "react-icons/cg";
+import { HiOutlinePencilSquare } from "react-icons/hi2";
 
 export const icons = {
   menu: <MdMenu />,
@@ -9,5 +12,9 @@ export const icons = {
   home: <IoHomeOutline />,
   search: <IoSearch />,
   setting: <FaGear />,
-  user: <FaRegUser />
+  user: <FaRegUser />,
+  add: <FaPlus />,
+  delete: <FaRegTrashAlt />,
+  danger: <CgDanger size={25} />,
+  update: <HiOutlinePencilSquare />
 }
