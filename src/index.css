@@ -4,7 +4,11 @@
 @layer tailwind-base {
   @tailwind base;
 }
-
+@layer base {
+  html {
+    @apply scrollbar-thin scrollbar-thumb scrollbar-track;
+  }
+}
 @layer tailwind-utilities {
   @tailwind components;
   @tailwind utilities;

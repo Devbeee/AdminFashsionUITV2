@@ -121,13 +121,15 @@ export function ManageCategory() {
                 category={selectedCategory}
                 resetUpdateCategoryValue={selectedCategory ? () => setSelectedCategory(null) : undefined}
             />
-            <Card className='m-3'>
+            <Card className='m-3 min-h-[85vh]'>
                 <DataTable
                     value={categories}
                     className='min-w-80'
+                    scrollable
+                    scrollHeight="638px"
                     paginator
-                    rows={5}
-                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    rows={7}
+                    rowsPerPageOptions={[7, 25, 50]}
                     selection={selectedCategories}
                     onSelectionChange={(e: any) => setSelectedCategories(e.value)}
                     dataKey='id'
@@ -171,23 +173,27 @@ export function ManageCategory() {
                             <>
                                 <Btn
                                     icon={icons.update}
+                                    title='Sửa'
+                                    label='Sửa'
                                     severity='success'
-                                    rounded
                                     text
                                     raised
                                     disabled={loading}
                                     loading={loading}
                                     onClick={() => showUpdateModal(rowData)}
+                                    className='mx-1 gap-2'
                                 />
                                 <Btn
                                     icon={icons.delete}
+                                    title='Xóa'
+                                    label='Xóa'
                                     severity='danger'
-                                    rounded
                                     text
                                     raised
                                     disabled={loading}
                                     loading={loading}
                                     onClick={() => confirmRemove(rowData.id)}
+                                    className='mx-1 gap-2'
                                 />
                             </>
                         )}

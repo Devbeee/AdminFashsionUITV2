@@ -1,16 +1,8 @@
 import { useCallback, useState } from 'react'
 
-import type { Dispatch, SetStateAction } from 'react'
+import { IUseBooleanReturn } from '@/interfaces'
 
-type UseBooleanReturn = {
-  value: boolean
-  setValue: Dispatch<SetStateAction<boolean>>
-  setTrue: () => void
-  setFalse: () => void
-  toggle: () => void
-}
-
-export function useBoolean(defaultValue = false): UseBooleanReturn {
+export function useBoolean(defaultValue = false): IUseBooleanReturn {
   if (typeof defaultValue !== 'boolean') {
     throw new Error('defaultValue must be `true` or `false`')
   }
