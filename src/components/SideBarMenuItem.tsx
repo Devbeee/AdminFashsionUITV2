@@ -2,7 +2,7 @@ import { SideBarItem } from '@/components/SideBarItem'
 import React, { ReactElement } from 'react'
 
 type SideBarMenuItemProps = {
-  title: string
+  group: string
   items: {
     path: string
     icon: ReactElement
@@ -10,12 +10,12 @@ type SideBarMenuItemProps = {
   }[]
   onClick: () => void
 }
-export const SideBarMenuItem: React.FC<SideBarMenuItemProps> = ({ title, items, onClick }) => {
+export const SideBarMenuItem: React.FC<SideBarMenuItemProps> = ({ group, items, onClick }) => {
   return (
     <div>
-      <div className='pl-6 font-bold text-lg text-partial-primary-700 py-2 select-none'>{title}</div>
-      {items.map((item) => (
-        <SideBarItem onClick={onClick} {...item} />
+      <div className='py-2 pl-6 text-lg font-bold select-none text-partial-primary-700'>{group}</div>
+      {items.map((item, index) => (
+        <SideBarItem key={`sidebar-item-${index}`} onClick={onClick} {...item} />
       ))}
     </div>
   )

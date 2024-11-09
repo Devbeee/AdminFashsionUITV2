@@ -2,7 +2,7 @@ import { icons } from '@/utils/icons'
 
 export const SIDE_BAR_ITEM_LIST = [
   {
-    title: 'DASHBOARDS',
+    group: 'DASHBOARDS',
     items: [
       {
         path: '/',
@@ -22,7 +22,7 @@ export const SIDE_BAR_ITEM_LIST = [
     ]
   },
   {
-    title: 'Products',
+    group: 'Products',
     items: [
       {
         path: '/#',

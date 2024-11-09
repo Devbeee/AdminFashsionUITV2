@@ -1,7 +1,7 @@
 import { Menu } from 'primereact/menu'
 import { Sidebar } from 'primereact/sidebar'
 
-import { SideBarMenuItem } from '@/components/SideBarMenuItem'
+import { SideBarMenuItem } from '@/components'
 import { IUseBooleanReturn } from '@/interfaces'
 import { SIDE_BAR_ITEM_LIST } from '@/utils/constants'
 
@@ -10,7 +10,7 @@ type ISideBar = {
 }
 
 export const SideBar: React.FC<ISideBar> = ({ sideBarVisible }) => {
-  const items = SIDE_BAR_ITEM_LIST.map((item) => ({
+  const sideBarItems = SIDE_BAR_ITEM_LIST.map((item) => ({
     template: <SideBarMenuItem onClick={() => sideBarVisible.setFalse()} {...item} />
   }))
 
@@ -23,7 +23,7 @@ export const SideBar: React.FC<ISideBar> = ({ sideBarVisible }) => {
         onHide={() => sideBarVisible.setFalse()}
         className='drop-shadow-sidebar'
         header={
-          <div className='w-full flex items-center justify-center'>
+          <div className='flex items-center justify-center w-full'>
             <div className='w-3/4'>
               <img src='/logo.webp' />
             </div>
@@ -36,7 +36,7 @@ export const SideBar: React.FC<ISideBar> = ({ sideBarVisible }) => {
         }}
       >
         <div className='w-full'>
-          <Menu model={items} className='border-0 w-full' />
+          <Menu model={sideBarItems} className='w-full border-0' />
         </div>
       </Sidebar>
     </div>
