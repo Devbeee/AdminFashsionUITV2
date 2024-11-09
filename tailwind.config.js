@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require('tailwindcss/colors')
 export default {
   darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -9,7 +10,8 @@ export default {
         yellow: '#ffc107',
         primary: '#007bff',
         'off-white': '#f7f8f9',
-        'text-dark-blue': '#01567f'
+        'text-dark-blue': '#01567f',
+        'partial-primary': colors.indigo
       },
       width: {
         1200: '1200px'
@@ -22,6 +24,9 @@ export default {
       },
       willChange: {
         opacity: 'opacity'
+      },
+      dropShadow: {
+        sidebar: ['0 0px 10px rgba(59, 130, 246, 0.3)', '0 0px 10px rgba(59, 130, 246, 0.1)']
       },
       keyframes: {
         pulsate: {
@@ -85,7 +90,7 @@ export default {
         },
         '.scrollbar-thumb': {
           '::-webkit-scrollbar-thumb': {
-            backgroundColor: '#01567f',
+            backgroundColor: '#818cf8',
             borderRadius: '10px'
           }
         },
@@ -97,7 +102,7 @@ export default {
         },
         '.scrollbar-thumb:hover': {
           '::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: '#00354b'
+            backgroundColor: '#6366f1'
           }
         }
       })
