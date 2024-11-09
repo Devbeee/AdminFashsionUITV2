@@ -3,8 +3,8 @@ import { useBoolean, useApi } from '@/hooks';
 import { ICreateProductDetail, IInputProduct, IProduct } from '@/interfaces';
 import { Input, Button } from '@/components';
 
-import { LuSearch, dropdownIcon } from '@/utils/icons';
-import { ProductFields, schema, sizes } from '@/utils/constants';
+import { IoIosList, RiDeleteBin6Line, LuSearch, dropdownIcon, IoMdClose } from '@/utils/icons';
+import { schema, sizes } from '@/utils/constants';
 import { uploadToCloudinary } from '@/utils/helpers';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -25,16 +25,30 @@ type ProductRowProps = {
 
 export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProductChange, setProducts}) => { 
     const toast = useRef<Toast>(null);
-    const { value: showProduct, toggle: toggleShowProduct } = useBoolean(false);
+    const fileUploadReference = useRef<FileUpload>(null);
+    const { value: showDropDown, toggle: toggleShowDropDown } = useBoolean(false);
     const { value: showProductDetail, toggle: toggleShowProductDetail } = useBoolean(false);
     const { value: showConfirmDelete, toggle: toggleShowConfirmDelete } = useBoolean(false);
     const { loading, errorMessage, callApi: callApiManageProduct } = useApi<void>()
-    const categoryId = [
-        { label: "Áo - Nam", value: "01" },
-        { label: "Áo - Nữ", value: "02" },
-        { label: "Quần - Nam", value: "03" },
-        { label: "Quần - Nữ", value: "04" }
-      ];
+    const categoryType = ['Áo', 'Quần'];
+    const categoryGender = ['Nam', 'Nữ'];
+    const category = [{
+        type: 'Áo',
+        gender: 'Nam',
+        value: '1'
+    }, {
+        type: 'Áo',
+        gender: 'Nữ',
+        value: '2'
+    }, {
+        type: 'Quần',
+        gender: 'Nam',
+        value: '3'
+    }, {
+        type: 'Quần',
+        gender: 'Nữ',
+        value: '4',
+    }]
     const {
         control,
         handleSubmit,
@@ -45,6 +59,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     } = useForm({
         resolver: yupResolver(schema),
         defaultValues: {
+            colorNames: [],
             sizes: [],
             colors: [],
             imgUrls: [],
@@ -53,7 +68,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     })
       const handleToggle = () => {
         toggleShowProductDetail();
-        toggleShowProduct();
+        toggleShowDropDown();
         resetProductForm();
         setValue('sizes', []);
         setValue('colors', []);
@@ -75,10 +90,12 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             price: productInfo.price,
             discount: productInfo.discount,
             description: productInfo.description,
-            categoryId: categoryId.find(category => category.label === 'Áo - Nam'),
+            categoryGender: { value: productInfo.category.gender },
+            categoryType: { value: productInfo.category.type },
             sizes: [...new Set(productInfo.productDetails.map(detail => detail.size))],
             colors: [...new Set(productInfo.productDetails.map(detail => detail.color))],
             numberOfColor: [...new Set(productInfo.productDetails.map(detail => detail.color))].length.toString(),
+            colorNames: [...new Set(productInfo.productDetails.map(detail => detail.colorName))],
             imgUrls: watch('imgUrls'),
             stocks: watch('stocks'),
         });
@@ -126,16 +143,18 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             const productDetails: ICreateProductDetail[] = []
             updateProductData.sizes.forEach((size, sizeIndex) => {
                 updateProductData.colors.forEach((color, colorIndex) => {
-                    const imgUrl = updateProductData.imgUrls[colorIndex + sizeIndex * updateProductData.colors.length];
+                    const colorName = updateProductData.colorNames[colorIndex];
+                    const imgUrl = updateProductData.imgUrls[colorIndex + sizeIndex * updateProductData.colors.length] || '';
                     const stock = updateProductData.stocks[colorIndex + sizeIndex * updateProductData.colors.length];
                     color = color || '#000000';
-                    const id = productInfo.productDetails.find(detail => detail.size === size && detail.color === color)?.id;
-                    productDetails.push({id, size, color, imgUrl, stock})
+                    productDetails.push({size, colorName, color, imgUrl, stock})
                 })
             })
-            const {numberOfColor, categoryId, sizes, colors, stocks, imgUrls, ...updateProductInfo} = updateProductData;
-            const sendData = {...updateProductInfo, categoryId: categoryId.value, productDetails: productDetails, discount: updateProductInfo.discount || 0}
-                const { data } = await productApi.updateProduct(productInfo.id, sendData)
+
+            const {numberOfColor, categoryGender, categoryType, sizes, colors, stocks, imgUrls, colorNames, ...updateProductInfo} = updateProductData;
+            const categoryId = category.find((category) => category.type === categoryType.value && category.gender === categoryGender.value)?.value || '';
+            const sendData = {...updateProductInfo, categoryId: categoryId, productDetails: productDetails, discount: updateProductInfo.discount || 0}
+            const { data } = await productApi.updateProduct(productInfo.id, sendData)
                 if (data) {
                     handleToggle()
                     toggleProductChange()
@@ -168,71 +187,47 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             </div>
         ))}
         <div className='w-[10%] pl-[12px] m-auto flex justify-center items-center'>
-            <PrimeBtn rounded raised text onClick={toggleShowProduct}>
-                <LuSearch size={15} color="blue"/>
-            </PrimeBtn>
-            {showProduct && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowProduct}>
-                <div className="bg-white rounded-lg shadow-lg p-6 w-[75%]" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-lg font-bold mb-4">
-                        Thông tin sản phẩm
+            <div className="relative">
+                <PrimeBtn text onClick={toggleShowDropDown}>
+                    <IoIosList size={20} color="black"/>
+                </PrimeBtn>
+                {showDropDown && (
+                    <div className="absolute right-0 mt-3 p-1 w-[130px] bg-white border border-gray-light rounded-md shadow-lg z-10">
+                        <div className="absolute top-[-6px] right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white"></div>
+                        <PrimeBtn onClick={toggleShowProductDetail} text className='flex w-full transition text-sm gap-2'><LuSearch/>Chi tiết</PrimeBtn>
+                        <PrimeBtn onClick={toggleShowConfirmDelete} text className='flex w-full transition text-sm text-red gap-2'><RiDeleteBin6Line color='red'/>Xóa</PrimeBtn>
                     </div>
-                    <div className='flex flex-row bg-white-blue h-[48px] p-[10px] gap-[10px] rounded-t-2xl'>
-                        {ProductFields.map((field) => (
-                            <div key={field.label} className={`w-[${field.width}] pl-[12px] m-auto`}>
-                                <div className='text-black-light opacity-80 text-sm font-semibold'>{field.label}</div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className='flex flex-row h-[80px] p-[10px] gap-[10px]'>
-                        {[
-                            { width: '15%', value: productInfo.name },
-                            { width: '15%', value: productInfo.slug },
-                            { width: '10%', value: productInfo.category.type + ' - ' + productInfo.category.gender },
-                            { width: '20%', value: productInfo.description },
-                            { width: '10%', value: `${productInfo.price} VND` },
-                            { width: '10%', value: productInfo.discount || 0 },
-                            { width: '10%', value: new Date(productInfo.createdAt).toLocaleDateString() },
-                            { width: '10%', value: new Date(productInfo.updatedAt).toLocaleDateString() },
-                        ].map((item, value) => (
-                            <div key={value} className={`w-[${item.width}] pl-[12px] m-auto`}>
-                                <div className='text-black-light opacity-80 text-sm font-semibold' dangerouslySetInnerHTML={{ __html: item.value }}></div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className='flex flex-row w-[50%] justify-between m-auto gap-5'>
-                        <PrimeBtn onClick={toggleShowProductDetail} className='flex justify-center items-center w-[45%] bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition'>Xem thông tin chi tiết</PrimeBtn>
-                        <PrimeBtn onClick={toggleShowProduct} className='flex justify-center items-center w-[45%] bg-green border-green text-white rounded-lg py-2 hover:bg-green-dark transition'>Quay lại</PrimeBtn>
-                        <PrimeBtn onClick={toggleShowConfirmDelete} className='flex justify-center items-center w-[45%] bg-red border-red text-white rounded-lg py-2 hover:bg-red-dark transition'>Xóa sản phẩm</PrimeBtn>
-                    </div> 
-                    {showConfirmDelete && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowConfirmDelete}>
-                            <div className="bg-white rounded-lg shadow-lg p-6 w-fit" onClick={(e) => e.stopPropagation()}>
-                                <div className="text-lg font-bold mb-4">
-                                    Xác nhận xóa sản phẩm
-                                </div>
-                                <div className="mb-4">
-                                    Bạn có chắc chắn muốn xóa sản phẩm này không?
-                                </div>
-                                <div className="flex flex-row justify-between gap-4 w-[60%] m-auto">
-                                    <PrimeBtn onClick={() => deleteProduct(productInfo.id)} className="w-[180px] justify-center items-center bg-red border-red text-white rounded-lg py-2 hover:bg-red-dark transition"
-                                        disabled={loading} loading={loading}>
-                                        Xóa
-                                    </PrimeBtn>
-                                    <PrimeBtn onClick={toggleShowConfirmDelete} className="w-[180px] justify-center items-center bg-green border-green text-white rounded-lg py-2 hover:bg-green-dark transition">
-                                        Hủy bỏ
-                                    </PrimeBtn>
-                                </div>
-                            </div>
+                )}
+            </div>
+            {showConfirmDelete && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowConfirmDelete}>
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-fit" onClick={(e) => e.stopPropagation()}>
+                        <div className="text-lg font-bold mb-4">
+                            Xác nhận xóa sản phẩm
                         </div>
-                    )}
+                        <div className="mb-4">
+                            Bạn có chắc chắn muốn xóa sản phẩm này không?
+                        </div>
+                        <div className="flex flex-row justify-between gap-4 w-[60%] m-auto">
+                            <PrimeBtn onClick={() => deleteProduct(productInfo.id)} className="w-[180px] justify-center items-center bg-red border-red text-white rounded-lg py-2 hover:bg-red-dark transition"
+                                disabled={loading} loading={loading}>
+                                Xóa
+                            </PrimeBtn>
+                            <PrimeBtn onClick={toggleShowConfirmDelete} className="w-[180px] justify-center items-center bg-green border-green text-white rounded-lg py-2 hover:bg-green-dark transition">
+                                Hủy bỏ
+                            </PrimeBtn>
+                        </div>
+                    </div>
                 </div>
-            </div>)}   
+            )}
             {showProductDetail && (
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowProductDetail}>
-                <div className="bg-white rounded-lg shadow-lg p-6 w-fit" onClick={(e) => e.stopPropagation()}>
-                    <div className="text-lg font-bold mb-4">
-                        Thông tin chi tiết sản phẩm
+                <div className="relative bg-white rounded-lg shadow-lg p-6 w-fit" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex flex-row text-xl font-bold mb-4 justify-between">
+                        <p className="flex justify-center items-center text-2xl">Thêm sản phẩm</p>
+                        <PrimeBtn text onClick={handleToggle} className="absolute right-2 top-2">
+                            <IoMdClose size={25} color="red"/>
+                        </PrimeBtn>
                     </div>
                     <form onSubmit={handleSubmit(updateProduct)} className="w-fit">
                         <div className="flex flex-col gap-4">
@@ -264,28 +259,50 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                 <div className="w-[30%] h-fit flex flex-col gap-4">
                                     <div className="h-fit w-full flex flex-col">
                                         <Controller
-                                            name="categoryId"
+                                            name="categoryType"
                                             control={control}
                                             render={({ field }) => (
                                                 <select 
                                                 value={field.value?.value || ''}
                                                 onChange={(val) => field.onChange({ value: val.target.value })}
-                                                className={`w-full border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 ${errors.categoryId?.value ? "border-red":''}`} 
+                                                className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryType?.value ? "border-red":''}`} 
                                                 style={{ backgroundImage: dropdownIcon, backgroundPosition: 'right 10px center' }}
                                                 >
-                                                    <option value="" disabled hidden>Chọn danh mục</option>
-                                                    {categoryId.map((category) => (
-                                                        <option key={category.value} value={category.value}>{category.label}</option>
+                                                    <option value="" disabled hidden>Chọn loại sản phẩm</option>
+                                                    {categoryType.map((category) => (
+                                                        <option key={category} value={category}>{category}</option>
                                                     ))}
                                                 </select>
-                                                )}
+                                            )}
                                         />
-                                        {errors.categoryId?.value && (
-                                            <span className="text-red">{errors.categoryId.value.message}</span>
+                                        {errors.categoryType?.value && (
+                                            <span className="text-red">{errors.categoryType.value.message}</span>
                                         )}
                                     </div>
-                                    <div className={`flex flex-col gap-4 border rounded-md p-3 ${errors.sizes ? "border-red":''}`}>
-                                        <label className="font-semibold">Chọn kích thước</label>
+                                    <div className="h-fit w-full flex flex-col">
+                                        <Controller
+                                            name="categoryGender"
+                                            control={control}
+                                            render={({ field }) => (
+                                                <select 
+                                                value={field.value?.value || ''}
+                                                onChange={(val) => field.onChange({ value: val.target.value })}
+                                                className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryGender?.value ? "border-red":''}`} 
+                                                style={{ backgroundImage: dropdownIcon, backgroundPosition: 'right 10px center' }}
+                                                >
+                                                    <option value="" disabled hidden>Chọn giới tính</option>
+                                                    {categoryGender.map((category) => (
+                                                        <option key={category} value={category}>{category}</option>
+                                                    ))}
+                                                </select>
+                                            )}
+                                        />
+                                        {errors.categoryGender?.value && (
+                                            <span className="text-red">{errors.categoryGender.value.message}</span>
+                                        )}
+                                    </div>
+                                    <div className={`flex flex-col gap-4 border border-gray-border rounded-md p-3 ${errors.sizes ? "border-red":''}`}>
+                                        <label className="font-semibold text-xl">Chọn kích thước</label>
                                         <div className="flex flex-row w-full gap-5">
                                             {sizes.map((size) => (
                                                 <div key={size}>
@@ -306,7 +323,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                             }}
                                                             className="rounded-lg size-4"
                                                             />
-                                                            <label className="ml-2 text-base">{size}</label>
+                                                            <label className="ml-2 text-xl">{size}</label>
                                                         </>
                                                         )}
                                                     />
@@ -317,57 +334,65 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                         {errors.sizes && <span className="text-red">{errors.sizes.message}</span>}
                                     </div>
                                     <div className="flex flex-col gap-2 p-2 w-full">
-                                        <label className="font-semibold">Số lượng màu sản phẩm</label>
+                                        <label className="font-semibold text-xl">Số lượng màu sản phẩm</label>
                                         <Input control={control} errors={errors} type="text" name="numberOfColor" placeholder="Số màu" className="w-full rounded-lg"/>
                                         {showProductDetail && <div className={`${Number(watch('numberOfColor')) > 2 ? 'overflow-y-scroll h-[150px]' : ''}`}>
                                             {Array.from({ length: Number(watch('numberOfColor')) }).map((_, index) => (
-                                                <label key={index} className="font-semibold">
-                                                    <p>Màu sắc {index + 1}</p>
-                                                    <Controller
-                                                        name={`colors.${index}`}
-                                                        control={control}
-                                                        render={({ field }) => (
-                                                            <input
-                                                            {...field}
-                                                            type="color"
-                                                            className="rounded-lg w-full h-[40px]"
-                                                            onChange={(e) => {
-                                                                const newColors = [...watch('colors')];
-                                                                newColors[index] = e.target.value;
-                                                                setValue('colors', newColors);
-                                                            }}
-                                                            value={field.value ? field.value : '#000000'}
-                                                            />
-                                                        )}
-                                                    />
-                                                </label>
+                                                <div key={index} className="flex flex-row w-full justify-between">
+                                                    <label className="font-semibold">
+                                                        <p>Màu sắc {index + 1}</p>
+                                                        <Controller
+                                                            name={`colors.${index}`}
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <input
+                                                                {...field}
+                                                                type="color"
+                                                                className="rounded-lg w-full h-[40px]"
+                                                                onChange={(e) => {
+                                                                    const newColors = [...watch('colors')];
+                                                                    newColors[index] = e.target.value;
+                                                                    setValue('colors', newColors);
+                                                                }}
+                                                                value={field.value ? field.value : '#000000'}
+                                                                />
+                                                            )}
+                                                        />
+                                                    </label>
+                                                    <label className="font-semibold">
+                                                        <p>Tên màu sắc {index + 1}</p>
+                                                        <Input name={`colorNames.${index}`} control={control} errors={errors}/>
+                                                        {errors.colorNames?.[index] && <span className="text-red">{errors.colorNames[index].message}</span>}
+                                                    </label>
+                                                </div>
                                             ))}
                                         </div>}
                                     </div>
                                 </div>
                             </div> 
                             <div className={`${Number(watch('numberOfColor')) > 1 && watch('sizes').length !==0 
-                                ? 'overflow-y-scroll h-[150px]' : ''}`}>
+                                ? 'overflow-y-scroll h-fit max-h-[250px]' : ''}`}>
                             {Array.from({ length: Number(watch('numberOfColor')) }).map((_, colorIndex) => (
                                     <div key={colorIndex} className="mb-4">
                                         {watch('sizes').map((size, sizeIndex) => {
                                             const index = sizeIndex * watch('colors').length + colorIndex;
                                             return (
                                                 <div key={index} className="flex flex-row gap-32 justify-center items-center mb-5">
-                                                <div className="flex flex-row w-[270px] font-semibold text-xl text-blue-cyan text-left justify-between">
+                                                <div className="flex flex-row w-[270px] font-semibold text-xl text-black text-left justify-between">
                                                     <p className="w-[65%]">{`Kích thước ${size}`}</p>
                                                     <p className="mr-3">-</p>
-                                                    <p className="w-[45%]">{`Màu sắc ${colorIndex + 1}`}</p>
+                                                    <p className="w-[45%]">{`Màu ${watch('colorNames')[colorIndex]}`}</p>
                                                 </div>
-                                                <div className="flex flex-row gap-2">
-                                                <Controller
+                                                <div className="flex flex-row gap-2 justify-center items-center">
+                                                    <Controller
                                                     name={`imgUrls.${index}`}
                                                     control={control}
                                                     render={({ field }) => (
                                                         <FileUpload
+                                                            ref={fileUploadReference}
                                                             mode="basic"
                                                             accept="image/*"
-                                                            maxFileSize={1000000}
+                                                            maxFileSize={1500000}
                                                             auto
                                                             customUpload
                                                             uploadHandler={async (e) => {
@@ -380,10 +405,35 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                         />
                                                     )}
                                                     />
-                                                    <Input name={`imgUrls.${index}`} control={control} errors={errors} placeholder="Đường dẫn hình ảnh"/>
+                                                    {watch('imgUrls').length === 0 || errors.imgUrls?.[index] && <span className="text-red">{errors.imgUrls.message}</span>}
+                                                    <div className="w-[85px] h-[85px] relative group">
+                                                        {watch(`imgUrls.${index}`) && (
+                                                            <div className="relative">
+                                                                <a href={watch(`imgUrls.${index}`)} target="_blank" rel="noopener noreferrer">
+                                                                    <img src={watch(`imgUrls.${index}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2" />
+                                                                </a>
+                                                                <button
+                                                                    type="button"
+                                                                    className="absolute top-0 right-0 bg-red text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    onClick={() => {
+                                                                        const newImgUrls = [...watch('imgUrls')];
+                                                                        newImgUrls[index] = '';
+                                                                        if (fileUploadReference.current) {
+                                                                            fileUploadReference.current.clear();
+                                                                        }
+                                                                        setValue('imgUrls', newImgUrls);
+                                                                    }}
+                                                                >
+                                                                    X
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <Input name={`stocks.${index}`} control={control} errors={errors} placeholder="Số lượng sản phẩm" />
-                                                {errors.stocks && <span className="text-red">{errors.stocks.message}</span>}
+                                                <div className="w-[400px] h-fit">
+                                                    <Input name={`stocks.${index}`} control={control} errors={errors.stocks} placeholder="Số lượng sản phẩm" />
+                                                    {errors.stocks?.[index] && <span className="text-red">{errors.stocks[index].message}</span>}
+                                                </div>
                                             </div>
                                             )
                                             
@@ -392,17 +442,17 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                 ))}
                             </div>
                             {errorMessage && <span className='text-red mb-2 text-lg'>{errorMessage}</span>}
-                            <div className="flex flex-row w-full m-auto gap-5 justify-center items-center">
-                                <Button 
-                                htmlType="submit" 
-                                disabled={loading} loading={loading}
-                                className="w-[25%] bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition">
-                                    Cập nhật sản phẩm
-                                </Button>
-                                <Button onClick={toggleShowProductDetail} className="w-[25%] bg-green border-green text-white rounded-lg py-2 hover:bg-green-dark transition">
-                                    Quay lại
-                                </Button>
-                            </div>
+                        </div>
+                        <div className="flex flex-row w-[50%] ml-auto gap-5 justify-end items-center">
+                        <Button 
+                            htmlType="submit" 
+                            disabled={loading} loading={loading}
+                            className="w-[35%] bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition text-xl">
+                                Cập nhật sản phẩm
+                            </Button>
+                            <Button onClick={toggleShowProductDetail} className="w-[35%] bg-green border-green text-white rounded-lg py-2 hover:bg-green-dark transition text-xl">
+                                Quay lại
+                            </Button>
                         </div>
                     </form>
                 </div>

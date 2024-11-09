@@ -3,6 +3,7 @@ import { ICategory } from "./ICategory.interface";
 export interface ICreateProductDetail {
     id?: string,
     size: string,
+    colorName: string,
     color: string,
     imgUrl: string,
     stock: number,
@@ -22,7 +23,9 @@ export interface IInputProduct {
     discount?: number,
     description: string,
     numberOfColor: string
-    categoryId: {value: string},
+    categoryType: {value: string},
+    categoryGender: {value: string},
+    colorNames: string[],
     colors: string[],
     sizes: string[],
     stocks: number[],
@@ -32,6 +35,7 @@ export interface IInputProduct {
 export interface IProductDetail {
     id: string,
     size: string,
+    colorName: string,
     color: string,
     imgUrl: string,
     stock: number
