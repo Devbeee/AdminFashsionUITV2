@@ -30,7 +30,7 @@ export function BlogCard({ blog }: NewsCardProps) {
                     <span className="bg-blue-cyan border border-white text-white px-2 py-[1px] rounded-full z-10 relative">
                         {convertStringDate(blog.createdAt)}
                     </span>
-                    <span className="absolute inset-0 border-b-[1px] border-blue-cyan opacity-30 transform -translate-y-1/2"></span>
+                    <span className="absolute inset-0 border-b border-blue-cyan opacity-30 transform -translate-y-1/2"></span>
                 </div>
                 <p dangerouslySetInnerHTML={{__html: blog.description}} className="text-center text-gray-600 line-clamp-3"></p>
             </div>

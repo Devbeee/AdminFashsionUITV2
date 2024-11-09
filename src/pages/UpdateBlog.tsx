@@ -15,14 +15,17 @@ import { Button, Input } from "@/components";
 import { uploadToCloudinary } from '@/utils/helpers';
 import { IBlog, IBlogForm } from "@/interfaces";
 import { blogApi } from "@/apis";
+import { useBoolean, useApi } from "@/hooks";
 
 export function UpdateBlog() {
     const toast = useRef<Toast>(null);
     const [uploading, setUploading] = useState<boolean>(false);
     const fileUploadRef = useRef<FileUpload | null>(null);
     const [blog, setBlog] = useState<IBlog | null>(null);
-    const slug = useParams<{ slug: string }>().slug;
-    const [isNavigating, setIsNavigating] = useState<boolean>(false);
+    const {slug} = useParams<{ slug: string }>();
+    const { value: isNavigating, setTrue: startNavigating, setFalse: stopNavigating } = useBoolean(false);
+    const { errorMessage: updateErrorMessage, callApi: callUpdateApi } = useApi<void>()
+    const { callApi: callGetBlogApi } = useApi<void>();
     const navigate = useNavigate();
 
     const schema = yup.object().shape({
@@ -86,21 +89,23 @@ export function UpdateBlog() {
     const acceptPublish = async (blogData: IBlogForm) => {
         try {
             if (blog) {
-                const dataRes = await blogApi.update(blog.slug, blogData);
-                if (dataRes.status === 200) {
-                    toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Blog đã được cập nhật thành công', life: 3000 });
-                    setIsNavigating(true);
-                    setTimeout(() => {
-                        navigate('/blog/list');
-                    }, 3000);
-                } else {
-                    toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: 'Bị lỗi khi cập nhật blog', life: 3000 });
-                }
+                callUpdateApi(async () => {
+                    const dataRes = await blogApi.update(blog.slug, blogData);
+                    if (dataRes.status === 200) {
+                        toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Blog đã được cập nhật thành công', life: 3000 });
+                        startNavigating();
+                        setTimeout(() => {
+                            navigate('/blog/list');
+                        }, 3000);
+                    } else {
+                        toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${updateErrorMessage}`, life: 3000 });
+                    }
+                });
             }
         }
         catch (error) {
             console.error('Failed to update blog: ', error);
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Bị lỗi khi cập nhật blog', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: `${updateErrorMessage}`, life: 3000 });
         }
     };
 
@@ -120,13 +125,15 @@ export function UpdateBlog() {
 
     const getBlog = async () => {
         if (slug) {
-            const res = await blogApi.getOne(slug);
-            if (res.status === 200) {
-                setBlog(res.data);
-                setValue('title', res.data.title);
-                setValue('description', res.data.description);
-                setValue('coverImage', res.data.coverImage);
-            }
+            callGetBlogApi(async () => {
+                const res = await blogApi.getOne(slug);
+                if (res.status === 200) {
+                    setBlog(res.data);
+                    setValue('title', res.data.title);
+                    setValue('description', res.data.description);
+                    setValue('coverImage', res.data.coverImage);
+                }
+            });
         }
     }
     
@@ -135,11 +142,15 @@ export function UpdateBlog() {
     },[]);
 
     if (!blog) {
-      return <></>;
+        return (
+          <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
+              <span className="text-2xl font-bold text-primary">Không tìm thấy blog</span>
+          </div>
+        );
     }
 
     return (
-        <form onSubmit={handleSubmit(confirmPublish)} className="rounded-xl m-7 p-7 border h-max">
+        <form onSubmit={handleSubmit(confirmPublish)} className="rounded-xl m-7 p-7 border h-max bg-white">
             <ConfirmDialog />
             <Toast ref={toast} />
             <span className="font-bold text-3xl text-gray-700">Cập nhật Blog</span>

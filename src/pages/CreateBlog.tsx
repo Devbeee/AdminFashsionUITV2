@@ -15,12 +15,14 @@ import { Button, Input } from "@/components";
 import { uploadToCloudinary } from '@/utils/helpers';
 import { IBlogForm } from "@/interfaces";
 import { blogApi } from "@/apis";
+import { useBoolean, useApi } from "@/hooks";
 
 export function CreateBlog() {
     const toast = useRef<Toast>(null);
     const [uploading, setUploading] = useState<boolean>(false);
     const fileUploadRef = useRef<FileUpload | null>(null);
-    const [isNavigating, setIsNavigating] = useState<boolean>(false);
+    const { value: isNavigating, setTrue: startNavigating, setFalse: stopNavigating } = useBoolean(false);
+    const { errorMessage, callApi: callCreateApi } = useApi<void>()
     const navigate = useNavigate();
 
     const schema = yup.object().shape({
@@ -83,20 +85,22 @@ export function CreateBlog() {
 
     const acceptPublish = async (data: IBlogForm) => {
         try{
-            const dataRes = await blogApi.create(data);
-            if (dataRes.status === 201) {
-                toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Blog đã được tạo thành công', life: 3000 });
-                setIsNavigating(true);
-                setTimeout(() => {
-                    navigate('/blog/list');
-                }, 3000);
-            } else {
-                toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: 'Bị lỗi khi tạo blog mới', life: 3000 });
-            }
+            callCreateApi(async () => {
+                const dataRes = await blogApi.create(data);
+                if (dataRes.status === 201) {
+                    toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Blog đã được tạo thành công', life: 3000 });
+                    startNavigating();
+                    setTimeout(() => {
+                        navigate('/blog/list');
+                    }, 3000);
+                } else {
+                    toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
+                }
+            });
         }
         catch (error) {
             console.error('Failed to create blog: ', error);
-            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: 'Bị lỗi khi tạo blog mới', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
         }
     };
 
@@ -115,7 +119,7 @@ export function CreateBlog() {
     };
 
     return (
-        <form onSubmit={handleSubmit(confirmPublish)} className="rounded-xl m-7 p-7 border">
+        <form onSubmit={handleSubmit(confirmPublish)} className="rounded-xl m-7 p-7 border bg-white">
             <ConfirmDialog />
             <Toast ref={toast} />
             <span className="font-bold text-3xl text-gray-700">Tạo Blog</span>

@@ -9,6 +9,9 @@ import { Button } from "@/components";
 import { convertStringDate } from '@/utils/helpers';
 import { blogApi } from "@/apis";
 import { IBlog } from "@/interfaces";
+import { useBoolean, useApi } from "@/hooks";
+import { icons } from "@/utils";
+import user_avt from '@/assets/images/user_avt.webp';
 
 type Comment = {
     id: string,
@@ -46,30 +49,34 @@ const CommmentsData: Comment[] = [
 
 export function BlogDetail() {
     const [blog, setBlog] = useState<IBlog | null>(null);
-    const slug = useParams<{ slug: string }>().slug;
+    const {slug} = useParams<{ slug: string }>();
     const toast = useRef<Toast>(null);
-    const [isNavigating, setIsNavigating] = useState<boolean>(false);
+    const { value: isNavigating, setTrue: startNavigating, setFalse: stopNavigating } = useBoolean(false);
+    const { errorMessage: deleteErrorMessage, callApi: callDeleteApi } = useApi<void>()
+    const { callApi: callGetBlogApi } = useApi<void>();
     const navigate = useNavigate();
 
     const acceptDelete = async () => {
         try {
             if (blog) {
-                const res = await blogApi.delete(blog.slug);
-                if (res.status === 204) {
-                    toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Blog này đã bị xóa', life: 3000 });
-                    setIsNavigating(true);
-                    setTimeout(() => {
-                        navigate('/blog/list');
-                    }, 3000);
-                }
-                else {
-                    toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: 'Bị lỗi khi xóa blog', life: 3000 });
-                }
+                callDeleteApi(async () => {
+                    const res = await blogApi.delete(blog.slug);
+                    if (res.status === 204) {
+                        toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Blog này đã bị xóa', life: 3000 });
+                        startNavigating();
+                        setTimeout(() => {
+                            navigate('/blog/list');
+                        }, 3000);
+                    }
+                    else {
+                        toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+                    }
+                });
             }
         }
         catch (error) {
             console.error('Failed to delete blog: ', error);
-            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: 'Bị lỗi khi xóa blog', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
         }
     }
 
@@ -90,10 +97,12 @@ export function BlogDetail() {
     
     const getBlog = async () => {
         if (slug) {
-            const res = await blogApi.getOne(slug);
-            if (res.status === 200) {
-                setBlog(res.data);
-            }
+            callGetBlogApi(async () => {
+                const res = await blogApi.getOne(slug);
+                if (res.status === 200) {
+                    setBlog(res.data);
+                }
+            });
         }
     }
     
@@ -102,14 +111,18 @@ export function BlogDetail() {
     },[]);
 
     if (!blog) {
-      return <></>;
+      return (
+        <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
+            <span className="text-2xl font-bold text-primary">Không tìm thấy blog</span>
+        </div>
+      );
     }
 
     return (
         <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
             <Toast ref={toast} />
             <ConfirmDialog />
-            <div className="flex flex-wrap flex-col-reverse md:flex-row gap-6 justify-between w-full px-4 mt-5 mb-5">
+            <div className="flex flex-wrap md:flex-row gap-6 justify-between w-full px-4 mt-5 mb-5">
                 <div className='flex flex-wrap w-full justify-end gap-4'>
                     <Button disabled={isNavigating} to={'/blog/update/' + blog.slug} className="font-bold w-32">Cập nhật</Button>
                     <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold w-32 border-red-500 bg-red-500 hover:bg-red-600">Xóa</Button>
@@ -119,14 +132,14 @@ export function BlogDetail() {
                         <div className="w-full flex justify-between items-end text-left">
                             <span className="font-bold text-3xl text-primary">{blog.title}</span>
                         </div>
-                        <div className="flex flex-row gap-4 justify-start">
+                        <div className="flex flex-row gap-4 justify-start flex-wrap">
                             <div className="flex flex-row items-center gap-1">
-                                {/* <span className="text-gray-400 text-lg">{icons.watch}</span> */}
+                                <span className="text-gray-400 text-lg">{icons.watch}</span>
                                 <span className="text-gray-400">{convertStringDate(blog.createdAt)}</span>
                             </div>
                             <div className="flex flex-row items-center gap-1">
-                                {/* <span className="text-gray-400 text-sm">{icons.faUser}</span> */}
-                                <span className="text-gray-400">{blog.user}</span>
+                                <span className="text-gray-400 text-sm">{icons.faUser}</span>
+                                <span className="text-gray-400">{blog.author}</span>
                             </div>
                         </div>
                         <div dangerouslySetInnerHTML={{ __html: blog.description }} className="flex flex-col items-start mt-2"></div>
@@ -135,7 +148,7 @@ export function BlogDetail() {
                             <div className="flex flex-col gap-4 mt-2">
                                 {CommmentsData.map((cmt: Comment) => (
                                     <div key={cmt.id} className='flex justify-start items-center'>
-                                        <Avatar image={'https://bizweb.dktcdn.net/100/451/884/articles/4-kieu-trang-phuc-demin-hot-nhat.jpg?v=1649173718847'} className="mr-2 border border-primary p-0.5" size="large" shape="circle" />
+                                        <Avatar image={user_avt} className="mr-2 border border-primary p-0.5" size="large" shape="circle" />
                                         <div className='flex flex-col text-left'>
                                             <span className='font-bold text-primary'>{cmt.user}</span>
                                             <span className='text-gray-400 text-sm'>{cmt.content}</span>

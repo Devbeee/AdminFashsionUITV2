@@ -4,7 +4,7 @@ export interface IBlog {
     description: string;
     slug: string;
     coverImage: string;
-    user: string;
+    author: string;
     createdAt: string;
 }
 
