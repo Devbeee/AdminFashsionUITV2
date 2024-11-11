@@ -1,2 +1,6 @@
 // export * from './Dashboard'
 export * from './ManageCategory'
+export * from './CreateBlog'
+export * from './BlogsList'
+export * from './BlogDetail'
+export * from './UpdateBlog'
