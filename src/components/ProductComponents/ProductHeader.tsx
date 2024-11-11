@@ -1,13 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import { MdOutlineLibraryAdd, LuSearch, IoMdClose } from "@/utils/icons";
 import { uploadToCloudinary } from "@/utils/helpers";
 import { schema } from "@/utils/constants";
 import { sizes } from "@/utils/constants";
-import { dropdownIcon } from "@/utils/icons";
+import { icons } from "@/utils/icons";
 
-import { productApi } from "@/apis";
-import { ICreateProductDetail, IInputProduct } from "@/interfaces";
+import { manageCategoryApi, productApi } from "@/apis";
+import { ICategory, ICreateProductDetail, IInputProduct } from "@/interfaces";
 import { useApi, useBoolean } from "@/hooks";
 import { Button, Input } from "@/components";
 
@@ -18,7 +17,7 @@ import { FileUpload } from 'primereact/fileupload';
 import { Editor, EditorTextChangeEvent } from 'primereact/editor';
 import { Button as PrimeBtn } from 'primereact/button';
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 
 export const ProductHeader = () => {
@@ -28,25 +27,31 @@ export const ProductHeader = () => {
     const {value: addProduct, toggle: toggleAddProduct } = useBoolean(false);
     const { loading, errorMessage, callApi: callApiSendProduct } = useApi<void>()
 
-    const categoryType = ['Áo', 'Quần'];
-    const categoryGender = ['Nam', 'Nữ'];
-    const category = [{
-        type: 'Áo',
-        gender: 'Nam',
-        value: '1'
-    }, {
-        type: 'Áo',
-        gender: 'Nữ',
-        value: '2'
-    }, {
-        type: 'Quần',
-        gender: 'Nam',
-        value: '3'
-    }, {
-        type: 'Quần',
-        gender: 'Nữ',
-        value: '4',
-    }]
+    const { callApi: callApiGetCategory } = useApi<void>()
+    const [categories, setCategories] = useState<ICategory[]>([])
+
+    const categoryType: string[] = [];
+    const categoryGender: string[] = [];
+    const category: ICategory[] = [];
+
+    const getAllCategories = async () => {
+        callApiGetCategory(async () => {
+            const { data } = await manageCategoryApi.findAll()
+            setCategories(data)
+        })
+    }
+    useEffect(() => {
+        getAllCategories()
+        Array.from(categories).forEach((cate: ICategory) => {
+            if (!categoryType.includes(cate.type)) {
+                categoryType.push(cate.type)
+            }
+            if (!categoryGender.includes(cate.gender)) {
+                categoryGender.push(cate.gender)
+            }
+            category.push(cate)
+        })
+    },[])
 
     const {
         control,
@@ -65,7 +70,6 @@ export const ProductHeader = () => {
             stocks: []
           }
       })
-
     useEffect(() => {
         const colorCount = Number(watch('numberOfColor')) || 0;
         const currentColors = watch('colors') || [];
@@ -108,7 +112,7 @@ export const ProductHeader = () => {
                 })
             })
             const {numberOfColor, categoryGender, categoryType, sizes, colors, stocks, imgUrls, colorNames, ...productInfo} = productData;
-            const categoryId = category.find((category) => category.type === categoryType.value && category.gender === categoryGender.value)?.value || '';
+            const categoryId = category.find((category) => category.type === categoryType.value && category.gender === categoryGender.value)?.id || '';
             const sendData = {...productInfo, categoryId: categoryId, productDetails: productDetails, discount: productInfo.discount || 0}
             const {data} = await productApi.createProduct(sendData);
             if (data) {
@@ -129,12 +133,12 @@ export const ProductHeader = () => {
             <div className="flex flex-row gap-5">
                 <IconField iconPosition="left">
                     <InputIcon>
-                        <LuSearch size={20} color="gray" className="pb-1"/>
+                        {icons.searchProduct}
                     </InputIcon>
                     <Input name="search" placeholder="Search" className="rounded-lg w-[270px]"/>
                 </IconField>
                 <Button className="rounded-lg" onClick={toggleAddProduct}>
-                    <MdOutlineLibraryAdd size={20} color="white"/>
+                    {icons.addProduct}
                 </Button>
                 {addProduct && (
                 <div className="fixed inset-0 h-full bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={handleToggle}>
@@ -142,7 +146,7 @@ export const ProductHeader = () => {
                         <div className="flex flex-row text-xl font-bold mb-4 justify-between">
                             <p className="flex justify-center items-center text-2xl">Thêm sản phẩm</p>
                             <PrimeBtn text onClick={handleToggle} className="absolute right-0 top-2">
-                                <IoMdClose size={25} color="red"/>
+                                {icons.closePopup}
                             </PrimeBtn>
                         </div>
                         <form onSubmit={handleSubmit(handleCreateProduct)}>
@@ -163,7 +167,7 @@ export const ProductHeader = () => {
                                                         value={field.value}
                                                         placeholder="Mô tả sản phẩm"
                                                         onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
-                                                        style={{ height: '350px', width: '100%' }}
+                                                        style={{ height: '375px', width: '100%' }}
                                                     />
                                                 )}
                                             />
@@ -182,7 +186,7 @@ export const ProductHeader = () => {
                                                     value={field.value?.value || ''}
                                                     onChange={(val) => field.onChange({ value: val.target.value })}
                                                     className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryType?.value ? "border-red":''}`} 
-                                                    style={{ backgroundImage: dropdownIcon, backgroundPosition: 'right 10px center' }}
+                                                    style={{ backgroundImage: icons.dropdownIcon, backgroundPosition: 'right 10px center' }}
                                                     >
                                                         <option value="" disabled hidden>Chọn loại sản phẩm</option>
                                                         {categoryType.map((category) => (
@@ -204,7 +208,7 @@ export const ProductHeader = () => {
                                                     value={field.value?.value || ''}
                                                     onChange={(val) => field.onChange({ value: val.target.value })}
                                                     className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryGender?.value ? "border-red":''}`} 
-                                                    style={{ backgroundImage: dropdownIcon, backgroundPosition: 'right 10px center' }}
+                                                    style={{ backgroundImage: icons.dropdownIcon, backgroundPosition: 'right 10px center' }}
                                                     >
                                                         <option value="" disabled hidden>Chọn giới tính</option>
                                                         {categoryGender.map((category) => (
@@ -300,27 +304,29 @@ export const ProductHeader = () => {
                                                         <p className="w-[45%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</p>
                                                     </div>
                                                     <div className="flex flex-row gap-2 justify-center items-center">
-                                                        <Controller
-                                                        name={`imgUrls.${index}`}
-                                                        control={control}
-                                                        render={({ field }) => (
-                                                            <FileUpload
-                                                                ref={fileUploadReference}
-                                                                mode="basic"
-                                                                accept="image/*"
-                                                                maxFileSize={1500000}
-                                                                auto
-                                                                customUpload
-                                                                uploadHandler={async (e) => {
-                                                                    const url = await handleUpload(e);
-                                                                    if (url) {
-                                                                        field.onChange(url);
-                                                                    }
-                                                                }}
-                                                                chooseLabel="Chọn ảnh"
+                                                        {!watch(`imgUrls.${index}`) &&
+                                                            <Controller
+                                                            name={`imgUrls.${index}`}
+                                                            control={control}
+                                                            render={({ field }) => (
+                                                                <FileUpload
+                                                                    ref={fileUploadReference}
+                                                                    mode="basic"
+                                                                    accept="image/*"
+                                                                    maxFileSize={1500000}
+                                                                    auto
+                                                                    customUpload
+                                                                    uploadHandler={async (e) => {
+                                                                        const url = await handleUpload(e);
+                                                                        if (url) {
+                                                                            field.onChange(url);
+                                                                        }
+                                                                    }}
+                                                                    chooseLabel="Chọn ảnh"
+                                                                />
+                                                            )}
                                                             />
-                                                        )}
-                                                        />
+                                                        }
                                                         {watch('imgUrls').length === 0 || errors.imgUrls?.[index] && <span className="text-red">{errors.imgUrls.message}</span>}
                                                         <div className="w-[85px] h-[85px] relative group">
                                                             {watch(`imgUrls.${index}`) && (
@@ -359,14 +365,14 @@ export const ProductHeader = () => {
                                 {errorMessage && <span className='text-red mb-2 text-lg'>{errorMessage}</span>}
                             </div>
                             <div className="flex flex-row w-[50%] ml-auto gap-5 justify-end items-center">
+                                <Button onClick={handleToggle} className="w-[27%] bg-gray border-gray text-white rounded-lg py-2 hover:bg-gray-dark transition text-xl">
+                                    Hủy bỏ
+                                </Button>
                                 <Button 
                                 htmlType="submit" 
                                 disabled={loading} loading={loading}
-                                className="w-[30%] bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition text-xl">
+                                className="w-[27%] bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition text-xl">
                                     Tạo sản phẩm
-                                </Button>
-                                <Button onClick={handleToggle} className="w-[30%] bg-gray border-gray text-white rounded-lg py-2 hover:bg-gray-dark transition text-xl">
-                                    Hủy bỏ
                                 </Button>
                             </div>
                         </form>

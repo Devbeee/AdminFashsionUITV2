@@ -1,2 +1,7 @@
-export * from './Dashboard'
+// export * from './Dashboard'
 export * from './Product'
+export * from './ManageCategory'
+export * from './CreateBlog'
+export * from './BlogsList'
+export * from './BlogDetail'
+export * from './UpdateBlog'

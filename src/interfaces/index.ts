@@ -1,3 +1,6 @@
 export * from './errorResponse.interface';
-export * from './ICategory.interface';
 export * from './Product.interface';
+export * from './category.interface'
+export * from './errorResponse.interface'
+export * from './hook.interface'
+export * from './blog.interfaces'

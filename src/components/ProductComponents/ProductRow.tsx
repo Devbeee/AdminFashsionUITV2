@@ -1,9 +1,9 @@
-import { productApi } from '@/apis';
+import { manageCategoryApi, productApi } from '@/apis';
 import { useBoolean, useApi } from '@/hooks';
-import { ICreateProductDetail, IInputProduct, IProduct } from '@/interfaces';
+import { ICategory, ICreateProductDetail, IInputProduct, IProduct } from '@/interfaces';
 import { Input, Button } from '@/components';
 
-import { IoIosList, RiDeleteBin6Line, LuSearch, dropdownIcon, IoMdClose } from '@/utils/icons';
+import { icons } from '@/utils/icons';
 import { schema, sizes } from '@/utils/constants';
 import { uploadToCloudinary } from '@/utils/helpers';
 
@@ -14,7 +14,7 @@ import { FileUpload } from 'primereact/fileupload';
 import { Button as PrimeBtn } from 'primereact/button';
 import { Editor, EditorTextChangeEvent } from 'primereact/editor';
 
-import { useRef, SetStateAction, useEffect } from 'react'
+import { useRef, SetStateAction, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form';
 
 type ProductRowProps = {
@@ -30,25 +30,33 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     const { value: showProductDetail, toggle: toggleShowProductDetail } = useBoolean(false);
     const { value: showConfirmDelete, toggle: toggleShowConfirmDelete } = useBoolean(false);
     const { loading, errorMessage, callApi: callApiManageProduct } = useApi<void>()
-    const categoryType = ['Áo', 'Quần'];
-    const categoryGender = ['Nam', 'Nữ'];
-    const category = [{
-        type: 'Áo',
-        gender: 'Nam',
-        value: '1'
-    }, {
-        type: 'Áo',
-        gender: 'Nữ',
-        value: '2'
-    }, {
-        type: 'Quần',
-        gender: 'Nam',
-        value: '3'
-    }, {
-        type: 'Quần',
-        gender: 'Nữ',
-        value: '4',
-    }]
+
+    const { callApi: callApiGetCategory } = useApi<void>()
+    const [categories, setCategories] = useState<ICategory[]>([])
+
+    const categoryType: string[] = [];
+    const categoryGender: string[] = [];
+    const category: ICategory[] = [];
+
+    const getAllCategories = async () => {
+        callApiGetCategory(async () => {
+            const { data } = await manageCategoryApi.findAll()
+            setCategories(data)
+        })
+    }
+    useEffect(() => {
+        getAllCategories()
+        Array.from(categories).forEach((cate: ICategory) => {
+            if (!categoryType.includes(cate.type)) {
+                categoryType.push(cate.type)
+            }
+            if (!categoryGender.includes(cate.gender)) {
+                categoryGender.push(cate.gender)
+            }
+            category.push(cate)
+        })
+    },[])
+    
     const {
         control,
         handleSubmit,
@@ -152,7 +160,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             })
 
             const {numberOfColor, categoryGender, categoryType, sizes, colors, stocks, imgUrls, colorNames, ...updateProductInfo} = updateProductData;
-            const categoryId = category.find((category) => category.type === categoryType.value && category.gender === categoryGender.value)?.value || '';
+            const categoryId = category.find((category) => category.type === categoryType.value && category.gender === categoryGender.value)?.id || '';
             const sendData = {...updateProductInfo, categoryId: categoryId, productDetails: productDetails, discount: updateProductInfo.discount || 0}
             const { data } = await productApi.updateProduct(productInfo.id, sendData)
                 if (data) {
@@ -189,13 +197,13 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
         <div className='w-[10%] pl-[12px] m-auto flex justify-center items-center'>
             <div className="relative">
                 <PrimeBtn text onClick={toggleShowDropDown}>
-                    <IoIosList size={20} color="black"/>
+                    {icons.list}
                 </PrimeBtn>
                 {showDropDown && (
                     <div className="absolute right-0 mt-3 p-1 w-[130px] bg-white border border-gray-light rounded-md shadow-lg z-10">
                         <div className="absolute top-[-6px] right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white"></div>
-                        <PrimeBtn onClick={toggleShowProductDetail} text className='flex w-full transition text-sm gap-2'><LuSearch/>Chi tiết</PrimeBtn>
-                        <PrimeBtn onClick={toggleShowConfirmDelete} text className='flex w-full transition text-sm text-red gap-2'><RiDeleteBin6Line color='red'/>Xóa</PrimeBtn>
+                        <PrimeBtn onClick={toggleShowProductDetail} text className='flex w-full transition text-sm gap-2'>{icons.search}Chi tiết</PrimeBtn>
+                        <PrimeBtn onClick={toggleShowConfirmDelete} text className='flex w-full transition text-sm text-red gap-2'>{icons.deleteProduct}Xóa</PrimeBtn>
                     </div>
                 )}
             </div>
@@ -226,7 +234,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                     <div className="flex flex-row text-xl font-bold mb-4 justify-between">
                         <p className="flex justify-center items-center text-2xl">Thêm sản phẩm</p>
                         <PrimeBtn text onClick={handleToggle} className="absolute right-2 top-2">
-                            <IoMdClose size={25} color="red"/>
+                            {icons.closePopup}
                         </PrimeBtn>
                     </div>
                     <form onSubmit={handleSubmit(updateProduct)} className="w-fit">
@@ -247,7 +255,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                     value={field.value}
                                                     placeholder="Mô tả sản phẩm"
                                                     onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
-                                                    style={{ height: '350px', width: '100%' }}
+                                                    style={{ height: '375px', width: '100%' }}
                                                 />
                                             )}
                                         />
@@ -266,7 +274,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                 value={field.value?.value || ''}
                                                 onChange={(val) => field.onChange({ value: val.target.value })}
                                                 className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryType?.value ? "border-red":''}`} 
-                                                style={{ backgroundImage: dropdownIcon, backgroundPosition: 'right 10px center' }}
+                                                style={{ backgroundImage: icons.dropdownIcon, backgroundPosition: 'right 10px center' }}
                                                 >
                                                     <option value="" disabled hidden>Chọn loại sản phẩm</option>
                                                     {categoryType.map((category) => (
@@ -288,7 +296,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                 value={field.value?.value || ''}
                                                 onChange={(val) => field.onChange({ value: val.target.value })}
                                                 className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryGender?.value ? "border-red":''}`} 
-                                                style={{ backgroundImage: dropdownIcon, backgroundPosition: 'right 10px center' }}
+                                                style={{ backgroundImage: icons.dropdownIcon, backgroundPosition: 'right 10px center' }}
                                                 >
                                                     <option value="" disabled hidden>Chọn giới tính</option>
                                                     {categoryGender.map((category) => (
@@ -384,27 +392,29 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                     <p className="w-[45%]">{`Màu ${watch('colorNames')[colorIndex]}`}</p>
                                                 </div>
                                                 <div className="flex flex-row gap-2 justify-center items-center">
-                                                    <Controller
-                                                    name={`imgUrls.${index}`}
-                                                    control={control}
-                                                    render={({ field }) => (
-                                                        <FileUpload
-                                                            ref={fileUploadReference}
-                                                            mode="basic"
-                                                            accept="image/*"
-                                                            maxFileSize={1500000}
-                                                            auto
-                                                            customUpload
-                                                            uploadHandler={async (e) => {
-                                                                const url = await handleUpload(e);
-                                                                if (url) {
-                                                                    field.onChange(url);
-                                                                }
-                                                            }}
-                                                            chooseLabel="Chọn ảnh"
+                                                    {!watch(`imgUrls.${index}`) &&
+                                                        <Controller
+                                                        name={`imgUrls.${index}`}
+                                                        control={control}
+                                                        render={({ field }) => (
+                                                            <FileUpload
+                                                                ref={fileUploadReference}
+                                                                mode="basic"
+                                                                accept="image/*"
+                                                                maxFileSize={1500000}
+                                                                auto
+                                                                customUpload
+                                                                uploadHandler={async (e) => {
+                                                                    const url = await handleUpload(e);
+                                                                    if (url) {
+                                                                        field.onChange(url);
+                                                                    }
+                                                                }}
+                                                                chooseLabel="Chọn ảnh"
+                                                            />
+                                                        )}
                                                         />
-                                                    )}
-                                                    />
+                                                    }
                                                     {watch('imgUrls').length === 0 || errors.imgUrls?.[index] && <span className="text-red">{errors.imgUrls.message}</span>}
                                                     <div className="w-[85px] h-[85px] relative group">
                                                         {watch(`imgUrls.${index}`) && (
@@ -444,14 +454,14 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                             {errorMessage && <span className='text-red mb-2 text-lg'>{errorMessage}</span>}
                         </div>
                         <div className="flex flex-row w-[50%] ml-auto gap-5 justify-end items-center">
-                        <Button 
+                            <Button onClick={toggleShowProductDetail} className="w-[27%] bg-green border-green text-white rounded-lg py-2 hover:bg-green-dark transition text-xl">
+                                Quay lại
+                            </Button>
+                            <Button 
                             htmlType="submit" 
                             disabled={loading} loading={loading}
-                            className="w-[35%] bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition text-xl">
-                                Cập nhật sản phẩm
-                            </Button>
-                            <Button onClick={toggleShowProductDetail} className="w-[35%] bg-green border-green text-white rounded-lg py-2 hover:bg-green-dark transition text-xl">
-                                Quay lại
+                            className="w-[27%] bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition text-xl">
+                                Cập nhật
                             </Button>
                         </div>
                     </form>
