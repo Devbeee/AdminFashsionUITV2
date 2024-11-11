@@ -12,7 +12,7 @@ export function BlogCard({ blog }: NewsCardProps) {
         <div className="w-60 xs:w-96 p-0 border-none">
         <div className='flex flex-col items-center justify-start w-full'>
             <div className='w-full h-60 z-0 bg-gray-300'>
-                <Link to={`/blog/detail/${blog.slug}`} title={blog.title} className='z-0'>
+                <Link to={`/admin/blog/detail/${blog.slug}`} title={blog.title} className='z-0'>
                     <img
                         className="w-full h-60 object-contain z-0"
                         src={blog.coverImage}
@@ -22,7 +22,7 @@ export function BlogCard({ blog }: NewsCardProps) {
             </div>
             <div className="h-44 overflow-hidden py-2 px-3 -mt-10 border rounded-md shadow-md z-50 w-11/12 bg-white">
                 <span className="text-center ">
-                    <Link to={`/blog/detail/${blog.slug}`} title={blog.title} className='font-bold line-clamp-2'>
+                    <Link to={`/admin/blog/detail/${blog.slug}`} title={blog.title} className='font-bold line-clamp-2'>
                         <span className='text-blue-cyan hover:text-primary transition duration-300 ease-in-out'>{blog.title}</span>
                     </Link>
                 </span>

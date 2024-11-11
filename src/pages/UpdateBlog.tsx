@@ -68,7 +68,7 @@ export function UpdateBlog() {
     };
 
     const acceptCancel = () => {
-        navigate(`/blog/detail/${blog?.slug}`);
+        navigate(`/admin/blog/detail/${blog?.slug}`);
     };
 
     const rejectCancel = () => {
@@ -95,7 +95,7 @@ export function UpdateBlog() {
                         toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Blog đã được cập nhật thành công', life: 3000 });
                         startNavigating();
                         setTimeout(() => {
-                            navigate('/blog/list');
+                            navigate('/admin/blog/list');
                         }, 3000);
                     } else {
                         toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${updateErrorMessage}`, life: 3000 });

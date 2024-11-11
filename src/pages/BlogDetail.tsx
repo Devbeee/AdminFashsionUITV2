@@ -65,7 +65,7 @@ export function BlogDetail() {
                         toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Blog này đã bị xóa', life: 3000 });
                         startNavigating();
                         setTimeout(() => {
-                            navigate('/blog/list');
+                            navigate('/admin/blog/list');
                         }, 3000);
                     }
                     else {
@@ -124,7 +124,7 @@ export function BlogDetail() {
             <ConfirmDialog />
             <div className="flex flex-wrap md:flex-row gap-6 justify-between w-full px-4 mt-5 mb-5">
                 <div className='flex flex-wrap w-full justify-end gap-4'>
-                    <Button disabled={isNavigating} to={'/blog/update/' + blog.slug} className="font-bold w-32">Cập nhật</Button>
+                    <Button disabled={isNavigating} to={'/admin/blog/update/' + blog.slug} className="font-bold w-32">Cập nhật</Button>
                     <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold w-32 border-red-500 bg-red-500 hover:bg-red-600">Xóa</Button>
                 </div>
                 {blog && (

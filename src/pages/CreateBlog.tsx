@@ -65,7 +65,7 @@ export function CreateBlog() {
     };
 
     const acceptCancel = () => {
-        navigate('/blog/list');
+        navigate('/admin/blog/list');
     };
 
     const rejectCancel = () => {
@@ -91,7 +91,7 @@ export function CreateBlog() {
                     toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Blog đã được tạo thành công', life: 3000 });
                     startNavigating();
                     setTimeout(() => {
-                        navigate('/blog/list');
+                        navigate('/admin/blog/list');
                     }, 3000);
                 } else {
                     toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });

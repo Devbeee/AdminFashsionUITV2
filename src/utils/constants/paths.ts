@@ -1,8 +1,8 @@
 export const PATH = {
   dashboard: '/',
   manageCategory: '/manage-category',
-  blogList: '/blog/list',
-  blogCreate: '/blog/create',
-  blogDetail: '/blog/detail/:slug',
-  blogUpdate: '/blog/update/:slug',
+  blogList: '/admin/blog/list',
+  blogCreate: '/admin/blog/create',
+  blogDetail: '/admin/blog/detail/:slug',
+  blogUpdate: '/admin/blog/update/:slug',
 }
