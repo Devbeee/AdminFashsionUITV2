@@ -1,13 +1,17 @@
 import { productApi } from "@/apis";
 import { useApi, useBoolean } from "@/hooks";
-import { IProduct } from "@/interfaces";
+import { ICategory, IProduct } from "@/interfaces";
 
 import { ProductRow } from "./ProductRow";
 
 import { Paginator } from 'primereact/paginator';
 import { SetStateAction, useEffect, useState } from "react";
 
-export const ProductTable = () => {
+type ProductTableProps = {
+    category: ICategory[];
+}
+
+export const ProductTable: React.FC<ProductTableProps> = ({category}) => {
     const [first, setFirst] = useState(0);
     const onPageChange = (event: { first: SetStateAction<number>}) => {
         setFirst(event.first);
@@ -61,7 +65,8 @@ export const ProductTable = () => {
             </div>
             <div className='divide-y'>
                 {Array.isArray(products) && products.slice(first, first + 9).map((product) => (
-                <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange} setProducts={setProducts}/>
+                <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange} setProducts={setProducts}
+                category={category}/>
                 ))}
             </div>
         </div>

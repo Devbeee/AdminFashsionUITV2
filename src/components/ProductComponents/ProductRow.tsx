@@ -1,4 +1,4 @@
-import { manageCategoryApi, productApi } from '@/apis';
+import { productApi } from '@/apis';
 import { useBoolean, useApi } from '@/hooks';
 import { ICategory, ICreateProductDetail, IInputProduct, IProduct } from '@/interfaces';
 import { Input, Button } from '@/components';
@@ -21,41 +21,26 @@ type ProductRowProps = {
     productInfo: IProduct;
     toggleProductChange: () => void;
     setProducts: React.Dispatch<SetStateAction<IProduct[]>>;
+    category: ICategory[];
 }
 
-export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProductChange, setProducts}) => { 
+export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProductChange, setProducts, category}) => { 
+    const [categoryType, setCategoryType] = useState<string[]>([]);
+    const [categoryGender, setCategoryGender] = useState<string[]>([]);
+    Array.from(category).forEach(cate => {
+        if (!categoryType.includes(cate.type)) {
+            setCategoryType([...categoryType, cate.type])
+        }
+        if (!categoryGender.includes(cate.gender)) {
+            setCategoryGender([...categoryGender, cate.gender])
+        }
+      })
     const toast = useRef<Toast>(null);
     const fileUploadReference = useRef<FileUpload>(null);
     const { value: showDropDown, toggle: toggleShowDropDown } = useBoolean(false);
     const { value: showProductDetail, toggle: toggleShowProductDetail } = useBoolean(false);
     const { value: showConfirmDelete, toggle: toggleShowConfirmDelete } = useBoolean(false);
     const { loading, errorMessage, callApi: callApiManageProduct } = useApi<void>()
-
-    const { callApi: callApiGetCategory } = useApi<void>()
-    const [categories, setCategories] = useState<ICategory[]>([])
-
-    const categoryType: string[] = [];
-    const categoryGender: string[] = [];
-    const category: ICategory[] = [];
-
-    const getAllCategories = async () => {
-        callApiGetCategory(async () => {
-            const { data } = await manageCategoryApi.findAll()
-            setCategories(data)
-        })
-    }
-    useEffect(() => {
-        getAllCategories()
-        Array.from(categories).forEach((cate: ICategory) => {
-            if (!categoryType.includes(cate.type)) {
-                categoryType.push(cate.type)
-            }
-            if (!categoryGender.includes(cate.gender)) {
-                categoryGender.push(cate.gender)
-            }
-            category.push(cate)
-        })
-    },[])
     
     const {
         control,

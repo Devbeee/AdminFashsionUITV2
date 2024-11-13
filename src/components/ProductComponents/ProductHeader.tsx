@@ -5,7 +5,7 @@ import { schema } from "@/utils/constants";
 import { sizes } from "@/utils/constants";
 import { icons } from "@/utils/icons";
 
-import { manageCategoryApi, productApi } from "@/apis";
+import { productApi } from "@/apis";
 import { ICategory, ICreateProductDetail, IInputProduct } from "@/interfaces";
 import { useApi, useBoolean } from "@/hooks";
 import { Button, Input } from "@/components";
@@ -20,38 +20,26 @@ import { Button as PrimeBtn } from 'primereact/button';
 import { useEffect, useRef, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 
-export const ProductHeader = () => {
+type ProductHeaderProps = {
+    category: ICategory[];
+}
+
+export const ProductHeader: React.FC<ProductHeaderProps> = ({category}) => {
+    const [categoryType, setCategoryType] = useState<string[]>([]);
+    const [categoryGender, setCategoryGender] = useState<string[]>([]);
+    Array.from(category).forEach(cate => {
+        if (!categoryType.includes(cate.type)) {
+            setCategoryType([...categoryType, cate.type])
+        }
+        if (!categoryGender.includes(cate.gender)) {
+            setCategoryGender([...categoryGender, cate.gender])
+        }
+      })
     const toast = useRef<Toast>(null);
     const fileUploadReference = useRef<FileUpload>(null);
 
     const {value: addProduct, toggle: toggleAddProduct } = useBoolean(false);
     const { loading, errorMessage, callApi: callApiSendProduct } = useApi<void>()
-
-    const { callApi: callApiGetCategory } = useApi<void>()
-    const [categories, setCategories] = useState<ICategory[]>([])
-
-    const categoryType: string[] = [];
-    const categoryGender: string[] = [];
-    const category: ICategory[] = [];
-
-    const getAllCategories = async () => {
-        callApiGetCategory(async () => {
-            const { data } = await manageCategoryApi.findAll()
-            setCategories(data)
-        })
-    }
-    useEffect(() => {
-        getAllCategories()
-        Array.from(categories).forEach((cate: ICategory) => {
-            if (!categoryType.includes(cate.type)) {
-                categoryType.push(cate.type)
-            }
-            if (!categoryGender.includes(cate.gender)) {
-                categoryGender.push(cate.gender)
-            }
-            category.push(cate)
-        })
-    },[])
 
     const {
         control,
