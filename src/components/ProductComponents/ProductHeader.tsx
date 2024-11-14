@@ -1,8 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import { uploadToCloudinary } from "@/utils/helpers";
-import { schema } from "@/utils/constants";
-import { sizes } from "@/utils/constants";
+import { schema, sizes, filterOptions } from "@/utils/constants";
 import { icons } from "@/utils/icons";
 
 import { productApi } from "@/apis";
@@ -22,9 +21,11 @@ import { useForm, Controller } from "react-hook-form";
 
 type ProductHeaderProps = {
     category: ICategory[];
+    setQuery: (query: string) => void;
+    setFilter: (filter: string) => void;
 }
 
-export const ProductHeader: React.FC<ProductHeaderProps> = ({category}) => {
+export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery, setFilter}) => {
     const [categoryType, setCategoryType] = useState<string[]>([]);
     const [categoryGender, setCategoryGender] = useState<string[]>([]);
     Array.from(category).forEach(cate => {
@@ -38,6 +39,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category}) => {
     const toast = useRef<Toast>(null);
     const fileUploadReference = useRef<FileUpload>(null);
 
+    const {value: showFilter, toggle: toggleFilter} = useBoolean(false);
     const {value: addProduct, toggle: toggleAddProduct } = useBoolean(false);
     const { loading, errorMessage, callApi: callApiSendProduct } = useApi<void>()
 
@@ -119,11 +121,32 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category}) => {
         <div className='flex flex-row w-[95%] h-fit justify-between m-auto mt-6'>
             <div className='text-black-light text-2xl font-bold leading-tight text-left'>Thông tin sản phẩm</div>
             <div className="flex flex-row gap-5">
+                <div className="relative">
+                    <PrimeBtn text onClick={toggleFilter}>
+                        {icons.filter}
+                    </PrimeBtn>
+                    {showFilter && (
+                        <>
+                            <div className='fixed inset-0 z-0' onClick={toggleFilter}></div>
+                            <div className="absolute right-0 mt-3 p-1 w-[150px] bg-white border border-gray-light rounded-md shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
+                                <div className="absolute top-[-6px] right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white"></div>
+                                {filterOptions.map((option) => (
+                                    <PrimeBtn text key={option.label} className='flex w-full transition text-sm text-black'
+                                    onClick={() => {
+                                        setFilter(option.value);
+                                        toggleFilter();
+                                    }}
+                                    >{option.label}</PrimeBtn>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
                 <IconField iconPosition="left">
                     <InputIcon>
                         {icons.searchProduct}
                     </InputIcon>
-                    <Input name="search" placeholder="Search" className="rounded-lg w-[270px]"/>
+                    <Input name="search" placeholder="Search" className="rounded-lg w-[270px]" onChange={(e) => setQuery(e.target.value)}/>
                 </IconField>
                 <Button className="rounded-lg" onClick={toggleAddProduct}>
                     {icons.addProduct}

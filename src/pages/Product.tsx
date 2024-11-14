@@ -8,7 +8,9 @@ import { useEffect, useState } from "react"
 export const Product = () => {
   const { callApi: callApiGetCategory } = useApi<void>()
   const [categories, setCategories] = useState<ICategory[]>([])
-  
+  const [query, setQuery] = useState('')
+  const [filter, setFilter] = useState('default')
+
   const getAllCategories = async () => {
     callApiGetCategory(async () => {
         const { data } = await manageCategoryApi.findAll()
@@ -21,9 +23,9 @@ useEffect(() => {
 
   return (
     <div className='w-full h-full'>
-      <ProductHeader category={categories}/>
+      <ProductHeader category={categories} setQuery={setQuery} setFilter={setFilter}/>
       <div className='h-full w-[95%] bg-off-white m-auto mt-4 rounded-lg'>      
-        <ProductTable category={categories}/>
+        <ProductTable category={categories} query={query} filter={filter}/>
       </div>
     </div>
   )

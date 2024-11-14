@@ -185,11 +185,14 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                     {icons.list}
                 </PrimeBtn>
                 {showDropDown && (
-                    <div className="absolute right-0 mt-3 p-1 w-[130px] bg-white border border-gray-light rounded-md shadow-lg z-10">
-                        <div className="absolute top-[-6px] right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white"></div>
-                        <PrimeBtn onClick={toggleShowProductDetail} text className='flex w-full transition text-sm gap-2'>{icons.search}Chi tiết</PrimeBtn>
-                        <PrimeBtn onClick={toggleShowConfirmDelete} text className='flex w-full transition text-sm text-red gap-2'>{icons.deleteProduct}Xóa</PrimeBtn>
-                    </div>
+                    <>
+                        <div className='fixed inset-0 z-0' onClick={toggleShowDropDown}></div>
+                        <div className="absolute right-0 mt-3 p-1 w-[130px] bg-white border border-gray-light rounded-md shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
+                            <div className="absolute top-[-6px] right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white"></div>
+                            <PrimeBtn onClick={toggleShowProductDetail} text className='flex w-full transition text-sm gap-2'>{icons.search}Chi tiết</PrimeBtn>
+                            <PrimeBtn onClick={toggleShowConfirmDelete} text className='flex w-full transition text-sm text-red gap-2'>{icons.deleteProduct}Xóa</PrimeBtn>
+                        </div>
+                    </>
                 )}
             </div>
             {showConfirmDelete && (

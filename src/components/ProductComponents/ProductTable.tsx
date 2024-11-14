@@ -9,9 +9,11 @@ import { SetStateAction, useEffect, useState } from "react";
 
 type ProductTableProps = {
     category: ICategory[];
+    query: string;
+    filter: string;
 }
 
-export const ProductTable: React.FC<ProductTableProps> = ({category}) => {
+export const ProductTable: React.FC<ProductTableProps> = ({category, query, filter}) => {
     const [first, setFirst] = useState(0);
     const onPageChange = (event: { first: SetStateAction<number>}) => {
         setFirst(event.first);
@@ -64,13 +66,38 @@ export const ProductTable: React.FC<ProductTableProps> = ({category}) => {
                 </div>
             </div>
             <div className='divide-y'>
-                {Array.isArray(products) && products.slice(first, first + 9).map((product) => (
+                {Array.isArray(products) && 
+                (filter === 'default' ? 
+                    (getAllProducts(), products)
+                 : products.sort((a,b) => {
+                    if (filter === 'name-asc') {
+                        return a.name.localeCompare(b.name)
+                    }
+                    if (filter === 'name-desc') {
+                        return b.name.localeCompare(a.name)
+                    }
+                    if (filter === 'price-asc') {
+                        return a.price - b.price
+                    }
+                    if (filter === 'price-desc') {
+                        return b.price - a.price
+                    }
+                    if (filter === 'date-asc') {
+                        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                    }
+                    if (filter === 'date-desc') {
+                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+                    }
+                    return 0
+                }))
+                .filter(product => product.name.toLowerCase().includes(query))
+                .slice(first, first + 8).map((product) => (
                 <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange} setProducts={setProducts}
                 category={category}/>
                 ))}
             </div>
         </div>
-        <Paginator first={first} rows={9} totalRecords={28} onPageChange={onPageChange}/>
+        <Paginator first={first} rows={8} totalRecords={products.length} onPageChange={onPageChange}/>
     </>
     
   )
