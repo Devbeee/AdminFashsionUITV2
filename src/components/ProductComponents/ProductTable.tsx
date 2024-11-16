@@ -32,7 +32,33 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
     useEffect(() => {
         getAllProducts()
     }, [isProductChange])
-
+    
+    const filterProducts = () => {
+        return (filter === 'default' ? 
+            (getAllProducts(), products)
+         : products.sort((a,b) => {
+            if (filter === 'name-asc') {
+                return a.name.localeCompare(b.name)
+            }
+            if (filter === 'name-desc') {
+                return b.name.localeCompare(a.name)
+            }
+            if (filter === 'price-asc') {
+                return a.price - b.price
+            }
+            if (filter === 'price-desc') {
+                return b.price - a.price
+            }
+            if (filter === 'date-asc') {
+                return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            }
+            if (filter === 'date-desc') {
+                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            }
+            return 0
+        }))
+        .filter(product => product.name.toLowerCase().includes(query))
+    }
   return (
     <>
         <div className='flex flex-col h-[690px] w-full'>
@@ -66,41 +92,16 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                 </div>
             </div>
             <div className='divide-y'>
-                {Array.isArray(products) && 
-                (filter === 'default' ? 
-                    (getAllProducts(), products)
-                 : products.sort((a,b) => {
-                    if (filter === 'name-asc') {
-                        return a.name.localeCompare(b.name)
-                    }
-                    if (filter === 'name-desc') {
-                        return b.name.localeCompare(a.name)
-                    }
-                    if (filter === 'price-asc') {
-                        return a.price - b.price
-                    }
-                    if (filter === 'price-desc') {
-                        return b.price - a.price
-                    }
-                    if (filter === 'date-asc') {
-                        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-                    }
-                    if (filter === 'date-desc') {
-                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-                    }
-                    return 0
-                }))
-                .filter(product => product.name.toLowerCase().includes(query))
-                .length === 0 ? (
-                    <div className='text-black-light opacity-80 text-center text-xl font-semibold pt-10'>Không có sản phẩm phù hợp</div>
-                ) : products.filter(product => product.name.toLowerCase().includes(query))
+                {Array.isArray(products) && filterProducts().length > 0
+                ? filterProducts()
                 .slice(first, first + 8).map((product) => (
                 <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange} setProducts={setProducts}
                 category={category}/>
-                ))}
+                ))
+                : <div className='text-black-light opacity-80 text-center text-xl font-semibold pt-10'>Không có sản phẩm phù hợp</div>}
             </div>
         </div>
-        <Paginator first={first} rows={8} totalRecords={products.length} onPageChange={onPageChange}/>
+        <Paginator first={first} rows={8} totalRecords={filterProducts().length} onPageChange={onPageChange}/>
     </>
     
   )
