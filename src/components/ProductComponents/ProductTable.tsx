@@ -35,7 +35,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
 
   return (
     <>
-        <div className='flex flex-col h-[770px] w-full'>
+        <div className='flex flex-col h-[690px] w-full'>
             <div className='flex flex-row bg-white-blue h-[48px] p-[10px] gap-[10px] rounded-t-lg'>
                 <div className='w-[15%] pl-[12px] m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'>Tên sản phẩm</div>
@@ -91,6 +91,9 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     return 0
                 }))
                 .filter(product => product.name.toLowerCase().includes(query))
+                .length === 0 ? (
+                    <div className='text-black-light opacity-80 text-center text-xl font-semibold pt-10'>Không có sản phẩm phù hợp</div>
+                ) : products.filter(product => product.name.toLowerCase().includes(query))
                 .slice(first, first + 8).map((product) => (
                 <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange} setProducts={setProducts}
                 category={category}/>
