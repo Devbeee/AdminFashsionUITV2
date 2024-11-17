@@ -1,9 +1,29 @@
+import { useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
+
+import { userApi } from '@/apis'
+import { useAuthStore } from '@/stores'
+import { useApi, useBoolean } from '@/hooks'
+
 import { Header, SideBar } from './partials'
-import { useBoolean } from '@/hooks'
 
 export function DefaultLayout() {
   const sideBarVisible = useBoolean(false)
+  const { setCurrentUser } = useAuthStore()
+  const { callApi: callApiGetCurrentUser } = useApi<void>()
+
+  const handleGetCurrentUser = () => {
+    callApiGetCurrentUser(async () => {
+      const { data } = await userApi.getCurrentUser()
+      if (data) {
+        setCurrentUser(data)
+      }
+    })
+  }
+
+  useEffect(() => {
+    handleGetCurrentUser()
+  }, [])
 
   return (
     <div>

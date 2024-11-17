@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { Controller, ControllerRenderProps } from 'react-hook-form'
 import { InputNumber } from 'primereact/inputnumber'
@@ -31,7 +32,7 @@ export const Input: React.FC<CustomInputProps> = ({
   type = 'text',
   onChange,
   disabled = false,
-  status
+  status,
 }) => {
   const isInvalid = status === 'error' || !!errors?.[name]
   const inputSizes = {
@@ -79,7 +80,7 @@ export const Input: React.FC<CustomInputProps> = ({
         )
       case 'password':
         return (
-          <Password {...elementProps} className={inputClassNames} inputClassName={inputClassNames} feedback={false} />
+          <Password {...elementProps} inputClassName={inputClassNames} feedback={false} toggleMask/>
         )
       case 'text':
       default:

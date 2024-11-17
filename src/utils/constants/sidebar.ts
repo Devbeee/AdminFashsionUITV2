@@ -40,5 +40,15 @@ export const SIDE_BAR_ITEM_LIST = [
         title: 'Edit Product'
       }
     ]
+  },
+  {
+    items: [
+      {
+        path: '/',
+        icon: icons.logout,
+        title: 'Logout',
+        
+      }
+    ]
   }
 ]

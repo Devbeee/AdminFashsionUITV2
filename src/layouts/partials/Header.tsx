@@ -9,6 +9,7 @@ import * as yup from 'yup'
 
 import { Search } from '@/components'
 import { getBreadCrumLabel, icons } from '@/utils'
+import { useAuthStore } from '@/stores'
 
 type HeaderProps = {
   toggleSideBar: () => void
@@ -17,6 +18,7 @@ type FormData = {
   searchValue: string
 }
 export const Header: React.FC<HeaderProps> = ({ toggleSideBar }) => {
+  const { currentUser } = useAuthStore()
   const defaultValues = {
     searchValue: ''
   }
@@ -58,7 +60,8 @@ export const Header: React.FC<HeaderProps> = ({ toggleSideBar }) => {
         </form>
         <div className='text-gray-600'>{icons.setting}</div>
         <Button className='p-0 ring-0' rounded text>
-          <Avatar icon={icons.user} className='text-white bg-partial-primary-500' shape='circle' />
+          <span className='px-2'>Hi {currentUser?.fullName}!</span>
+          <Avatar icon={icons.user} image={currentUser?.avatar} className='text-white bg-partial-primary-500' shape='circle' />
         </Button>
       </div>
     </div>
