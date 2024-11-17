@@ -1,3 +1,13 @@
+import { useEffect, useRef, useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+
+import { Toast } from 'primereact/toast';
+import { IconField } from 'primereact/iconfield';
+import { InputIcon } from 'primereact/inputicon';
+import { FileUpload } from 'primereact/fileupload';
+import { Editor, EditorTextChangeEvent } from 'primereact/editor';
+import { Button as PrimeBtn } from 'primereact/button';
+
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import { uploadToCloudinary } from "@/utils/helpers";
@@ -8,16 +18,6 @@ import { productApi } from "@/apis";
 import { ICategory, ICreateProductDetail, IInputProduct } from "@/interfaces";
 import { useApi, useBoolean } from "@/hooks";
 import { Button, Input } from "@/components";
-
-import { Toast } from 'primereact/toast';
-import { IconField } from 'primereact/iconfield';
-import { InputIcon } from 'primereact/inputicon';
-import { FileUpload } from 'primereact/fileupload';
-import { Editor, EditorTextChangeEvent } from 'primereact/editor';
-import { Button as PrimeBtn } from 'primereact/button';
-
-import { useEffect, useRef, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
 
 type ProductHeaderProps = {
     category: ICategory[];

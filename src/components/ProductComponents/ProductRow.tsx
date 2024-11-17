@@ -1,3 +1,11 @@
+import { useRef, SetStateAction, useEffect, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form';
+
+import { Toast } from 'primereact/toast';
+import { FileUpload } from 'primereact/fileupload';
+import { Button as PrimeBtn } from 'primereact/button';
+import { Editor, EditorTextChangeEvent } from 'primereact/editor';
+
 import { productApi } from '@/apis';
 import { useBoolean, useApi } from '@/hooks';
 import { ICategory, ICreateProductDetail, IInputProduct, IProduct } from '@/interfaces';
@@ -8,14 +16,6 @@ import { schema, sizes } from '@/utils/constants';
 import { uploadToCloudinary } from '@/utils/helpers';
 
 import { yupResolver } from '@hookform/resolvers/yup';
-
-import { Toast } from 'primereact/toast';
-import { FileUpload } from 'primereact/fileupload';
-import { Button as PrimeBtn } from 'primereact/button';
-import { Editor, EditorTextChangeEvent } from 'primereact/editor';
-
-import { useRef, SetStateAction, useEffect, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form';
 
 type ProductRowProps = {
     productInfo: IProduct;
@@ -175,11 +175,11 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             { width: '10%', value: new Date(productInfo.createdAt).toLocaleDateString() },
             { width: '10%', value: new Date(productInfo.updatedAt).toLocaleDateString() },
         ].map((item, value) => (
-            <div key={value} className={`w-[${item.width}] pl-[12px] m-auto`}>
+            <div key={value} className={`w-[${item.width}] pl-3 m-auto`}>
                 <div className='text-black-light opacity-80 text-sm font-semibold' dangerouslySetInnerHTML={{ __html: item.value }}></div>
             </div>
         ))}
-        <div className='w-[10%] pl-[12px] m-auto flex justify-center items-center'>
+        <div className='w-[10%] pl-3 m-auto flex justify-center items-center'>
             <div className="relative">
                 <PrimeBtn text onClick={toggleShowDropDown}>
                     {icons.list}
@@ -218,14 +218,14 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             )}
             {showProductDetail && (
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowProductDetail}>
-                <div className="relative bg-white rounded-lg shadow-lg p-6 w-fit" onClick={(e) => e.stopPropagation()}>
+                <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[85%]" onClick={(e) => e.stopPropagation()}>
                     <div className="flex flex-row text-xl font-bold mb-4 justify-between">
                         <p className="flex justify-center items-center text-2xl">Thêm sản phẩm</p>
                         <PrimeBtn text onClick={handleToggle} className="absolute right-2 top-2">
                             {icons.closePopup}
                         </PrimeBtn>
                     </div>
-                    <form onSubmit={handleSubmit(updateProduct)} className="w-fit">
+                    <form onSubmit={handleSubmit(updateProduct)}>
                         <div className="flex flex-col gap-4">
                             <div className="w-full flex flex-row gap-4">
                                 <div className="w-[70%] h-fit flex flex-col gap-5">

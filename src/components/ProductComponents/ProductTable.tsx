@@ -1,11 +1,11 @@
+import { SetStateAction, useEffect, useState } from "react";
+import { Paginator } from 'primereact/paginator';
+
 import { productApi } from "@/apis";
 import { useApi, useBoolean } from "@/hooks";
 import { ICategory, IProduct } from "@/interfaces";
 
 import { ProductRow } from "./ProductRow";
-
-import { Paginator } from 'primereact/paginator';
-import { SetStateAction, useEffect, useState } from "react";
 
 type ProductTableProps = {
     category: ICategory[];
@@ -63,31 +63,31 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
     <>
         <div className='flex flex-col h-[690px] w-full'>
             <div className='flex flex-row bg-white-blue h-[48px] p-[10px] gap-[10px] rounded-t-lg'>
-                <div className='w-[15%] pl-[12px] m-auto'>
+                <div className='w-[15%] pl-3 m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'>Tên sản phẩm</div>
                 </div>
-                <div className='w-[15%] pl-[12px] m-auto'>
+                <div className='w-[15%] pl-3 m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'>Mã sản phẩm</div>
                 </div>
-                <div className='w-[10%] pl-[12px] m-auto'>
+                <div className='w-[10%] pl-3 m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'>Danh mục</div>
                 </div>
-                <div className='w-[20%] pl-[12px] m-auto'>
+                <div className='w-[20%] pl-3 m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'>Mô tả</div>
                 </div>
-                <div className='w-[10%] pl-[12px] m-auto'>
+                <div className='w-[10%] pl-3 m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'>Giá</div>
                 </div>
-                <div className='w-[10%] pl-[12px] m-auto'>
+                <div className='w-[10%] pl-3 m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'>Ưu đãi</div>
                 </div>
-                <div className='w-[10%] pl-[12px] m-auto'>
+                <div className='w-[10%] pl-3 m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'>Tạo vào</div>
                 </div>
-                <div className='w-[10%] pl-[12px] m-auto'>
+                <div className='w-[10%] pl-3 m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'>Cập nhật vào</div>
                 </div>
-                <div className='w-[10%] pl-[12px] m-auto'>
+                <div className='w-[10%] pl-3 m-auto'>
                     <div className='text-black-light opacity-80 text-sm font-semibold'></div>
                 </div>
             </div>

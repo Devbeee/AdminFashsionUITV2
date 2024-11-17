@@ -1,9 +1,11 @@
 export const PATH = {
-  dashboard: '/',
+  dashboard: '/admin',
+  login: '/admin/login',
+  manageCategory: '/admin/manage-category',
   product: '/product',
-  manageCategory: '/manage-category',
   blogList: '/admin/blog/list',
   blogCreate: '/admin/blog/create',
   blogDetail: '/admin/blog/detail/:slug',
   blogUpdate: '/admin/blog/update/:slug',
+  notFound: '*'
 }

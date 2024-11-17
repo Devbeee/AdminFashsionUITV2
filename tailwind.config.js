@@ -8,7 +8,8 @@ export default {
       colors: {
         'blue-cyan': '#00354b',
         yellow: '#ffc107',
-        primary: '#007bff',
+        primary: '#6366f1',
+        'primary-hover': '#4f46e5',
         'off-white': '#f7f8f9',
         'text-dark-blue': '#01567f',
         'white-blue': '#F1F4F9',
@@ -70,16 +71,18 @@ export default {
           '100%': {
             left: '125%'
           }
-        }
+        },
+       
       },
       animation: {
         pulsate: 'pulsate 1s ease-out infinite',
         aniName: 'aniName 3s infinite',
-        shine: 'shine 1.1s'
+        shine: 'shine 1.1s',
       },
       backgroundImage: {
         fire: "url('@/assets/images/fire.png')",
-        'big-banner-sale': "url('@/assets/images/bg_banner_big.webp')"
+        'big-banner-sale': "url('@/assets/images/bg_banner_big.webp')",
+        'auth': "url('@/assets/svgs/authBg.svg')"
       }
     }
   },

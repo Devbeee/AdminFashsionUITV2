@@ -1,13 +1,20 @@
-import { ManageCategory, CreateBlog, BlogsList, BlogDetail, UpdateBlog, Product } from '@/pages'
-import { DefaultLayout } from '@/layouts/DefaultLayout'
-import { PATH } from '@/utils'
-
 import { createBrowserRouter } from 'react-router-dom'
+
+import { PATH } from '@/utils'
+import { DefaultLayout } from '@/layouts'
+import { ManageCategory, CreateBlog, BlogsList, BlogDetail, UpdateBlog, Login, NotFound, Product } from '@/pages'
+
+import { ProtectedRoute } from './ProtectedRoute'
+
 
 export const router = createBrowserRouter([
   {
-    path: '/',
-    element: <DefaultLayout />,
+    path: '/admin',
+    element: (
+      <ProtectedRoute role='admin'>
+        <DefaultLayout />
+      </ProtectedRoute>
+    ),
     children: [
       // {
       //   path: '/',
@@ -38,5 +45,13 @@ export const router = createBrowserRouter([
         element: <Product />
       }
     ]
+  },
+  {
+    path: PATH.login,
+    element: <Login />
+  },
+  {
+    path: PATH.notFound,
+    element: <NotFound />
   }
 ])
