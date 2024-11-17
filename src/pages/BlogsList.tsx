@@ -4,21 +4,78 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { Paginator, PaginatorPageChangeEvent } from 'primereact/paginator';
 import { Checkbox, CheckboxChangeEvent } from "primereact/checkbox";
+import { Calendar } from 'primereact/calendar';
+import { Nullable } from "primereact/ts-helpers";
+import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 
-import { BlogCard, Button } from '@/components';
-import { IBlog } from '@/interfaces';
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+
+import { BlogCard, Button, Search } from '@/components';
+import { IBlog, ISortStyle, IAuthor, IGetBlogsParams } from '@/interfaces';
 import { blogApi } from "@/apis";
 import { useApi } from "@/hooks";
+import { icons, sortStyle } from '@/utils';
+
+type FormData = {
+    searchValue?: string
+}
 
 export function BlogsList() {
     const [blogs, setBlogs] = useState<IBlog[]>([]);
     const [first, setFirst] = useState<number>(0);
-    const [limit, setRows] = useState<number>(8);
+    const [limit, setRows] = useState<number>(9);
     const [totalRecords, setTotalRecords] = useState<number>(0);
     const [choosedBlogs, setChoosedBlogs] = useState<string[]>([]);
+    const [createDateRange, setCreateDateRange] = useState<Nullable<(Date | null)[]>>(null);
+    const [allAuthors, setAllAuthors] = useState<IAuthor[]>([]);
+    const [choosedAuthors, setChoosedAuthors] = useState<string[]>([]);
+    const [selectedSortStyle, setSelectedSortStyle] = useState<ISortStyle>(sortStyle[0]);
     const toast = useRef<Toast>(null);
     const { errorMessage: deleteErrorMessage, callApi: callDeleteApi } = useApi<void>()
     const { callApi: callGetBlogsApi } = useApi<void>();
+
+    const defaultValues: FormData = {
+        searchValue: ''
+    }
+
+    const schema = yup.object().shape({
+        searchValue: yup.string().trim()
+    })
+
+    const {
+        control,
+        formState: { errors },
+        handleSubmit,
+        getValues,
+    } = useForm({ defaultValues, resolver: yupResolver(schema) })
+
+    const onSubmit = (data: FormData) => {
+        if (createDateRange) {
+            const params: IGetBlogsParams = {
+                page: 1,
+                limit: limit,
+                sortStyle: selectedSortStyle.code,
+                authors: choosedAuthors,
+                searchKeyWord: data.searchValue,
+                createDateRange: createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : []
+            }
+            getBlogs(params);
+        }
+        else {
+            const params: IGetBlogsParams = {
+                page: 1,
+                limit: limit,
+                sortStyle: selectedSortStyle.code,
+                authors: choosedAuthors,
+                searchKeyWord: data.searchValue,
+                createDateRange: []
+            }
+            getBlogs(params);
+        }
+        setFirst(0);
+    }
 
     const acceptDelete = async () => {
         try {
@@ -29,7 +86,29 @@ export function BlogsList() {
                         toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Đã xóa các blog được chọn', life: 3000 });
                         setChoosedBlogs([]);
                         setFirst(0);
-                        getBlogs(1, limit);
+                        if (createDateRange) {
+                            const params: IGetBlogsParams = {
+                                page: 1,
+                                limit: limit,
+                                sortStyle: selectedSortStyle.code,
+                                authors: choosedAuthors,
+                                searchKeyWord: getValues('searchValue'),
+                                createDateRange: createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : []
+                            }
+                            getBlogs(params);
+                        }
+                        else {
+                            const params: IGetBlogsParams = {
+                                page: 1,
+                                limit: limit,
+                                sortStyle: selectedSortStyle.code,
+                                authors: choosedAuthors,
+                                searchKeyWord: getValues('searchValue'),
+                                createDateRange: []
+                            }
+                            getBlogs(params);
+                        }
+                        getAuthors();
                     }
                     else {
                         toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
@@ -58,79 +137,212 @@ export function BlogsList() {
         });
     };
 
-    const onChoosedBlogsChange = (e: CheckboxChangeEvent) => {
+    const onChoosedBlogsChange = (event: CheckboxChangeEvent) => {
         let choosedBlogsTemp = [...choosedBlogs];
-        if (e.checked){
-            choosedBlogsTemp.push(e.value);
+        if (event.checked) {
+            choosedBlogsTemp.push(event.value);
         }
         else {
-            choosedBlogsTemp.splice(choosedBlogsTemp.indexOf(e.value), 1);
+            choosedBlogsTemp.splice(choosedBlogsTemp.indexOf(event.value), 1);
         }
         setChoosedBlogs(choosedBlogsTemp);
     }
 
     const onPageChange = (event: PaginatorPageChangeEvent) => {
         setFirst(event.first);
-        getBlogs(event.page + 1, limit);
+        if (createDateRange) {
+            const params: IGetBlogsParams = {
+                page: event.page + 1,
+                limit: limit,
+                sortStyle: selectedSortStyle.code,
+                authors: choosedAuthors,
+                searchKeyWord: getValues('searchValue'),
+                createDateRange: createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : []
+            }
+            getBlogs(params);
+        }
+        else {
+            const params: IGetBlogsParams = {
+                page: event.page + 1,
+                limit: limit,
+                sortStyle: selectedSortStyle.code,
+                authors: choosedAuthors,
+                searchKeyWord: getValues('searchValue'),
+                createDateRange: []
+            }
+            getBlogs(params);
+        }
     };
 
-    const getBlogs = async (page : number, limit : number) => {
+    const getBlogs = async (params : IGetBlogsParams) => {
         try {
             callGetBlogsApi(async () => {
-                const response = await blogApi.getAll(page, limit);
+                const response = await blogApi.getAll(params);
                 setBlogs(response.data.data);
                 setTotalRecords(response.data.total);
             });
         } catch (error) {
+            setBlogs([]);
+            setTotalRecords(0);
             console.error('Failed to fetch blogs: ', error);
         }
     }
 
-    useEffect(()=> {
-        getBlogs(1, limit);
-    },[])
-
-    if (!blogs) {
-        return (
-          <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
-              <span className="text-2xl font-bold text-primary">Không tìm thấy blog</span>
-          </div>
-        );
+    const getAuthors = async () => {
+        try {
+            callGetBlogsApi(async () => {
+                const response = await blogApi.getAuthors();
+                setAllAuthors(response.data);
+            });
+        }
+        catch (error) {
+            console.error('Failed to fetch authors: ', error);
+        }
     }
 
+    const onChoosedAuthorsChange = (event: CheckboxChangeEvent) => {
+        let choosedAuthorsTemp = [...choosedAuthors];
+        if (event.checked) {
+            choosedAuthorsTemp.push(event.value);
+        }
+        else {
+            choosedAuthorsTemp.splice(choosedAuthorsTemp.indexOf(event.value), 1);
+        }
+        setChoosedAuthors(choosedAuthorsTemp);
+    }
+
+    const clearDateRange = () => {
+        setCreateDateRange(null);
+    };
+
+    useEffect(() => {
+        if (createDateRange) {
+            const params: IGetBlogsParams = {
+                page: 1,
+                limit: limit,
+                sortStyle: selectedSortStyle.code,
+                authors: choosedAuthors,
+                searchKeyWord: getValues('searchValue'),
+                createDateRange: createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : []
+            }
+            getBlogs(params);
+        }
+        else {
+            const params: IGetBlogsParams = {
+                page: 1,
+                limit: limit,
+                sortStyle: selectedSortStyle.code,
+                authors: choosedAuthors,
+                searchKeyWord: getValues('searchValue'),
+                createDateRange: []
+            }
+            getBlogs(params);
+        }
+        setFirst(0);
+        getAuthors();
+    }, [choosedAuthors, selectedSortStyle, createDateRange]);
+
     return (
-        <div className='rounded-xl m-7 p-7 border text-left bg-white'>
+        <div className='rounded-xl m-7 p-7 border text-left bg-white flex flex-row gap-8'>
             <Toast ref={toast} />
             <ConfirmDialog />
-            <div className='h-20 bg-gray-100 py-4 px-2 border-t-2 border-b-2 flex justify-between items-center'>
-                <span className='font-bold text-3xl text-gray-700'>Blogs</span> 
-                {choosedBlogs.length > 0 && (<Button onClick={confirmDelete} className='font-bold w-32 border-red-500 bg-red-500 hover:bg-red-600'>Xóa đã chọn</Button>)}
-            </div>
-            <div className='flex justify-center items-center mt-7'>
-                <div className='text-center grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8'>
-                    {blogs?.map((blog) => (
-                        <div key={blog.slug}>
-                            <div className='w-full flex justify-end'>
-                                <Checkbox 
-                                    inputId={blog.slug} 
-                                    value={blog.slug}
-                                    onChange={onChoosedBlogsChange} 
-                                    checked={choosedBlogs.includes(blog.slug)} 
-                                    className='z-50 -mb-6'
-                                />
-                            </div>
-                            <BlogCard blog={blog} />
+            <div className='flex-[1] flex flex-col gap-8'>
+                <div className='w-full h-20 p-4 bg-gray-100 text-gray-500 rounded border'>
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <Search
+                            className='border-partial-primary-500 w-full'
+                            control={control}
+                            errors={errors}
+                            size='small'
+                            placeholder='Tìm kiếm blog'
+                        />
+                    </form>
+                </div>
+                <div className='w-full p-4 bg-gray-100 text-gray-500 rounded border'>
+                    <div className="flex flex-col justify-center gap-2">
+                        <span className='font-bold uppercase'>Ngày tạo blog</span>
+                        <div className='flex justify-center items-center gap-1'>
+                            <Calendar
+                                value={createDateRange}
+                                onChange={(event) => setCreateDateRange(event.value)}
+                                selectionMode="range"
+                                readOnlyInput
+                                hideOnRangeSelection
+                                placeholder='Chọn khoảng thời gian' 
+                            />
+                            <span onClick={clearDateRange} className='text-3xl rounded-full text-gray-500 hover:bg-white m-0 p-0'>{icons.close}</span>
                         </div>
-                    ))}
+                    </div>
+                </div>
+                <div className='w-full p-4 bg-gray-100 text-gray-500 rounded border'>
+                    <div className="flex flex-col justify-center items-start gap-2">
+                        <span className='font-bold uppercase'>Tác giả</span>
+                        {allAuthors.map((author) => (
+                            <div key={author.id} className='flex items-center gap-2'>
+                                <Checkbox
+                                    inputId={author.id}
+                                    name={author.fullName}
+                                    value={author.id}
+                                    onChange={onChoosedAuthorsChange}
+                                    checked={choosedAuthors.includes(author.id)}
+                                />
+                                <label htmlFor={author.id} className="cursor-pointer">
+                                    {author.fullName}
+                                </label>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
-            <div className='mt-4'>
-                <Paginator 
-                    first={first} 
-                    rows={limit} 
-                    totalRecords={totalRecords} 
-                    onPageChange={onPageChange} 
-                />
+            <div className='flex-[4]'>
+                <div className='h-20 bg-gray-100 py-4 px-2 border-t-2 border-b-2 flex justify-between items-center'>
+                    <span className='font-bold text-3xl text-gray-700'>Blogs</span>
+                    {choosedBlogs.length > 0 && (<Button onClick={confirmDelete} className='font-bold w-32 border-red-500 bg-red-500 hover:bg-red-600'>Xóa đã chọn</Button>)}
+                </div>
+                {blogs.length === 0 ? (
+                    <div className='flex flex-col items-center justify-center bg-gray-50 m-7 p-4'>
+                        <span className="text-2xl font-bold text-gray-500">Không tìm thấy blog</span>
+                    </div>
+                ) : (
+                    <>
+                        <div className='flex flex-col justify-center flex-wrap items-center mt-7 gap-4'>
+                            <div className="w-full flex justify-end items-center gap-1">
+                                <span className="text-gray-500 flex items-center gap-1">{icons.sort}Sắp xếp:</span>
+                                <Dropdown
+                                    value={selectedSortStyle}
+                                    onChange={(event: DropdownChangeEvent) => setSelectedSortStyle(event.value)}
+                                    options={sortStyle}
+                                    optionLabel="name"
+                                    className="w-36 text-gray-500 text-[0.75rem] leading-[0.1rem] border-none bg-gray-50 rounded-none"
+                                />
+                            </div>
+                            <div className='text-center grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-8'>
+                                {blogs?.map((blog) => (
+                                    <div key={blog.slug}>
+                                        <div className='w-full flex justify-end'>
+                                            <Checkbox
+                                                inputId={blog.slug}
+                                                value={blog.slug}
+                                                onChange={onChoosedBlogsChange}
+                                                checked={choosedBlogs.includes(blog.slug)}
+                                                className='z-50 -mb-6'
+                                            />
+                                        </div>
+                                        <BlogCard blog={blog} />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className='mt-4'>
+                            <Paginator
+                                first={first}
+                                rows={limit}
+                                totalRecords={totalRecords}
+                                onPageChange={onPageChange}
+                            />
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     )

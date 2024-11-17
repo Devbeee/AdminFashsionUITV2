@@ -139,7 +139,7 @@ export function BlogDetail() {
                             </div>
                             <div className="flex flex-row items-center gap-1">
                                 <span className="text-gray-400 text-sm">{icons.faUser}</span>
-                                <span className="text-gray-400">{blog.author}</span>
+                                <span className="text-gray-400">{blog.author.fullName}</span>
                             </div>
                         </div>
                         <div dangerouslySetInnerHTML={{ __html: blog.description }} className="flex flex-col items-start mt-2"></div>

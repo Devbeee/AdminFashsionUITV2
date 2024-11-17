@@ -5,6 +5,8 @@ import { RxSlash } from 'react-icons/rx'
 import { FaPlus, FaRegTrashAlt, FaUser } from "react-icons/fa";
 import { CgDanger } from "react-icons/cg";
 import { HiOutlinePencilSquare } from "react-icons/hi2";
+import { FaSortAmountDown } from "react-icons/fa";
+import { IoIosClose } from "react-icons/io";
 
 export const icons = {
   menu: <MdMenu />,
@@ -19,4 +21,6 @@ export const icons = {
   update: <HiOutlinePencilSquare />,
   faUser: <FaUser />,
   watch: <MdOutlineWatchLater />,
+  sort: <FaSortAmountDown />,
+  close: <IoIosClose />,
 }
