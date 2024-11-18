@@ -24,7 +24,7 @@ useEffect(() => {
   return (
     <div className='w-full h-full'>
       <ProductHeader category={categories} setQuery={setQuery} setFilter={setFilter}/>
-      <div className='h-full w-[95%] bg-off-white m-auto mt-4 rounded-lg'>      
+      <div className='h-full w-[95%] bg-white m-auto mt-4 rounded-lg'>      
         <ProductTable category={categories} query={query} filter={filter}/>
       </div>
     </div>

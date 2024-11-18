@@ -91,7 +91,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     <div className='text-black-light opacity-80 text-sm font-semibold'></div>
                 </div>
             </div>
-            <div className='divide-y'>
+            <div className='divide-y-2 divide-gray-light'>
                 {Array.isArray(products) && filterProducts().length > 0
                 ? filterProducts()
                 .slice(first, first + 8).map((product) => (
