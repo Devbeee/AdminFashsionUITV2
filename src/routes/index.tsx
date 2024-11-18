@@ -2,9 +2,10 @@ import { createBrowserRouter } from 'react-router-dom'
 
 import { PATH } from '@/utils'
 import { DefaultLayout } from '@/layouts'
-import { ManageCategory, CreateBlog, BlogsList, BlogDetail, UpdateBlog, Login, NotFound } from '@/pages'
+import { ManageCategory, CreateBlog, BlogsList, BlogDetail, UpdateBlog, Login, NotFound, Product } from '@/pages'
 
 import { ProtectedRoute } from './ProtectedRoute'
+
 
 export const router = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
       {
         path: PATH.blogUpdate,
         element: <UpdateBlog />
+      },
+      {
+        path: PATH.product,
+        element: <Product />
       }
     ]
   },

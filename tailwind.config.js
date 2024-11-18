@@ -12,6 +12,17 @@ export default {
         'primary-hover': '#4f46e5',
         'off-white': '#f7f8f9',
         'text-dark-blue': '#01567f',
+        'white-blue': '#F1F4F9',
+        'black-light': '#202224',
+        red: '#dc3545',
+        'primary-dark': '#0006b3',
+        'red-dark': '#8a0c19',
+        green: '#28a745',
+        'green-dark': '#0b6623',
+        gray: '#6b7280',
+        'gray-dark': '#3d4852',
+        'gray-border': '#d1d5db',
+        'gray-light': '#f5f5f5',
         'partial-primary': colors.indigo
       },
       width: {
