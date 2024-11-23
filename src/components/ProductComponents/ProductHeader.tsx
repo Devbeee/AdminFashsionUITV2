@@ -74,7 +74,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
         }
     }, [watch('numberOfColor'), setValue, watch])
 
-    const handleUpload = async (e: any) => {
+    const handleUpload = async (e: { files: File[] }) => {
         const file = e.files[0];
         const url = await uploadToCloudinary(file);
         return url ? url : null;
@@ -101,9 +101,9 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                     productDetails.push({size, colorName, color, imgUrl, stock})
                 })
             })
-            const {numberOfColor, categoryGender, categoryType, sizes, colors, stocks, imgUrls, colorNames, ...productInfo} = productData;
+            const {categoryGender, categoryType, ...productInfo} = productData;
             const categoryId = category.find((category) => category.type === categoryType.value && category.gender === categoryGender.value)?.id || '';
-            const sendData = {...productInfo, categoryId: categoryId, productDetails: productDetails, discount: productInfo.discount || 0}
+            const sendData = {name: productInfo.name, description: productInfo.description, price: productInfo.price, categoryId: categoryId, productDetails: productDetails, discount: productInfo.discount || 0}
             const {data} = await productApi.createProduct(sendData);
             if (data) {
                 handleToggle();

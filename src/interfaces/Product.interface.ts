@@ -26,10 +26,10 @@ export interface IInputProduct {
     categoryType: {value: string},
     categoryGender: {value: string},
     colorNames: string[],
-    colors: string[],
+    colors: (string | undefined)[],
     sizes: string[],
     stocks: number[],
-    imgUrls: string[],
+    imgUrls: (string | undefined)[],
 }
 
 export interface IProductDetail {
