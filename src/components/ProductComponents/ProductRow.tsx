@@ -111,7 +111,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
         }
         }, [watch('numberOfColor'), setValue, watch])
 
-    const handleUpload = async (e: any) => {
+    const handleUpload = async (e: { files: File[] }) => {
         const file = e.files[0];
         const url = await uploadToCloudinary(file);
         return url ? url : null;
@@ -144,16 +144,16 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                 })
             })
 
-            const {numberOfColor, categoryGender, categoryType, sizes, colors, stocks, imgUrls, colorNames, ...updateProductInfo} = updateProductData;
+            const {categoryGender, categoryType, ...updateProductInfo} = updateProductData;
             const categoryId = category.find((category) => category.type === categoryType.value && category.gender === categoryGender.value)?.id || '';
-            const sendData = {...updateProductInfo, categoryId: categoryId, productDetails: productDetails, discount: updateProductInfo.discount || 0}
+            const sendData = {name: updateProductInfo.name, description: updateProductInfo.description, price: updateProductInfo.price, categoryId: categoryId, productDetails: productDetails, discount: updateProductInfo.discount || 0}
             const { data } = await productApi.updateProduct(productInfo.id, sendData)
                 if (data) {
                     handleToggle()
                     toggleProductChange()
                     toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật sản phẩm thành công', life: 3000 });
                 }
-            } catch (error) {
+            } catch {
                 toast.current?.show({
                     severity: 'error',
                     summary: 'Lỗi',

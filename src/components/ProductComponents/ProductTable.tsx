@@ -35,8 +35,8 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
     
     const filterProducts = () => {
         return (filter === 'default' ? 
-            (getAllProducts(), products)
-         : products.sort((a,b) => {
+            products
+         : [...products].sort((a,b) => {
             if (filter === 'name-asc') {
                 return a.name.localeCompare(b.name)
             }
