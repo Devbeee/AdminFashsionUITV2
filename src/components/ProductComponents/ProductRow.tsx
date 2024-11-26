@@ -27,6 +27,7 @@ type ProductRowProps = {
 export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProductChange, setProducts, category}) => { 
     const [categoryType, setCategoryType] = useState<string[]>([]);
     const [categoryGender, setCategoryGender] = useState<string[]>([]);
+    const [colorErrorMessage, setColorErrorMessage] = useState<string>('');
     Array.from(category).forEach(cate => {
         if (!categoryType.includes(cate.type)) {
             setCategoryType([...categoryType, cate.type])
@@ -70,8 +71,10 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     }
 
     const handleResetForm = () => {
+        const colorsArray = [...new Set(productInfo.productDetails.map(detail => detail.color))];
+        const sizesArray = [...new Set(productInfo.productDetails.map(detail => detail.size))];
         productInfo.productDetails.forEach((detail) => {
-            const sizeIndex = productInfo.productDetails.findIndex(d => d.size === detail.size);
+            const sizeIndex = watch('sizes').indexOf(detail.size);
             const colorIndex = watch('colors').indexOf(detail.color);
             const index = sizeIndex * watch('colors').length + colorIndex;
             
@@ -85,8 +88,8 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             description: productInfo.description,
             categoryGender: { value: productInfo.category.gender },
             categoryType: { value: productInfo.category.type },
-            sizes: [...new Set(productInfo.productDetails.map(detail => detail.size))],
-            colors: [...new Set(productInfo.productDetails.map(detail => detail.color))],
+            sizes: sizesArray,
+            colors: colorsArray,
             numberOfColor: [...new Set(productInfo.productDetails.map(detail => detail.color))].length.toString(),
             colorNames: [...new Set(productInfo.productDetails.map(detail => detail.colorName))],
             imgUrls: watch('imgUrls'),
@@ -100,17 +103,34 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     useEffect(() => {
         const colorCount = Number(watch('numberOfColor')) || 0;
         const currentColors = watch('colors') || [];
+        const currentColorNames = watch('colorNames') || [];
         
         if (colorCount > currentColors.length) {
             setValue('colors', [
             ...currentColors,
             ...Array(colorCount - currentColors.length).fill('#000000'),
-            ]);
+            ], { shouldValidate: true });
+            setValue('colorNames', [
+            ...currentColorNames,
+            ...Array(colorCount - currentColors.length).fill(''),
+            ], { shouldValidate: true })
         } else if (colorCount < currentColors.length) {
             setValue('colors', currentColors.slice(0, colorCount));
+            setValue('colorNames', currentColorNames.slice(0, colorCount));
         }
         }, [watch('numberOfColor'), setValue, watch])
 
+    useEffect(() => {
+        const colors = watch('colors') || [];
+        const uniqueColors = new Set(colors);
+        
+        if (uniqueColors.size !== colors.length) {
+            setColorErrorMessage('Màu sắc không được trùng nhau.');
+        } else {
+            setColorErrorMessage('');
+        }
+        }, [watch('numberOfColor'), watch('colors')]);
+        
     const handleUpload = async (e: { files: File[] }) => {
         const file = e.files[0];
         const url = await uploadToCloudinary(file);
@@ -220,7 +240,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowProductDetail}>
                 <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[85%]" onClick={(e) => e.stopPropagation()}>
                     <div className="flex flex-row text-xl font-bold mb-4 justify-between">
-                        <p className="flex justify-center items-center text-2xl">Thêm sản phẩm</p>
+                        <p className="flex justify-center items-center text-2xl">Thông tin sản phẩm</p>
                         <PrimeBtn text onClick={handleToggle} className="absolute right-2 top-2">
                             {icons.closePopup}
                         </PrimeBtn>
@@ -363,21 +383,22 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                 </div>
                                             ))}
                                         </div>}
+                                        {colorErrorMessage && (<div className="text-red">{colorErrorMessage}</div>)}
                                     </div>
                                 </div>
                             </div> 
-                            <div className={`${Number(watch('numberOfColor')) > 1 && watch('sizes').length !==0 
+                            <div className={`${Number(watch('numberOfColor')) >= 1 && watch('sizes').length !==0 
                                 ? 'overflow-y-scroll h-fit max-h-[250px]' : ''}`}>
-                            {Array.from({ length: Number(watch('numberOfColor')) }).map((_, colorIndex) => (
+                            {watch('colors').map((_,colorIndex) => (
                                     <div key={colorIndex} className="mb-4">
                                         {watch('sizes').map((size, sizeIndex) => {
                                             const index = sizeIndex * watch('colors').length + colorIndex;
                                             return (
                                                 <div key={index} className="flex flex-row gap-32 justify-center items-center mb-5">
                                                 <div className="flex flex-row w-[270px] font-semibold text-xl text-black text-left justify-between">
-                                                    <p className="w-[65%]">{`Kích thước ${size}`}</p>
+                                                    <p className="w-[45%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</p>
                                                     <p className="mr-3">-</p>
-                                                    <p className="w-[45%]">{`Màu ${watch('colorNames')[colorIndex]}`}</p>
+                                                    <p className="w-[75%]">{`Kích thước ${size}`}</p>
                                                 </div>
                                                 <div className="flex flex-row gap-2 justify-center items-center">
                                                     {!watch(`imgUrls.${index}`) &&

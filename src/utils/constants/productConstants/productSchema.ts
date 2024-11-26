@@ -17,7 +17,12 @@ export const schema = yup.object().shape({
     numberOfColor: yup.string().required('Số lượng màu sắc không được để trống').typeError('Số lượng màu sắc phải là số'),
     colors: yup.array().of(
         yup.string().matches(/^#([0-9A-F]{3}|[0-9A-F]{6})$/i, 'Màu sắc phải là mã màu hợp lệ')
-    ).required(),
+    ).test('unique-colors', 'Màu sắc không được trùng nhau', 
+        (value) => {
+            if (!value || value.length === 0) return true;
+            const uniqueColors = new Set(value);
+            return uniqueColors.size === value.length;
+        }).required(),
     colorNames: yup.array().of(
         yup.string().required("Vui lòng cung cấp tên màu sắc")
     ).required(),

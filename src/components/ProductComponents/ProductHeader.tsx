@@ -28,6 +28,7 @@ type ProductHeaderProps = {
 export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery, setFilter}) => {
     const [categoryType, setCategoryType] = useState<string[]>([]);
     const [categoryGender, setCategoryGender] = useState<string[]>([]);
+    const [colorErrorMessage, setColorErrorMessage] = useState<string>('');
     Array.from(category).forEach(cate => {
         if (!categoryType.includes(cate.type)) {
             setCategoryType([...categoryType, cate.type])
@@ -63,17 +64,34 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
     useEffect(() => {
         const colorCount = Number(watch('numberOfColor')) || 0;
         const currentColors = watch('colors') || [];
+        const currentColorNames = watch('colorNames') || [];
         
         if (colorCount > currentColors.length) {
             setValue('colors', [
             ...currentColors,
             ...Array(colorCount - currentColors.length).fill('#000000'),
-            ]);
+            ], { shouldValidate: true });
+            setValue('colorNames', [
+            ...currentColorNames,
+            ...Array(colorCount - currentColors.length).fill(''),
+            ], { shouldValidate: true })
         } else if (colorCount < currentColors.length) {
             setValue('colors', currentColors.slice(0, colorCount));
+            setValue('colorNames', currentColorNames.slice(0, colorCount));
         }
     }, [watch('numberOfColor'), setValue, watch])
 
+    useEffect(() => {
+        const colors = watch('colors') || [];
+        const uniqueColors = new Set(colors);
+      
+        if (uniqueColors.size !== colors.length) {
+          setColorErrorMessage('Màu sắc không được trùng nhau.');
+        } else {
+          setColorErrorMessage('');
+        }
+      }, [watch('numberOfColor'), watch('colors')]);
+      
     const handleUpload = async (e: { files: File[] }) => {
         const file = e.files[0];
         const url = await uploadToCloudinary(file);
@@ -94,7 +112,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
             const productDetails: ICreateProductDetail[] = []
             productData.sizes.forEach((size, sizeIndex) => {
                 productData.colors.forEach((color, colorIndex) => {
-                    const colorName = productData.colorNames[colorIndex + sizeIndex * productData.colors.length];
+                    const colorName = productData.colorNames[colorIndex];
                     const imgUrl = productData.imgUrls[colorIndex + sizeIndex * productData.colors.length] || '';
                     const stock = productData.stocks[colorIndex + sizeIndex * productData.colors.length];
                     color = color || '#000000';
@@ -298,21 +316,22 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                     </div>
                                                 ))}
                                             </div>}
+                                            {colorErrorMessage && (<div className="text-red">{colorErrorMessage}</div>)}
                                         </div>
                                     </div>
                                 </div> 
-                                <div className={`${Number(watch('numberOfColor')) > 1 && watch('sizes').length !==0 
+                                <div className={`${Number(watch('numberOfColor')) >= 1 && watch('sizes').length !==0 
                                     ? 'overflow-y-scroll h-fit max-h-[250px]' : ''}`}>
-                                {Array.from({ length: Number(watch('numberOfColor')) }).map((_, colorIndex) => (
+                                {watch('colors').map((_,colorIndex) => (
                                         <div key={colorIndex} className="mb-4">
                                             {watch('sizes').map((size, sizeIndex) => {
                                                 const index = sizeIndex * watch('colors').length + colorIndex;
                                                 return (
                                                     <div key={index} className="flex flex-row gap-32 justify-center items-center mb-5">
                                                     <div className="flex flex-row w-[270px] font-semibold text-xl text-black text-left justify-between">
-                                                        <p className="w-[65%]">{`Kích thước ${size}`}</p>
-                                                        <p className="mr-3">-</p>
                                                         <p className="w-[45%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</p>
+                                                        <p className="mr-3">-</p>
+                                                        <p className="w-[75%]">{`Kích thước ${size}`}</p>
                                                     </div>
                                                     <div className="flex flex-row gap-2 justify-center items-center">
                                                         {!watch(`imgUrls.${index}`) &&
