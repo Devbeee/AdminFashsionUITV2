@@ -25,7 +25,7 @@ type FormData = {
 export function BlogsList() {
     const [blogs, setBlogs] = useState<IBlog[]>([]);
     const [first, setFirst] = useState<number>(0);
-    const [limit, setRows] = useState<number>(9);
+    const [limit] = useState<number>(9);
     const [totalRecords, setTotalRecords] = useState<number>(0);
     const [choosedBlogs, setChoosedBlogs] = useState<string[]>([]);
     const [createDateRange, setCreateDateRange] = useState<Nullable<(Date | null)[]>>(null);
@@ -51,29 +51,8 @@ export function BlogsList() {
         getValues,
     } = useForm({ defaultValues, resolver: yupResolver(schema) })
 
-    const onSubmit = (data: FormData) => {
-        if (createDateRange) {
-            const params: IGetBlogsParams = {
-                page: 1,
-                limit: limit,
-                sortStyle: selectedSortStyle.code,
-                authors: choosedAuthors,
-                searchKeyWord: data.searchValue,
-                createDateRange: createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : []
-            }
-            getBlogs(params);
-        }
-        else {
-            const params: IGetBlogsParams = {
-                page: 1,
-                limit: limit,
-                sortStyle: selectedSortStyle.code,
-                authors: choosedAuthors,
-                searchKeyWord: data.searchValue,
-                createDateRange: []
-            }
-            getBlogs(params);
-        }
+    const onSubmit = () => {
+        getBlogs(1, limit);
         setFirst(0);
     }
 
@@ -86,28 +65,7 @@ export function BlogsList() {
                         toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Đã xóa các blog được chọn', life: 3000 });
                         setChoosedBlogs([]);
                         setFirst(0);
-                        if (createDateRange) {
-                            const params: IGetBlogsParams = {
-                                page: 1,
-                                limit: limit,
-                                sortStyle: selectedSortStyle.code,
-                                authors: choosedAuthors,
-                                searchKeyWord: getValues('searchValue'),
-                                createDateRange: createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : []
-                            }
-                            getBlogs(params);
-                        }
-                        else {
-                            const params: IGetBlogsParams = {
-                                page: 1,
-                                limit: limit,
-                                sortStyle: selectedSortStyle.code,
-                                authors: choosedAuthors,
-                                searchKeyWord: getValues('searchValue'),
-                                createDateRange: []
-                            }
-                            getBlogs(params);
-                        }
+                        getBlogs(1, limit);
                         getAuthors();
                     }
                     else {
@@ -138,7 +96,7 @@ export function BlogsList() {
     };
 
     const onChoosedBlogsChange = (event: CheckboxChangeEvent) => {
-        let choosedBlogsTemp = [...choosedBlogs];
+        const choosedBlogsTemp = [...choosedBlogs];
         if (event.checked) {
             choosedBlogsTemp.push(event.value);
         }
@@ -150,32 +108,21 @@ export function BlogsList() {
 
     const onPageChange = (event: PaginatorPageChangeEvent) => {
         setFirst(event.first);
-        if (createDateRange) {
-            const params: IGetBlogsParams = {
-                page: event.page + 1,
-                limit: limit,
-                sortStyle: selectedSortStyle.code,
-                authors: choosedAuthors,
-                searchKeyWord: getValues('searchValue'),
-                createDateRange: createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : []
-            }
-            getBlogs(params);
-        }
-        else {
-            const params: IGetBlogsParams = {
-                page: event.page + 1,
-                limit: limit,
-                sortStyle: selectedSortStyle.code,
-                authors: choosedAuthors,
-                searchKeyWord: getValues('searchValue'),
-                createDateRange: []
-            }
-            getBlogs(params);
-        }
+        getBlogs(event.page + 1, limit);
     };
 
-    const getBlogs = async (params : IGetBlogsParams) => {
+    const getBlogs = async (page : number, limit : number) => {
         try {
+            const params: IGetBlogsParams = {
+                page: page,
+                limit: limit,
+                sortStyle: selectedSortStyle.code,
+                authors: choosedAuthors,
+                searchKeyWord: getValues('searchValue'),
+                createDateRange: createDateRange? (
+                    createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : [createDateRange[0] ? createDateRange[0] : new Date(), new Date()]
+                ) : ([])
+            }
             callGetBlogsApi(async () => {
                 const response = await blogApi.getAll(params);
                 setBlogs(response.data.data);
@@ -201,7 +148,7 @@ export function BlogsList() {
     }
 
     const onChoosedAuthorsChange = (event: CheckboxChangeEvent) => {
-        let choosedAuthorsTemp = [...choosedAuthors];
+        const choosedAuthorsTemp = [...choosedAuthors];
         if (event.checked) {
             choosedAuthorsTemp.push(event.value);
         }
@@ -216,31 +163,13 @@ export function BlogsList() {
     };
 
     useEffect(() => {
-        if (createDateRange) {
-            const params: IGetBlogsParams = {
-                page: 1,
-                limit: limit,
-                sortStyle: selectedSortStyle.code,
-                authors: choosedAuthors,
-                searchKeyWord: getValues('searchValue'),
-                createDateRange: createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : []
-            }
-            getBlogs(params);
-        }
-        else {
-            const params: IGetBlogsParams = {
-                page: 1,
-                limit: limit,
-                sortStyle: selectedSortStyle.code,
-                authors: choosedAuthors,
-                searchKeyWord: getValues('searchValue'),
-                createDateRange: []
-            }
-            getBlogs(params);
-        }
+        getBlogs(1, limit);
         setFirst(0);
-        getAuthors();
     }, [choosedAuthors, selectedSortStyle, createDateRange]);
+
+    useEffect(() => {
+        getAuthors();
+    }, []);
 
     return (
         <div className='rounded-xl m-7 p-7 border text-left bg-white flex flex-row gap-8'>
@@ -268,6 +197,7 @@ export function BlogsList() {
                                 selectionMode="range"
                                 readOnlyInput
                                 hideOnRangeSelection
+                                maxDate={new Date()}
                                 placeholder='Chọn khoảng thời gian' 
                             />
                             <span onClick={clearDateRange} className='text-3xl rounded-full text-gray-500 hover:bg-white m-0 p-0'>{icons.close}</span>
