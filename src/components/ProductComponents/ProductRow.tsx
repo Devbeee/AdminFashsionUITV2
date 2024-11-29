@@ -130,7 +130,26 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             setColorErrorMessage('');
         }
         }, [watch('numberOfColor'), watch('colors')]);
-        
+        useEffect(() => {
+            const currentSizes = watch('sizes').length;
+            const currentColors = Number(watch('numberOfColor'));
+            if(currentSizes === 0 || currentColors === 0) {
+                resetProductForm({
+                    name: productInfo.name,
+                    price: productInfo.price,
+                    discount: productInfo.discount,
+                    description: productInfo.description,
+                    categoryGender: { value: productInfo.category.gender },
+                    categoryType: { value: productInfo.category.type },
+                    sizes: watch('sizes'),
+                    colors: [],
+                    numberOfColor: watch('numberOfColor'),
+                    colorNames: [],
+                    imgUrls: [],
+                    stocks: [],
+                });
+            }
+        },[watch('sizes'), watch('numberOfColor')])
     const handleUpload = async (e: { files: File[] }) => {
         const file = e.files[0];
         const url = await uploadToCloudinary(file);
@@ -138,10 +157,10 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     }
 
     const deleteProduct = async (productId: string) => {
-        setProducts(prevProducts => prevProducts.filter(product => product.id !== productId))
         callApiManageProduct(async () => {
             const { data } = await productApi.deleteProduct(productId)
             if (data) {
+                setProducts(prevProducts => prevProducts.filter(product => product.id !== productId))
                 toggleProductChange()
                 toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Xóa thành công', life: 3000 });
             } else {
@@ -173,6 +192,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                     toggleProductChange()
                     toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật sản phẩm thành công', life: 3000 });
                 }
+                window.location.reload();
             } catch {
                 toast.current?.show({
                     severity: 'error',
@@ -185,6 +205,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     }
   return (
     <div className='flex flex-row h-[80px] p-[10px] gap-[10px]'>
+        <Toast ref={toast} />
         {[
             { width: '15%', value: productInfo.name },
             { width: '15%', value: productInfo.slug },
@@ -241,7 +262,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                 <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[85%]" onClick={(e) => e.stopPropagation()}>
                     <div className="flex flex-row text-xl font-bold mb-4 justify-between">
                         <p className="flex justify-center items-center text-2xl">Thông tin sản phẩm</p>
-                        <PrimeBtn text onClick={handleToggle} className="absolute right-2 top-2">
+                        <PrimeBtn text onClick={toggleShowProductDetail} className="absolute right-2 top-2">
                             {icons.closePopup}
                         </PrimeBtn>
                     </div>

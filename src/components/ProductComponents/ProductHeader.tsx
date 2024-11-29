@@ -23,9 +23,10 @@ type ProductHeaderProps = {
     category: ICategory[];
     setQuery: (query: string) => void;
     setFilter: (filter: string) => void;
+    toggleProductChange: () => void;
 }
 
-export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery, setFilter}) => {
+export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery, setFilter, toggleProductChange}) => {
     const [categoryType, setCategoryType] = useState<string[]>([]);
     const [categoryGender, setCategoryGender] = useState<string[]>([]);
     const [colorErrorMessage, setColorErrorMessage] = useState<string>('');
@@ -92,6 +93,17 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
         }
       }, [watch('numberOfColor'), watch('colors')]);
       
+    useEffect(() => {
+        const currentSizes = watch('sizes').length;
+        const currentColors = Number(watch('numberOfColor'));
+        if(currentSizes === 0 || currentColors === 0) {
+            setValue('colorNames', []);
+            setValue('colors', []);
+            setValue('imgUrls', []);
+            setValue('stocks', []);
+        }
+    },[watch('sizes'), watch('numberOfColor')])
+
     const handleUpload = async (e: { files: File[] }) => {
         const file = e.files[0];
         const url = await uploadToCloudinary(file);
@@ -125,6 +137,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
             const {data} = await productApi.createProduct(sendData);
             if (data) {
                 handleToggle();
+                toggleProductChange();
                 toast.current?.show({
                     severity: 'success',
                     summary: 'Thành công',
@@ -137,6 +150,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
 
     return (
         <div className='flex flex-row w-[95%] h-fit justify-between m-auto mt-6'>
+            <Toast ref={toast} />
             <div className='text-black-light text-2xl font-bold leading-tight text-left'>Thông tin sản phẩm</div>
             <div className="flex flex-row gap-5">
                 <div className="relative">
