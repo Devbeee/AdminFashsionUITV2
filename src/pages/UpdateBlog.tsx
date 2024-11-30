@@ -34,7 +34,7 @@ export function UpdateBlog() {
         coverImage: yup.string().url("Vui lòng thêm ảnh bìa!").required("Vui lòng thêm ảnh bìa!"),
     });
 
-    const { control, setValue, handleSubmit, formState: { errors } } = useForm<IBlogForm>({
+    const { control, setValue, handleSubmit, formState: { errors, isDirty } } = useForm<IBlogForm>({
         resolver: yupResolver(schema),
     });
 
@@ -221,7 +221,7 @@ export function UpdateBlog() {
                     </Panel>
                     <div className="flex gap-4 justify-between">
                         <Button htmlType="reset" onClick={confirmCancel} disabled={isNavigating} className="flex-1 bg-white text-red-500 border-red-500 font-bold">Loại bỏ</Button>
-                        <Button htmlType="submit" disabled={uploading || isNavigating} className="flex-1 font-bold">
+                        <Button htmlType="submit" disabled={uploading || isNavigating || !isDirty} className="flex-1 font-bold">
                             {uploading ? 'Đang tải...' : 'Cập nhật'}
                         </Button>
                     </div>
