@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react'
-
 import { IUseBooleanReturn } from '@/interfaces'
+
+import { useCallback, useState } from 'react'
 
 export function useBoolean(defaultValue = false): IUseBooleanReturn {
   if (typeof defaultValue !== 'boolean') {
