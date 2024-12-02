@@ -14,15 +14,7 @@ export default {
         'text-dark-blue': '#01567f',
         'white-blue': '#F1F4F9',
         'black-light': '#202224',
-        red: '#dc3545',
         'primary-dark': '#0006b3',
-        'red-dark': '#8a0c19',
-        green: '#28a745',
-        'green-dark': '#0b6623',
-        gray: '#6b7280',
-        'gray-dark': '#3d4852',
-        'gray-border': '#d1d5db',
-        'gray-light': '#f5f5f5',
         'partial-primary': colors.indigo
       },
       width: {
@@ -71,18 +63,17 @@ export default {
           '100%': {
             left: '125%'
           }
-        },
-       
+        }
       },
       animation: {
         pulsate: 'pulsate 1s ease-out infinite',
         aniName: 'aniName 3s infinite',
-        shine: 'shine 1.1s',
+        shine: 'shine 1.1s'
       },
       backgroundImage: {
         fire: "url('@/assets/images/fire.png')",
         'big-banner-sale': "url('@/assets/images/bg_banner_big.webp')",
-        'auth': "url('@/assets/svgs/authBg.svg')"
+        auth: "url('@/assets/svgs/authBg.svg')"
       }
     }
   },

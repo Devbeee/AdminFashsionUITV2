@@ -25,19 +25,9 @@ export const SIDE_BAR_ITEM_LIST = [
     group: 'Products',
     items: [
       {
-        path: '/#',
-        icon: icons.home,
+        path: '/admin/product',
+        icon: icons.product,
         title: 'All Products'
-      },
-      {
-        path: '/#',
-        icon: icons.home,
-        title: 'Product Detail'
-      },
-      {
-        path: '/#',
-        icon: icons.home,
-        title: 'Edit Product'
       }
     ]
   },

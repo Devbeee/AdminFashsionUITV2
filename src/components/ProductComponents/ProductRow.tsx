@@ -1,10 +1,12 @@
-import { useRef, SetStateAction, useEffect, useState } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form';
 
 import { Toast } from 'primereact/toast';
 import { FileUpload } from 'primereact/fileupload';
 import { Button as PrimeBtn } from 'primereact/button';
 import { Editor, EditorTextChangeEvent } from 'primereact/editor';
+import { Dropdown } from 'primereact/dropdown';
+import { ColorPicker } from 'primereact/colorpicker';
 
 import { productApi } from '@/apis';
 import { useBoolean, useApi } from '@/hooks';
@@ -20,11 +22,10 @@ import { yupResolver } from '@hookform/resolvers/yup';
 type ProductRowProps = {
     productInfo: IProduct;
     toggleProductChange: () => void;
-    setProducts: React.Dispatch<SetStateAction<IProduct[]>>;
     category: ICategory[];
 }
 
-export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProductChange, setProducts, category}) => { 
+export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProductChange, category}) => { 
     const [categoryType, setCategoryType] = useState<string[]>([]);
     const [categoryGender, setCategoryGender] = useState<string[]>([]);
     const [colorErrorMessage, setColorErrorMessage] = useState<string>('');
@@ -47,7 +48,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
         control,
         handleSubmit,
         reset: resetProductForm,
-        formState: { errors },
+        formState: { errors, isDirty },
         watch,
         setValue
     } = useForm({
@@ -99,7 +100,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
 
     useEffect(() => {
         handleResetForm();
-    }, [showProductDetail])
+    }, [showProductDetail, productInfo])
     useEffect(() => {
         const colorCount = Number(watch('numberOfColor')) || 0;
         const currentColors = watch('colors') || [];
@@ -160,7 +161,6 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
         callApiManageProduct(async () => {
             const { data } = await productApi.deleteProduct(productId)
             if (data) {
-                setProducts(prevProducts => prevProducts.filter(product => product.id !== productId))
                 toggleProductChange()
                 toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Xóa thành công', life: 3000 });
             } else {
@@ -192,7 +192,6 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                     toggleProductChange()
                     toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật sản phẩm thành công', life: 3000 });
                 }
-                window.location.reload();
             } catch {
                 toast.current?.show({
                     severity: 'error',
@@ -217,7 +216,9 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             { width: '10%', value: new Date(productInfo.updatedAt).toLocaleDateString() },
         ].map((item, value) => (
             <div key={value} className={`w-[${item.width}] pl-3 m-auto`}>
-                <div className='text-black-light opacity-80 text-sm font-semibold' dangerouslySetInnerHTML={{ __html: item.value }}></div>
+                <div className='text-black-light opacity-80 text-sm font-semibold max-h-[60px] overflow-hidden'>
+                    <span dangerouslySetInnerHTML={{ __html: item.value }}></span>
+                </div>
             </div>
         ))}
         <div className='w-[10%] pl-3 m-auto flex justify-center items-center'>
@@ -228,10 +229,10 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                 {showDropDown && (
                     <>
                         <div className='fixed inset-0 z-0' onClick={toggleShowDropDown}></div>
-                        <div className="absolute right-0 mt-3 p-1 w-[130px] bg-white border border-gray-light rounded-md shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
+                        <div className="absolute right-0 mt-3 p-1 w-[130px] bg-white border border-gray-200 rounded-md shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
                             <div className="absolute top-[-6px] right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white"></div>
                             <PrimeBtn onClick={toggleShowProductDetail} text className='flex w-full transition text-sm gap-2'>{icons.search}Chi tiết</PrimeBtn>
-                            <PrimeBtn onClick={toggleShowConfirmDelete} text className='flex w-full transition text-sm text-red gap-2'>{icons.deleteProduct}Xóa</PrimeBtn>
+                            <PrimeBtn onClick={toggleShowConfirmDelete} text className='flex w-full transition text-sm text-red-500 gap-2'>{icons.deleteProduct}Xóa</PrimeBtn>
                         </div>
                     </>
                 )}
@@ -246,11 +247,11 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                             Bạn có chắc chắn muốn xóa sản phẩm này không?
                         </div>
                         <div className="flex flex-row justify-between gap-4 w-[60%] m-auto">
-                            <PrimeBtn onClick={() => deleteProduct(productInfo.id)} className="w-[180px] justify-center items-center bg-red border-red text-white rounded-lg py-2 hover:bg-red-dark transition"
+                            <PrimeBtn onClick={() => deleteProduct(productInfo.id)} className="w-[180px] justify-center items-center bg-red-500 border-red-500 text-white rounded-lg py-2 hover:bg-red-800 transition"
                                 disabled={loading} loading={loading}>
                                 Xóa
                             </PrimeBtn>
-                            <PrimeBtn onClick={toggleShowConfirmDelete} className="w-[180px] justify-center items-center bg-green border-green text-white rounded-lg py-2 hover:bg-green-dark transition">
+                            <PrimeBtn onClick={toggleShowConfirmDelete} className="w-[180px] justify-center items-center bg-green-500 border-green-500 text-white rounded-lg py-2 hover:bg-green-800 transition">
                                 Hủy bỏ
                             </PrimeBtn>
                         </div>
@@ -259,7 +260,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             )}
             {showProductDetail && (
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowProductDetail}>
-                <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[85%]" onClick={(e) => e.stopPropagation()}>
+                <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[70%]" onClick={(e) => e.stopPropagation()}>
                     <div className="flex flex-row text-xl font-bold mb-4 justify-between">
                         <p className="flex justify-center items-center text-2xl">Thông tin sản phẩm</p>
                         <PrimeBtn text onClick={toggleShowProductDetail} className="absolute right-2 top-2">
@@ -289,7 +290,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                             )}
                                         />
                                         {errors.description && (
-                                            <span className="text-red">{errors.description.message}</span>
+                                            <span className="text-red-500">{errors.description.message}</span>
                                         )}
                                     </div>
                                 </div>
@@ -299,21 +300,17 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                             name="categoryType"
                                             control={control}
                                             render={({ field }) => (
-                                                <select 
-                                                value={field.value?.value || ''}
-                                                onChange={(val) => field.onChange({ value: val.target.value })}
-                                                className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryType?.value ? "border-red":''}`} 
-                                                style={{ backgroundImage: icons.dropdownIcon, backgroundPosition: 'right 10px center' }}
-                                                >
-                                                    <option value="" disabled hidden>Chọn loại sản phẩm</option>
-                                                    {categoryType.map((category) => (
-                                                        <option key={category} value={category}>{category}</option>
-                                                    ))}
-                                                </select>
+                                                <Dropdown 
+                                                    value={field.value?.value || ''} 
+                                                    onChange={(val) => field.onChange({ value: val.target.value })} 
+                                                    options={categoryType} optionLabel="name" 
+                                                    placeholder="Chọn loại sản phẩm" 
+                                                    className="w-full md:w-14rem" 
+                                                    />
                                             )}
                                         />
                                         {errors.categoryType?.value && (
-                                            <span className="text-red">{errors.categoryType.value.message}</span>
+                                            <span className="text-red-500">{errors.categoryType.value.message}</span>
                                         )}
                                     </div>
                                     <div className="h-fit w-full flex flex-col">
@@ -321,24 +318,20 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                             name="categoryGender"
                                             control={control}
                                             render={({ field }) => (
-                                                <select 
-                                                value={field.value?.value || ''}
-                                                onChange={(val) => field.onChange({ value: val.target.value })}
-                                                className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryGender?.value ? "border-red":''}`} 
-                                                style={{ backgroundImage: icons.dropdownIcon, backgroundPosition: 'right 10px center' }}
-                                                >
-                                                    <option value="" disabled hidden>Chọn giới tính</option>
-                                                    {categoryGender.map((category) => (
-                                                        <option key={category} value={category}>{category}</option>
-                                                    ))}
-                                                </select>
+                                                <Dropdown 
+                                                    value={field.value?.value || ''} 
+                                                    onChange={(val) => field.onChange({ value: val.target.value })} 
+                                                    options={categoryGender} optionLabel="name" 
+                                                    placeholder="Chọn giới tính" 
+                                                    className="w-full md:w-14rem" 
+                                                    />
                                             )}
                                         />
                                         {errors.categoryGender?.value && (
-                                            <span className="text-red">{errors.categoryGender.value.message}</span>
+                                            <span className="text-red-500">{errors.categoryGender.value.message}</span>
                                         )}
                                     </div>
-                                    <div className={`flex flex-col gap-4 border border-gray-border rounded-md p-3 ${errors.sizes ? "border-red":''}`}>
+                                    <div className={`flex flex-col gap-4 border border-gray-400 rounded-md p-3 ${errors.sizes ? "border-red-500":''}`}>
                                         <label className="font-semibold text-xl">Chọn kích thước</label>
                                         <div className="flex flex-row w-full gap-5">
                                             {sizes.map((size) => (
@@ -368,7 +361,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                 </div>
                                                 ))}
                                         </div>
-                                        {errors.sizes && <span className="text-red">{errors.sizes.message}</span>}
+                                        {errors.sizes && <span className="text-red-500">{errors.sizes.message}</span>}
                                     </div>
                                     <div className="flex flex-col gap-2 p-2 w-full">
                                         <label className="font-semibold text-xl">Số lượng màu sản phẩm</label>
@@ -376,35 +369,35 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                         {showProductDetail && <div className={`${Number(watch('numberOfColor')) > 2 ? 'overflow-y-scroll h-[150px]' : ''}`}>
                                             {Array.from({ length: Number(watch('numberOfColor')) }).map((_, index) => (
                                                 <div key={index} className="flex flex-row w-full justify-between">
-                                                    <label className="font-semibold">
+                                                    <label className="font-semibold flex flex-col items-center">
                                                         <p>Màu sắc {index + 1}</p>
                                                         <Controller
                                                             name={`colors.${index}`}
                                                             control={control}
                                                             render={({ field }) => (
-                                                                <input
-                                                                {...field}
-                                                                type="color"
-                                                                className="rounded-lg w-full h-[40px]"
-                                                                onChange={(e) => {
-                                                                    const newColors = [...watch('colors')];
-                                                                    newColors[index] = e.target.value;
-                                                                    setValue('colors', newColors);
-                                                                }}
-                                                                value={field.value ? field.value : '#000000'}
-                                                                />
+                                                                <ColorPicker {...field} 
+                                                                    format="hex" 
+                                                                    value={field.value ? field.value : '000000'} 
+                                                                    onChange={(e) => {
+                                                                        const newColors = [...watch('colors')];
+                                                                        const colorCode = '#' + e.target.value as string;
+                                                                        newColors[index] = colorCode;
+                                                                        setValue('colors', newColors);
+                                                                }} />
                                                             )}
                                                         />
                                                     </label>
                                                     <label className="font-semibold">
                                                         <p>Tên màu sắc {index + 1}</p>
                                                         <Input name={`colorNames.${index}`} control={control} errors={errors}/>
-                                                        {errors.colorNames?.[index] && <span className="text-red">{errors.colorNames[index].message}</span>}
+                                                        {errors.colorNames?.[index] && !watch(`colorNames.${index}`) && (
+                                                            <span className="text-red-500">{errors.colorNames[index].message}</span>
+                                                        )}
                                                     </label>
                                                 </div>
                                             ))}
                                         </div>}
-                                        {colorErrorMessage && (<div className="text-red">{colorErrorMessage}</div>)}
+                                        {colorErrorMessage && (<div className="text-red-500">{colorErrorMessage}</div>)}
                                     </div>
                                 </div>
                             </div> 
@@ -416,10 +409,10 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                             const index = sizeIndex * watch('colors').length + colorIndex;
                                             return (
                                                 <div key={index} className="flex flex-row gap-32 justify-center items-center mb-5">
-                                                <div className="flex flex-row w-[270px] font-semibold text-xl text-black text-left justify-between">
-                                                    <p className="w-[45%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</p>
+                                                    <div className="flex flex-row min-w-[400px] font-semibold text-xl text-black text-left justify-between">
+                                                    <p className="w-[50%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</p>
                                                     <p className="mr-3">-</p>
-                                                    <p className="w-[75%]">{`Kích thước ${size}`}</p>
+                                                    <p className="w-[60%] text-right">{`Kích thước ${size}`}</p>
                                                 </div>
                                                 <div className="flex flex-row gap-2 justify-center items-center">
                                                     {!watch(`imgUrls.${index}`) &&
@@ -445,7 +438,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                         )}
                                                         />
                                                     }
-                                                    {watch('imgUrls').length === 0 || errors.imgUrls?.[index] && <span className="text-red">{errors.imgUrls.message}</span>}
+                                                    {watch('imgUrls').length === 0 || errors.imgUrls?.[index] && <span className="text-red-500">{errors.imgUrls.message}</span>}
                                                     <div className="w-[85px] h-[85px] relative group">
                                                         {watch(`imgUrls.${index}`) && (
                                                             <div className="relative">
@@ -454,7 +447,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                                 </a>
                                                                 <button
                                                                     type="button"
-                                                                    className="absolute top-0 right-0 bg-red text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                                     onClick={() => {
                                                                         const newImgUrls = [...watch('imgUrls')];
                                                                         newImgUrls[index] = '';
@@ -472,7 +465,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                 </div>
                                                 <div className="w-[400px] h-fit">
                                                     <Input name={`stocks.${index}`} control={control} errors={errors.stocks} placeholder="Số lượng sản phẩm" />
-                                                    {errors.stocks?.[index] && <span className="text-red">{errors.stocks[index].message}</span>}
+                                                    {errors.stocks?.[index] && <span className="text-red-500">{errors.stocks[index].message}</span>}
                                                 </div>
                                             </div>
                                             )
@@ -481,15 +474,15 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                     </div>
                                 ))}
                             </div>
-                            {errorMessage && <span className='text-red mb-2 text-lg'>{errorMessage}</span>}
+                            {errorMessage && <span className='text-red-500 mb-2 text-lg'>{errorMessage}</span>}
                         </div>
                         <div className="flex flex-row w-[50%] ml-auto gap-5 justify-end items-center">
-                            <Button onClick={toggleShowProductDetail} className="w-[27%] bg-green border-green text-white rounded-lg py-2 hover:bg-green-dark transition text-xl">
+                            <Button onClick={toggleShowProductDetail} className="w-[27%] bg-gray-500 border-gray-500 text-white rounded-lg py-2 hover:bg-gray-800 transition text-xl">
                                 Quay lại
                             </Button>
                             <Button 
                             htmlType="submit" 
-                            disabled={loading} loading={loading}
+                            disabled={loading || !isDirty} loading={loading}
                             className="w-[27%] bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition text-xl">
                                 Cập nhật
                             </Button>

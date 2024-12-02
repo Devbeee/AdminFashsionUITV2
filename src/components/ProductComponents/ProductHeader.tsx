@@ -6,6 +6,8 @@ import { IconField } from 'primereact/iconfield';
 import { InputIcon } from 'primereact/inputicon';
 import { FileUpload } from 'primereact/fileupload';
 import { Editor, EditorTextChangeEvent } from 'primereact/editor';
+import { Dropdown } from 'primereact/dropdown';
+import { ColorPicker } from 'primereact/colorpicker';
 import { Button as PrimeBtn } from 'primereact/button';
 
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -160,7 +162,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                     {showFilter && (
                         <>
                             <div className='fixed inset-0 z-0' onClick={toggleFilter}></div>
-                            <div className="absolute right-0 mt-3 p-1 w-[150px] bg-white border border-gray-light rounded-md shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
+                            <div className="absolute right-0 mt-3 p-1 w-[150px] bg-white border border-gray-200 rounded-md shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
                                 <div className="absolute top-[-6px] right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white"></div>
                                 {filterOptions.map((option) => (
                                     <PrimeBtn text key={option.label} className='flex w-full transition text-sm text-black'
@@ -185,7 +187,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                 </Button>
                 {addProduct && (
                 <div className="fixed inset-0 h-full bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={handleToggle}>
-                    <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[85%]" onClick={(e) => e.stopPropagation()}>
+                    <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[70%]" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-row text-xl font-bold mb-4 justify-between">
                             <p className="flex justify-center items-center text-2xl">Thêm sản phẩm</p>
                             <PrimeBtn text onClick={handleToggle} className="absolute right-0 top-2">
@@ -215,7 +217,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                 )}
                                             />
                                             {errors.description && (
-                                                <span className="text-red">{errors.description.message}</span>
+                                                <span className="text-red-500">{errors.description.message}</span>
                                             )}
                                         </div>
                                     </div>
@@ -225,21 +227,17 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                 name="categoryType"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <select 
-                                                    value={field.value?.value || ''}
-                                                    onChange={(val) => field.onChange({ value: val.target.value })}
-                                                    className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryType?.value ? "border-red":''}`} 
-                                                    style={{ backgroundImage: icons.dropdownIcon, backgroundPosition: 'right 10px center' }}
-                                                    >
-                                                        <option value="" disabled hidden>Chọn loại sản phẩm</option>
-                                                        {categoryType.map((category) => (
-                                                            <option key={category} value={category}>{category}</option>
-                                                        ))}
-                                                    </select>
+                                                    <Dropdown 
+                                                    value={field.value?.value || ''} 
+                                                    onChange={(val) => field.onChange({ value: val.target.value })} 
+                                                    options={categoryType} optionLabel="name" 
+                                                    placeholder="Chọn loại sản phẩm" 
+                                                    className="w-full md:w-14rem" 
+                                                    />
                                                   )}
                                             />
                                             {errors.categoryType?.value && (
-                                                <span className="text-red">{errors.categoryType.value.message}</span>
+                                                <span className="text-red-500">{errors.categoryType.value.message}</span>
                                             )}
                                         </div>
                                         <div className="h-fit w-full flex flex-col">
@@ -247,24 +245,20 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                 name="categoryGender"
                                                 control={control}
                                                 render={({ field }) => (
-                                                    <select 
-                                                    value={field.value?.value || ''}
-                                                    onChange={(val) => field.onChange({ value: val.target.value })}
-                                                    className={`w-full border border-gray-border rounded-lg h-[48px] p-2 appearance-none bg-no-repeat pr-10 text-xl ${errors.categoryGender?.value ? "border-red":''}`} 
-                                                    style={{ backgroundImage: icons.dropdownIcon, backgroundPosition: 'right 10px center' }}
-                                                    >
-                                                        <option value="" disabled hidden>Chọn giới tính</option>
-                                                        {categoryGender.map((category) => (
-                                                            <option key={category} value={category}>{category}</option>
-                                                        ))}
-                                                    </select>
+                                                    <Dropdown 
+                                                    value={field.value?.value || ''} 
+                                                    onChange={(val) => field.onChange({ value: val.target.value })} 
+                                                    options={categoryGender} optionLabel="name" 
+                                                    placeholder="Chọn giới tính" 
+                                                    className="w-full md:w-14rem" 
+                                                    />
                                                   )}
                                             />
                                             {errors.categoryGender?.value && (
-                                                <span className="text-red">{errors.categoryGender.value.message}</span>
+                                                <span className="text-red-500">{errors.categoryGender.value.message}</span>
                                             )}
                                         </div>
-                                        <div className={`flex flex-col gap-4 border border-gray-border rounded-md p-3 ${errors.sizes ? "border-red":''}`}>
+                                        <div className={`flex flex-col gap-4 border border-gray-200 rounded-md p-3 ${errors.sizes ? "border-red-500":''}`}>
                                             <label className="font-semibold text-xl">Chọn kích thước</label>
                                             <div className="flex flex-row w-full gap-5">
                                                 {sizes.map((size) => (
@@ -290,11 +284,10 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                             </>
                                                             )}
                                                         />
-                                                        
                                                     </div>
                                                     ))}
                                             </div>
-                                            {errors.sizes && <span className="text-red">{errors.sizes.message}</span>}
+                                            {errors.sizes && <span className="text-red-500">{errors.sizes.message}</span>}
                                         </div>
                                         <div className="flex flex-col gap-2 p-2 w-full">
                                             <label className="font-semibold text-xl">Số lượng màu sản phẩm</label>
@@ -302,35 +295,35 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                             {addProduct && <div className={`${Number(watch('numberOfColor')) > 2 ? 'overflow-y-scroll h-[150px]' : ''}`}>
                                                 {Array.from({ length: Number(watch('numberOfColor')) }).map((_, index) => (
                                                     <div key={index} className="flex flex-row w-full justify-between">
-                                                        <label className="font-semibold">
+                                                        <label className="font-semibold flex flex-col items-center">
                                                             <p>Màu sắc {index + 1}</p>
                                                             <Controller
                                                                 name={`colors.${index}`}
                                                                 control={control}
                                                                 render={({ field }) => (
-                                                                    <input
-                                                                    {...field}
-                                                                    type="color"
-                                                                    className="rounded-lg w-full h-[40px]"
+                                                                    <ColorPicker {...field} 
+                                                                    format="hex" 
+                                                                    value={field.value ? field.value : '000000'} 
                                                                     onChange={(e) => {
                                                                         const newColors = [...watch('colors')];
-                                                                        newColors[index] = e.target.value;
+                                                                        const colorCode = '#' + e.target.value as string;
+                                                                        newColors[index] = colorCode;
                                                                         setValue('colors', newColors);
-                                                                    }}
-                                                                    value={field.value ? field.value : '#000000'}
-                                                                    />
+                                                                    }} />
                                                                 )}
                                                             />
                                                         </label>
                                                         <label className="font-semibold">
                                                             <p>Tên màu sắc {index + 1}</p>
                                                             <Input name={`colorNames.${index}`} control={control} errors={errors}/>
-                                                            {errors.colorNames?.[index] && <span className="text-red">{errors.colorNames[index].message}</span>}
+                                                            {errors.colorNames?.[index] && !watch(`colorNames.${index}`) && (
+                                                                <span className="text-red-500">{errors.colorNames[index].message}</span>
+                                                            )}
                                                         </label>
                                                     </div>
                                                 ))}
                                             </div>}
-                                            {colorErrorMessage && (<div className="text-red">{colorErrorMessage}</div>)}
+                                            {colorErrorMessage && (<div className="text-red-500">{colorErrorMessage}</div>)}
                                         </div>
                                     </div>
                                 </div> 
@@ -342,10 +335,10 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                 const index = sizeIndex * watch('colors').length + colorIndex;
                                                 return (
                                                     <div key={index} className="flex flex-row gap-32 justify-center items-center mb-5">
-                                                    <div className="flex flex-row w-[270px] font-semibold text-xl text-black text-left justify-between">
-                                                        <p className="w-[45%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</p>
+                                                    <div className="flex flex-row min-w-[400px] font-semibold text-xl text-black text-left justify-between">
+                                                        <p className="w-[50%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</p>
                                                         <p className="mr-3">-</p>
-                                                        <p className="w-[75%]">{`Kích thước ${size}`}</p>
+                                                        <p className="w-[60%] text-right">{`Kích thước ${size}`}</p>
                                                     </div>
                                                     <div className="flex flex-row gap-2 justify-center items-center">
                                                         {!watch(`imgUrls.${index}`) &&
@@ -371,7 +364,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                             )}
                                                             />
                                                         }
-                                                        {watch('imgUrls').length === 0 || errors.imgUrls?.[index] && <span className="text-red">{errors.imgUrls.message}</span>}
+                                                        {watch('imgUrls').length === 0 || errors.imgUrls?.[index] && <span className="text-red-500">{errors.imgUrls.message}</span>}
                                                         <div className="w-[85px] h-[85px] relative group">
                                                             {watch(`imgUrls.${index}`) && (
                                                                 <div className="relative">
@@ -380,7 +373,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                                     </a>
                                                                     <button
                                                                         type="button"
-                                                                        className="absolute top-0 right-0 bg-red text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                                         onClick={() => {
                                                                             const newImgUrls = [...watch('imgUrls')];
                                                                             newImgUrls[index] = '';
@@ -398,7 +391,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                     </div>
                                                     <div className="w-[400px] h-fit">
                                                         <Input name={`stocks.${index}`} control={control} errors={errors.stocks} placeholder="Số lượng sản phẩm" />
-                                                        {errors.stocks?.[index] && <span className="text-red">{errors.stocks[index].message}</span>}
+                                                        {errors.stocks?.[index] && <span className="text-red-500">{errors.stocks[index].message}</span>}
                                                     </div>
                                                 </div>
                                                 )
@@ -406,10 +399,10 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                         </div>
                                     ))}
                                 </div>
-                                {errorMessage && <span className='text-red mb-2 text-lg'>{errorMessage}</span>}
+                                {errorMessage && <span className='text-red-500 mb-2 text-lg'>{errorMessage}</span>}
                             </div>
                             <div className="flex flex-row w-[50%] ml-auto gap-5 justify-end items-center">
-                                <Button onClick={handleToggle} className="w-[27%] bg-gray border-gray text-white rounded-lg py-2 hover:bg-gray-dark transition text-xl">
+                                <Button onClick={handleToggle} className="w-[27%] bg-gray-500 border-gray-500 text-white rounded-lg py-2 hover:bg-gray-800 transition text-xl">
                                     Hủy bỏ
                                 </Button>
                                 <Button 

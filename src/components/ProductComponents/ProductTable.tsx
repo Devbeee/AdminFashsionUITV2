@@ -95,7 +95,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                 {Array.isArray(products) && filterProducts().length > 0
                 ? filterProducts()
                 .slice(first, first + 8).map((product) => (
-                <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange} setProducts={setProducts}
+                <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange}
                 category={category}/>
                 ))
                 : <div className='text-black-light opacity-80 text-center text-xl font-semibold pt-10'>Không có sản phẩm phù hợp</div>}
