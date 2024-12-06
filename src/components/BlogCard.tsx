@@ -9,7 +9,7 @@ type NewsCardProps = {
 
 export function BlogCard({ blog }: NewsCardProps) {
     return (
-        <div className="w-60 xs:w-96 p-0 border-none">
+        <div className="w-60 xs:w-80 2xl:w-[22rem] p-0 border-none">
         <div className='flex flex-col items-center justify-start w-full'>
             <div className='w-full h-60 z-0 bg-gray-300'>
                 <Link to={`/admin/blog/detail/${blog.slug}`} title={blog.title} className='z-0'>

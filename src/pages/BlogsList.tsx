@@ -25,7 +25,7 @@ type FormData = {
 export function BlogsList() {
     const [blogs, setBlogs] = useState<IBlog[]>([]);
     const [first, setFirst] = useState<number>(0);
-    const [limit] = useState<number>(9);
+    const [limit, setLimit] = useState<number>(9);
     const [totalRecords, setTotalRecords] = useState<number>(0);
     const [choosedBlogs, setChoosedBlogs] = useState<string[]>([]);
     const [createDateRange, setCreateDateRange] = useState<Nullable<(Date | null)[]>>(null);
@@ -80,10 +80,6 @@ export function BlogsList() {
         }
     }
 
-    const rejectDelete = () => {
-        toast.current?.show({ severity: 'warn', summary: 'Đã hủy', detail: 'Bạn đã hủy xóa blog', life: 3000 });
-    }
-
     const confirmDelete = () => {
         confirmDialog({
             message: 'Bạn có chắc muốn xóa những blog này?',
@@ -91,7 +87,6 @@ export function BlogsList() {
             defaultFocus: 'reject',
             acceptClassName: 'p-button-danger',
             accept: acceptDelete,
-            reject: rejectDelete
         });
     };
 
@@ -119,9 +114,12 @@ export function BlogsList() {
                 sortStyle: selectedSortStyle.code,
                 authors: choosedAuthors,
                 searchKeyWord: getValues('searchValue'),
-                createDateRange: createDateRange? (
-                    createDateRange[0] && createDateRange[1] ? [createDateRange[0], createDateRange[1]] : [createDateRange[0] ? createDateRange[0] : new Date(), new Date()]
-                ) : ([])
+                createDateRange: createDateRange && createDateRange.length > 0
+                    ? [
+                        createDateRange[0] || new Date(), 
+                        createDateRange[1] || new Date()
+                    ]
+                    : []
             }
             callGetBlogsApi(async () => {
                 const response = await blogApi.getAll(params);
@@ -165,14 +163,21 @@ export function BlogsList() {
     useEffect(() => {
         getBlogs(1, limit);
         setFirst(0);
-    }, [choosedAuthors, selectedSortStyle, createDateRange]);
+    }, [choosedAuthors, selectedSortStyle, createDateRange, limit]);
 
     useEffect(() => {
         getAuthors();
     }, []);
 
+    useEffect(() => {
+      const handleResize = () => window.innerWidth < 1536 ? setLimit(8) : setLimit(9);
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
     return (
-        <div className='rounded-xl m-7 p-7 border text-left bg-white flex flex-row gap-8'>
+        <div className='rounded-xl m-7 p-7 border text-left bg-white flex flex-col lg:flex-row gap-8'>
             <Toast ref={toast} />
             <ConfirmDialog />
             <div className='flex-[1] flex flex-col gap-8'>
@@ -187,6 +192,7 @@ export function BlogsList() {
                         />
                     </form>
                 </div>
+                <div className='flex flex-col gap-8 sm:flex-row lg:flex-col'>
                 <div className='w-full p-4 bg-gray-100 text-gray-500 rounded border'>
                     <div className="flex flex-col justify-center gap-2">
                         <span className='font-bold uppercase'>Ngày tạo blog</span>
@@ -223,6 +229,7 @@ export function BlogsList() {
                         ))}
                     </div>
                 </div>
+                </div>
             </div>
             <div className='flex-[4]'>
                 <div className='h-20 bg-gray-100 py-4 px-2 border-t-2 border-b-2 flex justify-between items-center'>
@@ -246,7 +253,7 @@ export function BlogsList() {
                                     className="w-36 text-gray-500 text-[0.75rem] leading-[0.1rem] border-none bg-gray-50 rounded-none"
                                 />
                             </div>
-                            <div className='text-center grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-3 gap-8'>
+                            <div className='text-center grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 2xl:gap-10'>
                                 {blogs?.map((blog) => (
                                     <div key={blog.slug}>
                                         <div className='w-full flex justify-end'>

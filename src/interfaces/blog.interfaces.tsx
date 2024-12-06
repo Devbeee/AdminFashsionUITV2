@@ -1,12 +1,14 @@
 export interface IAuthor {
     id: string;
     fullName: string;
+    avatar: string;
 }
 
 export interface IBlog {
     id: string;
     title: string;
     description: string;
+    content: string;
     slug: string;
     coverImage: string;
     author: IAuthor;
@@ -16,6 +18,7 @@ export interface IBlog {
 export interface IBlogForm {
     title: string;
     description: string;
+    content: string;
     coverImage: string;
 }
 

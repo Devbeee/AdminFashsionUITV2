@@ -8,7 +8,7 @@ export const blogApi = {
     getAll: async (params : IGetBlogsParams) => {
         const { page, limit, sortStyle, authors, searchKeyWord, createDateRange } = params;
         const authorParams = authors.map(author => `authors=${author}`).join('&');
-        const createDateRangeParams = createDateRange.map(date => `createDateRange=${date.toISOString()}`).join('&');
+        const createDateRangeParams = createDateRange.map(date => `createDateRange=${date}`).join('&');
         const url = `/blogs?keyword=${searchKeyWord}&sortStyle=${sortStyle}&page=${page}&limit=${limit}&${authorParams}&${createDateRangeParams}`;
         return axiosClient.get(url);
     },
