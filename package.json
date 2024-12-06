@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
-    "adminfashsionuitv2": "file:",
     "axios": "^1.7.7",
     "primereact": "^10.8.4",
     "quill": "^2.0.2",
