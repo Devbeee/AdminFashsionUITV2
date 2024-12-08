@@ -27,7 +27,7 @@ export const schema = yup.object().shape({
         yup.string().required("Vui lòng cung cấp tên màu sắc")
     ).required(),
     imgUrls: yup.array().of(
-        yup.string().url("Đường dẫn hình ảnh không hợp lệ")
+        yup.string().url("Đường dẫn hình ảnh không hợp lệ").defined("Vui lòng cung cấp hình ảnh")
     ).required("Vui lòng cung cấp hình ảnh"),
     stocks: yup.array().of(
         yup.number().min(0, "Số lượng hàng phải hợp lệ").required("Vui lòng cung cấp số lượng hàng").typeError("Số lượng hàng phải là số")

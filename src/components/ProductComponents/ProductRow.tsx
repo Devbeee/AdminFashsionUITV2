@@ -36,7 +36,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
         if (!categoryGender.includes(cate.gender)) {
             setCategoryGender([...categoryGender, cate.gender])
         }
-      })
+    })
     const toast = useRef<Toast>(null);
     const fileUploadReference = useRef<FileUpload>(null);
     const { value: showDropDown, toggle: toggleShowDropDown } = useBoolean(false);
@@ -61,7 +61,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             stocks: []
         }
     })
-      const handleToggle = () => {
+    const handleToggle = () => {
         toggleShowProductDetail();
         toggleShowDropDown();
         resetProductForm();
@@ -101,6 +101,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     useEffect(() => {
         handleResetForm();
     }, [showProductDetail, productInfo])
+
     useEffect(() => {
         const colorCount = Number(watch('numberOfColor')) || 0;
         const currentColors = watch('colors') || [];
@@ -119,7 +120,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             setValue('colors', currentColors.slice(0, colorCount));
             setValue('colorNames', currentColorNames.slice(0, colorCount));
         }
-        }, [watch('numberOfColor'), setValue, watch])
+    }, [watch('numberOfColor'), setValue, watch])
 
     useEffect(() => {
         const colors = watch('colors') || [];
@@ -130,27 +131,29 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
         } else {
             setColorErrorMessage('');
         }
-        }, [watch('numberOfColor'), watch('colors')]);
-        useEffect(() => {
-            const currentSizes = watch('sizes').length;
-            const currentColors = Number(watch('numberOfColor'));
-            if(currentSizes === 0 || currentColors === 0) {
-                resetProductForm({
-                    name: productInfo.name,
-                    price: productInfo.price,
-                    discount: productInfo.discount,
-                    description: productInfo.description,
-                    categoryGender: { value: productInfo.category.gender },
-                    categoryType: { value: productInfo.category.type },
-                    sizes: watch('sizes'),
-                    colors: [],
-                    numberOfColor: watch('numberOfColor'),
-                    colorNames: [],
-                    imgUrls: [],
-                    stocks: [],
-                });
-            }
-        },[watch('sizes'), watch('numberOfColor')])
+    }, [watch('numberOfColor'), watch('colors')]);
+
+    useEffect(() => {
+        const currentSizes = watch('sizes').length;
+        const currentColors = Number(watch('numberOfColor'));
+        if(currentSizes === 0 || currentColors === 0) {
+            resetProductForm({
+                name: productInfo.name,
+                price: productInfo.price,
+                discount: productInfo.discount,
+                description: productInfo.description,
+                categoryGender: { value: productInfo.category.gender },
+                categoryType: { value: productInfo.category.type },
+                sizes: watch('sizes'),
+                colors: [],
+                numberOfColor: watch('numberOfColor'),
+                colorNames: [],
+                imgUrls: [],
+                stocks: [],
+            });
+        }
+    },[watch('sizes'), watch('numberOfColor')])
+
     const handleUpload = async (e: { files: File[] }) => {
         const file = e.files[0];
         const url = await uploadToCloudinary(file);
@@ -262,7 +265,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowProductDetail}>
                 <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[70%]" onClick={(e) => e.stopPropagation()}>
                     <div className="flex flex-row text-xl font-bold mb-4 justify-between">
-                        <p className="flex justify-center items-center text-2xl">Thông tin sản phẩm</p>
+                        <h3 className="flex justify-center items-center text-2xl">Thông tin sản phẩm</h3>
                         <PrimeBtn text onClick={toggleShowProductDetail} className="absolute right-2 top-2">
                             {icons.closePopup}
                         </PrimeBtn>
@@ -391,7 +394,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                         <p>Tên màu sắc {index + 1}</p>
                                                         <Input name={`colorNames.${index}`} control={control} errors={errors}/>
                                                         {errors.colorNames?.[index] && !watch(`colorNames.${index}`) && (
-                                                            <span className="text-red-500">{errors.colorNames[index].message}</span>
+                                                            <span className="text-red-500 font-normal">{errors.colorNames[index].message}</span>
                                                         )}
                                                     </label>
                                                 </div>
@@ -410,9 +413,9 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                             return (
                                                 <div key={index} className="flex flex-row gap-32 justify-center items-center mb-5">
                                                     <div className="flex flex-row min-w-[400px] font-semibold text-xl text-black text-left justify-between">
-                                                    <p className="w-[50%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</p>
-                                                    <p className="mr-3">-</p>
-                                                    <p className="w-[60%] text-right">{`Kích thước ${size}`}</p>
+                                                    <span className="w-[50%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</span>
+                                                    <span className="mr-3">-</span>
+                                                    <span className="w-[60%] text-right">{`Kích thước ${size}`}</span>
                                                 </div>
                                                 <div className="flex flex-row gap-2 justify-center items-center">
                                                     {!watch(`imgUrls.${index}`) &&
@@ -420,25 +423,27 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                         name={`imgUrls.${index}`}
                                                         control={control}
                                                         render={({ field }) => (
-                                                            <FileUpload
-                                                                ref={fileUploadReference}
-                                                                mode="basic"
-                                                                accept="image/*"
-                                                                maxFileSize={1500000}
-                                                                auto
-                                                                customUpload
-                                                                uploadHandler={async (e) => {
-                                                                    const url = await handleUpload(e);
-                                                                    if (url) {
-                                                                        field.onChange(url);
-                                                                    }
-                                                                }}
-                                                                chooseLabel="Chọn ảnh"
-                                                            />
+                                                            <div className="flex flex-col">
+                                                                <FileUpload
+                                                                    ref={fileUploadReference}
+                                                                    mode="basic"
+                                                                    accept="image/*"
+                                                                    maxFileSize={1500000}
+                                                                    auto
+                                                                    customUpload
+                                                                    uploadHandler={async (e) => {
+                                                                        const url = await handleUpload(e);
+                                                                        if (url) {
+                                                                            field.onChange(url);
+                                                                        }
+                                                                    }}
+                                                                    chooseLabel="Chọn ảnh"
+                                                                />
+                                                                {errors.imgUrls?.[index] && <span className="text-red-500">{errors.imgUrls[index].message}</span>}
+                                                            </div>
                                                         )}
                                                         />
                                                     }
-                                                    {watch('imgUrls').length === 0 || errors.imgUrls?.[index] && <span className="text-red-500">{errors.imgUrls.message}</span>}
                                                     <div className="w-[85px] h-[85px] relative group">
                                                         {watch(`imgUrls.${index}`) && (
                                                             <div className="relative">

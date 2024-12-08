@@ -189,7 +189,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                 <div className="fixed inset-0 h-full bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={handleToggle}>
                     <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[70%]" onClick={(e) => e.stopPropagation()}>
                         <div className="flex flex-row text-xl font-bold mb-4 justify-between">
-                            <p className="flex justify-center items-center text-2xl">Thêm sản phẩm</p>
+                            <h3 className="flex justify-center items-center text-2xl">Thêm sản phẩm</h3>
                             <PrimeBtn text onClick={handleToggle} className="absolute right-0 top-2">
                                 {icons.closePopup}
                             </PrimeBtn>
@@ -317,7 +317,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                             <p>Tên màu sắc {index + 1}</p>
                                                             <Input name={`colorNames.${index}`} control={control} errors={errors}/>
                                                             {errors.colorNames?.[index] && !watch(`colorNames.${index}`) && (
-                                                                <span className="text-red-500">{errors.colorNames[index].message}</span>
+                                                                <span className="text-red-500 font-normal">{errors.colorNames[index].message}</span>
                                                             )}
                                                         </label>
                                                     </div>
@@ -336,9 +336,9 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                 return (
                                                     <div key={index} className="flex flex-row gap-32 justify-center items-center mb-5">
                                                     <div className="flex flex-row min-w-[400px] font-semibold text-xl text-black text-left justify-between">
-                                                        <p className="w-[50%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</p>
-                                                        <p className="mr-3">-</p>
-                                                        <p className="w-[60%] text-right">{`Kích thước ${size}`}</p>
+                                                        <span className="w-[50%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</span>
+                                                        <span className="mr-3">-</span>
+                                                        <span className="w-[60%] text-right">{`Kích thước ${size}`}</span>
                                                     </div>
                                                     <div className="flex flex-row gap-2 justify-center items-center">
                                                         {!watch(`imgUrls.${index}`) &&
@@ -346,25 +346,27 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                             name={`imgUrls.${index}`}
                                                             control={control}
                                                             render={({ field }) => (
-                                                                <FileUpload
-                                                                    ref={fileUploadReference}
-                                                                    mode="basic"
-                                                                    accept="image/*"
-                                                                    maxFileSize={1500000}
-                                                                    auto
-                                                                    customUpload
-                                                                    uploadHandler={async (e) => {
-                                                                        const url = await handleUpload(e);
-                                                                        if (url) {
-                                                                            field.onChange(url);
-                                                                        }
-                                                                    }}
-                                                                    chooseLabel="Chọn ảnh"
-                                                                />
+                                                                <div className="flex flex-col">
+                                                                    <FileUpload
+                                                                        ref={fileUploadReference}
+                                                                        mode="basic"
+                                                                        accept="image/*"
+                                                                        maxFileSize={1500000}
+                                                                        auto
+                                                                        customUpload
+                                                                        uploadHandler={async (e) => {
+                                                                            const url = await handleUpload(e);
+                                                                            if (url) {
+                                                                                field.onChange(url);
+                                                                            }
+                                                                        }}
+                                                                        chooseLabel="Chọn ảnh"
+                                                                    />
+                                                                    {errors.imgUrls?.[index] && <span className="text-red-500">{errors.imgUrls[index].message}</span>}
+                                                                </div>
                                                             )}
                                                             />
                                                         }
-                                                        {watch('imgUrls').length === 0 || errors.imgUrls?.[index] && <span className="text-red-500">{errors.imgUrls.message}</span>}
                                                         <div className="w-[85px] h-[85px] relative group">
                                                             {watch(`imgUrls.${index}`) && (
                                                                 <div className="relative">
