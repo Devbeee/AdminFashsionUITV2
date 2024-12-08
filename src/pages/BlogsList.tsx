@@ -7,6 +7,7 @@ import { Checkbox, CheckboxChangeEvent } from "primereact/checkbox";
 import { Calendar } from 'primereact/calendar';
 import { Nullable } from "primereact/ts-helpers";
 import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -35,6 +36,8 @@ export function BlogsList() {
     const toast = useRef<Toast>(null);
     const { errorMessage: deleteErrorMessage, callApi: callDeleteApi } = useApi<void>()
     const { callApi: callGetBlogsApi } = useApi<void>();
+    const [loadingBlogs, setLoadingBlogs] = useState<boolean>(false);
+    const [loadingAuthors, setLoadingAuthors] = useState<boolean>(false);
 
     const defaultValues: FormData = {
         searchValue: ''
@@ -108,6 +111,7 @@ export function BlogsList() {
 
     const getBlogs = async (page : number, limit : number) => {
         try {
+            setLoadingBlogs(true);
             const params: IGetBlogsParams = {
                 page: page,
                 limit: limit,
@@ -126,7 +130,9 @@ export function BlogsList() {
                 setBlogs(response.data.data);
                 setTotalRecords(response.data.total);
             });
+            setLoadingBlogs(false);
         } catch (error) {
+            setLoadingBlogs(false);
             setBlogs([]);
             setTotalRecords(0);
             console.error('Failed to fetch blogs: ', error);
@@ -135,12 +141,15 @@ export function BlogsList() {
 
     const getAuthors = async () => {
         try {
+            setLoadingAuthors(true);
             callGetBlogsApi(async () => {
                 const response = await blogApi.getAuthors();
                 setAllAuthors(response.data);
             });
+            setLoadingAuthors(false);
         }
         catch (error) {
+            setLoadingAuthors(false);
             console.error('Failed to fetch authors: ', error);
         }
     }
@@ -180,7 +189,7 @@ export function BlogsList() {
         <div className='rounded-xl m-7 p-7 border text-left bg-white flex flex-col lg:flex-row gap-8'>
             <Toast ref={toast} />
             <ConfirmDialog />
-            <div className='flex-[1] flex flex-col gap-8'>
+            <div className='flex-1 flex flex-col gap-8'>
                 <div className='w-full h-20 p-4 bg-gray-100 text-gray-500 rounded border'>
                     <form onSubmit={handleSubmit(onSubmit)}>
                         <Search
@@ -213,72 +222,84 @@ export function BlogsList() {
                 <div className='w-full p-4 bg-gray-100 text-gray-500 rounded border'>
                     <div className="flex flex-col justify-center items-start gap-2">
                         <span className='font-bold uppercase'>Tác giả</span>
-                        {allAuthors.map((author) => (
-                            <div key={author.id} className='flex items-center gap-2'>
-                                <Checkbox
-                                    inputId={author.id}
-                                    name={author.fullName}
-                                    value={author.id}
-                                    onChange={onChoosedAuthorsChange}
-                                    checked={choosedAuthors.includes(author.id)}
-                                />
-                                <label htmlFor={author.id} className="cursor-pointer">
-                                    {author.fullName}
-                                </label>
+                        {loadingAuthors ? (
+                            <div className='flex justify-center items-center w-full'>
+                                <ProgressSpinner className='w-10 h-10' />
                             </div>
-                        ))}
+                        ):(
+                            allAuthors.map((author) => (
+                                <div key={author.id} className='flex items-center gap-2'>
+                                    <Checkbox
+                                        inputId={author.id}
+                                        name={author.fullName}
+                                        value={author.id}
+                                        onChange={onChoosedAuthorsChange}
+                                        checked={choosedAuthors.includes(author.id)}
+                                    />
+                                    <label htmlFor={author.id} className="cursor-pointer">
+                                        {author.fullName}
+                                    </label>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
                 </div>
             </div>
-            <div className='flex-[4]'>
-                <div className='h-20 bg-gray-100 py-4 px-2 border-t-2 border-b-2 flex justify-between items-center'>
+            <div className='flex-[4] h-full'>
+                <div className='h-20 bg-gray-100 py-4 px-2 border-y-2 flex justify-between items-center'>
                     <span className='font-bold text-3xl text-gray-700'>Blogs</span>
                     {choosedBlogs.length > 0 && (<Button onClick={confirmDelete} className='font-bold w-32 border-red-500 bg-red-500 hover:bg-red-600'>Xóa đã chọn</Button>)}
                 </div>
-                {blogs.length === 0 ? (
-                    <div className='flex flex-col items-center justify-center bg-gray-50 m-7 p-4'>
-                        <span className="text-2xl font-bold text-gray-500">Không tìm thấy blog</span>
+                {loadingBlogs ? (
+                    <div className='flex justify-center items-center min-h-[100vh]'>
+                        <ProgressSpinner />
                     </div>
-                ) : (
-                    <>
-                        <div className='flex flex-col justify-center flex-wrap items-center mt-7 gap-4'>
-                            <div className="w-full flex justify-end items-center gap-1">
-                                <span className="text-gray-500 flex items-center gap-1">{icons.sort}Sắp xếp:</span>
-                                <Dropdown
-                                    value={selectedSortStyle}
-                                    onChange={(event: DropdownChangeEvent) => setSelectedSortStyle(event.value)}
-                                    options={sortStyle}
-                                    optionLabel="name"
-                                    className="w-36 text-gray-500 text-[0.75rem] leading-[0.1rem] border-none bg-gray-50 rounded-none"
+                ):(
+                    blogs.length === 0 ? (
+                        <div className='flex flex-col items-center justify-center bg-gray-50 m-7 p-4'>
+                            <span className="text-2xl font-bold text-gray-500">Không tìm thấy blog</span>
+                        </div>
+                    ) : (
+                        <div className='flex flex-col justify-between min-h-[100vh]'>
+                            <div className='flex flex-col justify-center flex-wrap items-center mt-7 gap-4'>
+                                <div className="w-full flex justify-end items-center gap-1">
+                                    <span className="text-gray-500 flex items-center gap-1">{icons.sort}Sắp xếp:</span>
+                                    <Dropdown
+                                        value={selectedSortStyle}
+                                        onChange={(event: DropdownChangeEvent) => setSelectedSortStyle(event.value)}
+                                        options={sortStyle}
+                                        optionLabel="name"
+                                        className="w-36 text-gray-500 text-[0.75rem] leading-[0.1rem] border-none bg-gray-50 rounded-none"
+                                    />
+                                </div>
+                                <div className='text-center grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 2xl:gap-10'>
+                                    {blogs?.map((blog) => (
+                                        <div key={blog.slug}>
+                                            <div className='w-full flex justify-end'>
+                                                <Checkbox
+                                                    inputId={blog.slug}
+                                                    value={blog.slug}
+                                                    onChange={onChoosedBlogsChange}
+                                                    checked={choosedBlogs.includes(blog.slug)}
+                                                    className='z-50 -mb-6'
+                                                />
+                                            </div>
+                                            <BlogCard blog={blog} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className='mt-4'>
+                                <Paginator
+                                    first={first}
+                                    rows={limit}
+                                    totalRecords={totalRecords}
+                                    onPageChange={onPageChange}
                                 />
                             </div>
-                            <div className='text-center grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 2xl:gap-10'>
-                                {blogs?.map((blog) => (
-                                    <div key={blog.slug}>
-                                        <div className='w-full flex justify-end'>
-                                            <Checkbox
-                                                inputId={blog.slug}
-                                                value={blog.slug}
-                                                onChange={onChoosedBlogsChange}
-                                                checked={choosedBlogs.includes(blog.slug)}
-                                                className='z-50 -mb-6'
-                                            />
-                                        </div>
-                                        <BlogCard blog={blog} />
-                                    </div>
-                                ))}
-                            </div>
                         </div>
-                        <div className='mt-4'>
-                            <Paginator
-                                first={first}
-                                rows={limit}
-                                totalRecords={totalRecords}
-                                onPageChange={onPageChange}
-                            />
-                        </div>
-                    </>
+                    )
                 )}
             </div>
         </div>

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Avatar } from 'primereact/avatar';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 import { Button } from "@/components";
 import { convertStringDate } from '@/utils/helpers';
@@ -20,6 +21,7 @@ export function BlogDetail() {
     const { errorMessage: deleteErrorMessage, callApi: callDeleteApi } = useApi<void>()
     const { callApi: callGetBlogApi } = useApi<void>();
     const navigate = useNavigate();
+    const [loadingBlog, setLoadingBlog] = useState<boolean>(false);
 
     const acceptDelete = async () => {
         try {
@@ -56,6 +58,7 @@ export function BlogDetail() {
     };
     
     const getBlog = async () => {
+        setLoadingBlog(true);
         if (slug) {
             callGetBlogApi(async () => {
                 const res = await blogApi.getOne(slug);
@@ -64,6 +67,7 @@ export function BlogDetail() {
                 }
             });
         }
+        setLoadingBlog(false);
     }
     
     useEffect(() => {
@@ -82,36 +86,42 @@ export function BlogDetail() {
         <div className="flex flex-col items-center justify-start bg-white rounded-xl m-7 p-7 border min-h-[80vh]">
             <Toast ref={toast} />
             <ConfirmDialog />
-                {blog && (
-                    <div className="flex flex-wrap md:flex-row gap-6 justify-between w-full">
-                        <div className='w-full'>
-                            <div className="w-full flex justify-between items-start text-left flex-col sm:flex-row">
-                                <div className="flex flex-col gap-2 justify-start items-start">
-                                    <span className="font-semibold text-2xl text-primary">{blog.title}</span>
-                                    <div className="flex flex-row items-center gap-2 border border-gray-300 rounded-md py-1 px-2">
-                                        <span className="text-xl text-primary">{icons.watch}</span>
-                                        <span className="text-sm font-semibold">{convertStringDate(blog.createdAt)}</span>
+                {loadingBlog ? (
+                    <div className='flex justify-center items-center min-h-[100vh]'>
+                        <ProgressSpinner />
+                    </div>
+                ):(
+                    blog && (
+                        <div className="flex flex-wrap md:flex-row gap-6 justify-between w-full">
+                            <div className='w-full'>
+                                <div className="w-full flex justify-between items-start text-left flex-col sm:flex-row">
+                                    <div className="flex flex-col gap-2 justify-start items-start">
+                                        <span className="font-semibold text-2xl text-primary">{blog.title}</span>
+                                        <div className="flex flex-row items-center gap-2 border border-gray-300 rounded-md py-1 px-2">
+                                            <span className="text-xl text-primary">{icons.watch}</span>
+                                            <span className="text-sm font-semibold">{convertStringDate(blog.createdAt)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col min-w-fit items-center justify-start gap-1">
+                                        <Avatar image={blog.author.avatar} className="p-0.5" size="xlarge" shape="circle" />
+                                        <span className="text-gray-800 font-semibold">{blog.author.fullName}</span>
                                     </div>
                                 </div>
-                                <div className="flex flex-col min-w-fit items-center justify-start gap-1">
-                                    <Avatar image={blog.author.avatar} className="p-0.5" size="xlarge" shape="circle" />
-                                    <span className="text-gray-800 font-semibold">{blog.author.fullName}</span>
+                                <div className="flex flex-col items-start mt-2">{blog.description}</div>
+                                <div className="flex justify-center my-7">
+                                    <img src={blog.coverImage} alt="cover" className="w-full h-auto object-contain rounded-md" />
+                                </div>
+                                <div dangerouslySetInnerHTML={{ __html: blog.content }} className="flex flex-col items-start mt-2"></div>
+                            </div>
+                            <div className="w-full flex flex-row flex-wrap sm:flex-nowrap gap-4 justify-between mt-7">
+                                <Button htmlType="reset" to="/admin/blog/list" disabled={isNavigating} className="bg-white text-gray-500 border-gray-300 hover:bg-gray-50 font-bold w-40">Quay lại</Button>
+                                <div className='flex flex-wrap flex-col xs:flex-row justify-end gap-4'>
+                                    <Button disabled={isNavigating} to={'/admin/blog/update/' + blog.slug} className="font-bold w-40">Cập nhật</Button>
+                                    <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
                                 </div>
                             </div>
-                            <div className="flex flex-col items-start mt-2">{blog.description}</div>
-                            <div className="flex justify-center my-7">
-                                <img src={blog.coverImage} alt="cover" className="w-full h-auto object-contain rounded-md" />
-                            </div>
-                            <div dangerouslySetInnerHTML={{ __html: blog.content }} className="flex flex-col items-start mt-2"></div>
                         </div>
-                        <div className="w-full flex flex-row flex-wrap sm:flex-nowrap gap-4 justify-between mt-7">
-                            <Button htmlType="reset" to="/admin/blog/list" disabled={isNavigating} className="bg-white text-gray-500 border-gray-300 hover:bg-gray-50 font-bold w-40">Quay lại</Button>
-                            <div className='flex flex-wrap flex-col xs:flex-row justify-end gap-4'>
-                                <Button disabled={isNavigating} to={'/admin/blog/update/' + blog.slug} className="font-bold w-40">Cập nhật</Button>
-                                <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
-                            </div>
-                        </div>
-                    </div>
+                    )
                 )}
         </div>
     );
