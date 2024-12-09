@@ -26,17 +26,8 @@ type ProductRowProps = {
 }
 
 export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProductChange, category}) => { 
-    const [categoryType, setCategoryType] = useState<string[]>([]);
-    const [categoryGender, setCategoryGender] = useState<string[]>([]);
+    const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
     const [colorErrorMessage, setColorErrorMessage] = useState<string>('');
-    Array.from(category).forEach(cate => {
-        if (!categoryType.includes(cate.type)) {
-            setCategoryType([...categoryType, cate.type])
-        }
-        if (!categoryGender.includes(cate.gender)) {
-            setCategoryGender([...categoryGender, cate.gender])
-        }
-    })
     const toast = useRef<Toast>(null);
     const fileUploadReference = useRef<FileUpload>(null);
     const { value: showDropDown, toggle: toggleShowDropDown } = useBoolean(false);
@@ -87,8 +78,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             price: productInfo.price,
             discount: productInfo.discount,
             description: productInfo.description,
-            categoryGender: { value: productInfo.category.gender },
-            categoryType: { value: productInfo.category.type },
+            categoryType: { value: `${productInfo.category.gender} - ${productInfo.category.type}`},
             sizes: sizesArray,
             colors: colorsArray,
             numberOfColor: [...new Set(productInfo.productDetails.map(detail => detail.color))].length.toString(),
@@ -142,8 +132,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                 price: productInfo.price,
                 discount: productInfo.discount,
                 description: productInfo.description,
-                categoryGender: { value: productInfo.category.gender },
-                categoryType: { value: productInfo.category.type },
+                categoryType: { value: `${productInfo.category.gender} - ${productInfo.category.type}`},
                 sizes: watch('sizes'),
                 colors: [],
                 numberOfColor: watch('numberOfColor'),
@@ -153,6 +142,13 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             });
         }
     },[watch('sizes'), watch('numberOfColor')])
+
+    useEffect(() => {
+        const options = Array.from(category).map(cate => 
+          `${cate.gender} - ${cate.type}`
+        );
+        setCategoryOptions(options);
+    }, [category]);
 
     const handleUpload = async (e: { files: File[] }) => {
         const file = e.files[0];
@@ -186,8 +182,8 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                 })
             })
 
-            const {categoryGender, categoryType, ...updateProductInfo} = updateProductData;
-            const categoryId = category.find((category) => category.type === categoryType.value && category.gender === categoryGender.value)?.id || '';
+            const {categoryType, ...updateProductInfo} = updateProductData;
+            const categoryId = category.find((category) => `${category.gender} - ${category.type}` === categoryType.value)?.id || '';
             const sendData = {name: updateProductInfo.name, description: updateProductInfo.description, price: updateProductInfo.price, categoryId: categoryId, productDetails: productDetails, discount: updateProductInfo.discount || 0}
             const { data } = await productApi.updateProduct(productInfo.id, sendData)
                 if (data) {
@@ -211,7 +207,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
         {[
             { width: '15%', value: productInfo.name },
             { width: '15%', value: productInfo.slug },
-            { width: '10%', value: productInfo.category.type + ' - ' + productInfo.category.gender },
+            { width: '10%', value: productInfo.category.gender + ' - ' + productInfo.category.type },
             { width: '20%', value: productInfo.description },
             { width: '10%', value: `${productInfo.price} VND` },
             { width: '10%', value: productInfo.discount || 0 },
@@ -306,32 +302,14 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                 <Dropdown 
                                                     value={field.value?.value || ''} 
                                                     onChange={(val) => field.onChange({ value: val.target.value })} 
-                                                    options={categoryType} optionLabel="name" 
+                                                    options={categoryOptions} optionLabel="name" 
                                                     placeholder="Chọn loại sản phẩm" 
-                                                    className="w-full md:w-14rem" 
+                                                    className="w-full md:w-14rem p-inputtext-lg" 
                                                     />
                                             )}
                                         />
                                         {errors.categoryType?.value && (
                                             <span className="text-red-500">{errors.categoryType.value.message}</span>
-                                        )}
-                                    </div>
-                                    <div className="h-fit w-full flex flex-col">
-                                        <Controller
-                                            name="categoryGender"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Dropdown 
-                                                    value={field.value?.value || ''} 
-                                                    onChange={(val) => field.onChange({ value: val.target.value })} 
-                                                    options={categoryGender} optionLabel="name" 
-                                                    placeholder="Chọn giới tính" 
-                                                    className="w-full md:w-14rem" 
-                                                    />
-                                            )}
-                                        />
-                                        {errors.categoryGender?.value && (
-                                            <span className="text-red-500">{errors.categoryGender.value.message}</span>
                                         )}
                                     </div>
                                     <div className={`flex flex-col gap-4 border border-gray-400 rounded-md p-3 ${errors.sizes ? "border-red-500":''}`}>

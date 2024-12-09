@@ -8,9 +8,6 @@ export const schema = yup.object().shape({
     categoryType: yup.object({
         value: yup.string().required("Vui lòng chọn loại sản phẩm"),
       }),
-    categoryGender: yup.object({
-        value: yup.string().required("Vui lòng chọn giới tính"),
-    }),
     sizes: yup.array().min(1, "Vui lòng chọn ít nhất 1 kích thước").of(
         yup.string().required("Vui lòng chọn ít nhất 1 kích thước")
     ).required(),

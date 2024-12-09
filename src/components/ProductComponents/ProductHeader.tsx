@@ -29,17 +29,8 @@ type ProductHeaderProps = {
 }
 
 export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery, setFilter, toggleProductChange}) => {
-    const [categoryType, setCategoryType] = useState<string[]>([]);
-    const [categoryGender, setCategoryGender] = useState<string[]>([]);
+    const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
     const [colorErrorMessage, setColorErrorMessage] = useState<string>('');
-    Array.from(category).forEach(cate => {
-        if (!categoryType.includes(cate.type)) {
-            setCategoryType([...categoryType, cate.type])
-        }
-        if (!categoryGender.includes(cate.gender)) {
-            setCategoryGender([...categoryGender, cate.gender])
-        }
-      })
     const toast = useRef<Toast>(null);
     const fileUploadReference = useRef<FileUpload>(null);
 
@@ -106,6 +97,13 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
         }
     },[watch('sizes'), watch('numberOfColor')])
 
+    useEffect(() => {
+        const options = Array.from(category).map(cate => 
+          `${cate.gender} - ${cate.type}`
+        );
+        setCategoryOptions(options);
+      }, [category]);
+
     const handleUpload = async (e: { files: File[] }) => {
         const file = e.files[0];
         const url = await uploadToCloudinary(file);
@@ -133,8 +131,8 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                     productDetails.push({size, colorName, color, imgUrl, stock})
                 })
             })
-            const {categoryGender, categoryType, ...productInfo} = productData;
-            const categoryId = category.find((category) => category.type === categoryType.value && category.gender === categoryGender.value)?.id || '';
+            const {categoryType, ...productInfo} = productData;
+            const categoryId = category.find((category) => `${category.gender} - ${category.type}` === categoryType.value)?.id || '';
             const sendData = {name: productInfo.name, description: productInfo.description, price: productInfo.price, categoryId: categoryId, productDetails: productDetails, discount: productInfo.discount || 0}
             const {data} = await productApi.createProduct(sendData);
             if (data) {
@@ -230,32 +228,14 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                     <Dropdown 
                                                     value={field.value?.value || ''} 
                                                     onChange={(val) => field.onChange({ value: val.target.value })} 
-                                                    options={categoryType} optionLabel="name" 
+                                                    options={categoryOptions} optionLabel="name" 
                                                     placeholder="Chọn loại sản phẩm" 
-                                                    className="w-full md:w-14rem" 
+                                                    className="w-full md:w-14rem p-inputtext-lg" 
                                                     />
                                                   )}
                                             />
                                             {errors.categoryType?.value && (
                                                 <span className="text-red-500">{errors.categoryType.value.message}</span>
-                                            )}
-                                        </div>
-                                        <div className="h-fit w-full flex flex-col">
-                                            <Controller
-                                                name="categoryGender"
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <Dropdown 
-                                                    value={field.value?.value || ''} 
-                                                    onChange={(val) => field.onChange({ value: val.target.value })} 
-                                                    options={categoryGender} optionLabel="name" 
-                                                    placeholder="Chọn giới tính" 
-                                                    className="w-full md:w-14rem" 
-                                                    />
-                                                  )}
-                                            />
-                                            {errors.categoryGender?.value && (
-                                                <span className="text-red-500">{errors.categoryGender.value.message}</span>
                                             )}
                                         </div>
                                         <div className={`flex flex-col gap-4 border border-gray-200 rounded-md p-3 ${errors.sizes ? "border-red-500":''}`}>
