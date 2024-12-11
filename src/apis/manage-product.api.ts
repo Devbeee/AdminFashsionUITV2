@@ -12,7 +12,7 @@ export const productApi = {
         return await axiosClient.get(`/product/${productId}`)
     },
     updateProduct: async (productId: string, productData: ICreateProduct) => {
-        return await axiosClient.patch(`/product/${productId}`, productData)
+        return await axiosClient.put(`/product/${productId}`, productData)
     },
     deleteProduct: async (productId: string) => {
         return await axiosClient.delete(`/product/${productId}`)
