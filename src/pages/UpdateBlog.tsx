@@ -23,8 +23,9 @@ export function UpdateBlog() {
     const fileUploadRef = useRef<FileUpload | null>(null);
     const [blog, setBlog] = useState<IBlog | null>(null);
     const {slug} = useParams<{ slug: string }>();
-    const { value: isNavigating, setTrue: startNavigating, setFalse: stopNavigating } = useBoolean(false);
+    const { value: isNavigating, setTrue: startNavigating } = useBoolean(false);
     const { errorMessage: updateErrorMessage, callApi: callUpdateApi } = useApi<void>()
+    const { errorMessage: deleteErrorMessage, callApi: callDeleteApi } = useApi<void>()
     const { callApi: callGetBlogApi } = useApi<void>();
     const navigate = useNavigate();
     const [loadingBlog, setLoadingBlog] = useState<boolean>(false);
@@ -59,6 +60,7 @@ export function UpdateBlog() {
                     stream: () => file.stream(),
                     text: () => file.text(),
                     objectURL,
+                    bytes: () => file.arrayBuffer().then(buffer => new Uint8Array(buffer)),
                 };
                 fileUploadRef.current.clear();
                 fileUploadRef.current.setUploadedFiles([uploadedFile]);
@@ -67,23 +69,6 @@ export function UpdateBlog() {
         } else {
             console.error('Failed to upload image');
         }
-    };
-
-    const acceptCancel = () => {
-        navigate(`/admin/blog/detail/${blog?.slug}`);
-    };
-
-    const confirmCancel = () => {
-        isDirty ?
-            confirmDialog({
-                message: 'Bạn có chắc muốn bỏ cập nhật blog này?',
-                header: 'Bỏ cập nhật',
-                defaultFocus: 'reject',
-                acceptClassName: 'p-button-danger',
-                accept: acceptCancel,
-            })
-            : 
-            acceptCancel();
     };
 
     const acceptPublish = async (blogData: IBlogForm) => {
@@ -115,6 +100,40 @@ export function UpdateBlog() {
             header: 'Cập nhật blog',
             defaultFocus: 'accept',
             accept: () => acceptPublish(blogData),
+        });
+    };
+
+    const acceptDelete = async () => {
+        try {
+            if (blog) {
+                callDeleteApi(async () => {
+                    const res = await blogApi.delete(blog.slug);
+                    if (res.status === 204) {
+                        toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Blog này đã bị xóa', life: 3000 });
+                        startNavigating();
+                        setTimeout(() => {
+                            navigate('/admin/blog/list');
+                        }, 3000);
+                    }
+                    else {
+                        toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+                    }
+                });
+            }
+        }
+        catch (error) {
+            console.error('Failed to delete blog: ', error);
+            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+        }
+    }
+
+    const confirmDelete = () => {
+        confirmDialog({
+            message: 'Bạn có chắc muốn xóa blog này?',
+            header: 'Xóa blog',
+            defaultFocus: 'reject',
+            acceptClassName: 'p-button-danger',
+            accept: acceptDelete,
         });
     };
 
@@ -218,7 +237,7 @@ export function UpdateBlog() {
                         </div>
                     </div>
                     <div className="flex gap-4 sm:justify-end justify-between">
-                        <Button htmlType="reset" onClick={confirmCancel} disabled={isNavigating} className="flex-1 bg-white text-red-500 border-red-500 font-bold max-w-40">Quay lại</Button>
+                        <Button htmlType="button" disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
                         <Button htmlType="submit" disabled={uploading || isNavigating || !isDirty} className="flex-1 font-bold max-w-40">
                             {uploading ? 'Đang tải...' : 'Cập nhật'}
                         </Button>

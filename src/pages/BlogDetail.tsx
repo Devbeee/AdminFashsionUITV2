@@ -17,7 +17,7 @@ export function BlogDetail() {
     const [blog, setBlog] = useState<IBlog | null>(null);
     const {slug} = useParams<{ slug: string }>();
     const toast = useRef<Toast>(null);
-    const { value: isNavigating, setTrue: startNavigating, setFalse: stopNavigating } = useBoolean(false);
+    const { value: isNavigating, setTrue: startNavigating } = useBoolean(false);
     const { errorMessage: deleteErrorMessage, callApi: callDeleteApi } = useApi<void>()
     const { callApi: callGetBlogApi } = useApi<void>();
     const navigate = useNavigate();
@@ -113,12 +113,9 @@ export function BlogDetail() {
                                 </div>
                                 <div dangerouslySetInnerHTML={{ __html: blog.content }} className="flex flex-col items-start mt-2"></div>
                             </div>
-                            <div className="w-full flex flex-row flex-wrap sm:flex-nowrap gap-4 justify-between mt-7">
-                                <Button htmlType="reset" to="/admin/blog/list" disabled={isNavigating} className="bg-white text-gray-500 border-gray-300 hover:bg-gray-50 font-bold w-40">Quay lại</Button>
-                                <div className='flex flex-wrap flex-col xs:flex-row justify-end gap-4'>
-                                    <Button disabled={isNavigating} to={'/admin/blog/update/' + blog.slug} className="font-bold w-40">Cập nhật</Button>
-                                    <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
-                                </div>
+                            <div className='flex flex-wrap flex-col xs:flex-row justify-end gap-4 w-full'>
+                                <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
+                                <Button disabled={isNavigating} to={'/admin/blog/update/' + blog.slug} className="font-bold w-40">Cập nhật</Button>
                             </div>
                         </div>
                     )

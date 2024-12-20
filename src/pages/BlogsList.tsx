@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from "react-router-dom";
 
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
@@ -17,7 +18,7 @@ import { BlogCard, Button, Search } from '@/components';
 import { IBlog, ISortStyle, IAuthor, IGetBlogsParams } from '@/interfaces';
 import { blogApi } from "@/apis";
 import { useApi } from "@/hooks";
-import { icons, sortStyle } from '@/utils';
+import { icons, sortStyle, initFilters } from '@/utils';
 
 type FormData = {
     searchValue?: string
@@ -38,6 +39,7 @@ export function BlogsList() {
     const { callApi: callGetBlogsApi } = useApi<void>();
     const [loadingBlogs, setLoadingBlogs] = useState<boolean>(false);
     const [loadingAuthors, setLoadingAuthors] = useState<boolean>(false);
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const defaultValues: FormData = {
         searchValue: ''
@@ -52,11 +54,39 @@ export function BlogsList() {
         formState: { errors },
         handleSubmit,
         getValues,
+        setValue
     } = useForm({ defaultValues, resolver: yupResolver(schema) })
 
     const onSubmit = () => {
+        handleFilterChange(initFilters.search.name, getValues('searchValue') || '', initFilters.search.isMultiFilter);
+        setToFirstPage();
         getBlogs(1, limit);
+    }
+
+    const handleFilterChange = (filterKey: string, value: string, isMultiFilter : boolean) => {
+        const currentValues = searchParams.get(filterKey)?.split(',') || [];
+        if (!isMultiFilter) {
+            searchParams.set(filterKey, value);
+            !searchParams.get(filterKey) && searchParams.delete(filterKey);
+        }
+        else if (currentValues.includes(value)) {
+            currentValues.splice(currentValues.indexOf(value), 1);
+            currentValues.length === 0 ? 
+                searchParams.delete(filterKey) 
+                : 
+                searchParams.set(filterKey,currentValues.join(','));
+        }
+        else {
+            currentValues.push(value);
+            searchParams.set(filterKey, currentValues.join(','));
+        }
+        setSearchParams(searchParams);
+    }
+
+    const setToFirstPage = () => {
         setFirst(0);
+        searchParams.set(initFilters.page.name, '1');
+        setSearchParams(searchParams);
     }
 
     const acceptDelete = async () => {
@@ -67,7 +97,7 @@ export function BlogsList() {
                     if (res.status === 204) {
                         toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Đã xóa các blog được chọn', life: 3000 });
                         setChoosedBlogs([]);
-                        setFirst(0);
+                        setToFirstPage();
                         getBlogs(1, limit);
                         getAuthors();
                     }
@@ -106,6 +136,7 @@ export function BlogsList() {
 
     const onPageChange = (event: PaginatorPageChangeEvent) => {
         setFirst(event.first);
+        handleFilterChange(initFilters.page.name, (event.page + 1).toString(), initFilters.page.isMultiFilter);
         getBlogs(event.page + 1, limit);
     };
 
@@ -113,18 +144,19 @@ export function BlogsList() {
         try {
             setLoadingBlogs(true);
             const params: IGetBlogsParams = {
-                page: page,
+                page: Number(searchParams.get(initFilters.page.name)) || page,
                 limit: limit,
-                sortStyle: selectedSortStyle.code,
-                authors: choosedAuthors,
-                searchKeyWord: getValues('searchValue'),
-                createDateRange: createDateRange && createDateRange.length > 0
-                    ? [
-                        createDateRange[0] || new Date(), 
-                        createDateRange[1] || new Date()
-                    ]
-                    : []
+                sortStyle: searchParams.get(initFilters.sortStyle.name) || '',
+                authors: searchParams.get(initFilters.authors.name)?.split(',') || [],
+                searchKeyWord: searchParams.get(initFilters.search.name) || '',
+                createDateRange: searchParams.get(initFilters.createDateRange.name)?.split(',').map(date => new Date(date)) || [],
             }
+            setFirst((params.page - 1)*limit);
+            setLimit(params.limit);
+            setSelectedSortStyle(sortStyle.find(style => style.code === params.sortStyle) || sortStyle[0]);
+            setChoosedAuthors(params.authors);
+            !createDateRange && setCreateDateRange(params.createDateRange);
+            setValue('searchValue', params.searchKeyWord);
             callGetBlogsApi(async () => {
                 const response = await blogApi.getAll(params);
                 setBlogs(response.data.data);
@@ -163,16 +195,35 @@ export function BlogsList() {
             choosedAuthorsTemp.splice(choosedAuthorsTemp.indexOf(event.value), 1);
         }
         setChoosedAuthors(choosedAuthorsTemp);
+        handleFilterChange(initFilters.authors.name, event.value, initFilters.authors.isMultiFilter);
+        setToFirstPage();
+    }
+
+    const handleChangeSortStyle = (event: DropdownChangeEvent) => {
+        setSelectedSortStyle(event.value);
+        handleFilterChange(initFilters.sortStyle.name, event.value.code, initFilters.sortStyle.isMultiFilter);
     }
 
     const clearDateRange = () => {
         setCreateDateRange(null);
+        handleFilterChange(initFilters.createDateRange.name, '', initFilters.createDateRange.isMultiFilter);
     };
+
+    const handleChangeCreateDateRange = (dates: Nullable<(Date | null)[]>) => {
+        setToFirstPage();
+        setCreateDateRange(dates);
+        const createDateRangeTemp : Date[] = dates && dates.length > 0
+            ? [
+                dates[0] || new Date(), 
+                dates[1] || new Date()
+            ]
+            : [];
+        handleFilterChange(initFilters.createDateRange.name, createDateRangeTemp.join(','), initFilters.createDateRange.isMultiFilter);
+    }
 
     useEffect(() => {
         getBlogs(1, limit);
-        setFirst(0);
-    }, [choosedAuthors, selectedSortStyle, createDateRange, limit]);
+    }, [searchParams]);
 
     useEffect(() => {
         getAuthors();
@@ -208,7 +259,7 @@ export function BlogsList() {
                         <div className='flex justify-center items-center gap-1'>
                             <Calendar
                                 value={createDateRange}
-                                onChange={(event) => setCreateDateRange(event.value)}
+                                onChange={(event) => handleChangeCreateDateRange(event.value)}
                                 selectionMode="range"
                                 readOnlyInput
                                 hideOnRangeSelection
@@ -267,7 +318,7 @@ export function BlogsList() {
                                     <span className="text-gray-500 flex items-center gap-1">{icons.sort}Sắp xếp:</span>
                                     <Dropdown
                                         value={selectedSortStyle}
-                                        onChange={(event: DropdownChangeEvent) => setSelectedSortStyle(event.value)}
+                                        onChange={(event: DropdownChangeEvent) => handleChangeSortStyle(event)}
                                         options={sortStyle}
                                         optionLabel="name"
                                         className="w-36 text-gray-500 text-[0.75rem] leading-[0.1rem] border-none bg-gray-50 rounded-none"

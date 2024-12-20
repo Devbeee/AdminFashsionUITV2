@@ -20,7 +20,7 @@ export function CreateBlog() {
     const toast = useRef<Toast>(null);
     const [uploading, setUploading] = useState<boolean>(false);
     const fileUploadRef = useRef<FileUpload | null>(null);
-    const { value: isNavigating, setTrue: startNavigating, setFalse: stopNavigating } = useBoolean(false);
+    const { value: isNavigating, setTrue: startNavigating } = useBoolean(false);
     const { errorMessage, callApi: callCreateApi } = useApi<void>()
     const navigate = useNavigate();
 
@@ -60,6 +60,7 @@ export function CreateBlog() {
                     stream: () => file.stream(),
                     text: () => file.text(),
                     objectURL,
+                    bytes: () => file.arrayBuffer().then(buffer => new Uint8Array(buffer)),
                 };
                 fileUploadRef.current.clear();
                 fileUploadRef.current.setUploadedFiles([uploadedFile]);
