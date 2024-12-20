@@ -27,7 +27,7 @@ type FormData = {
 export function BlogsList() {
     const [blogs, setBlogs] = useState<IBlog[]>([]);
     const [first, setFirst] = useState<number>(0);
-    const [limit, setLimit] = useState<number>(9);
+    const [limit, setLimit] = useState<number>(8);
     const [totalRecords, setTotalRecords] = useState<number>(0);
     const [choosedBlogs, setChoosedBlogs] = useState<string[]>([]);
     const [createDateRange, setCreateDateRange] = useState<Nullable<(Date | null)[]>>(null);
@@ -229,13 +229,6 @@ export function BlogsList() {
         getAuthors();
     }, []);
 
-    useEffect(() => {
-      const handleResize = () => window.innerWidth < 1536 ? setLimit(8) : setLimit(9);
-      handleResize();
-      window.addEventListener("resize", handleResize);
-      return () => window.removeEventListener("resize", handleResize);
-    }, []);
-
     return (
         <div className='rounded-xl m-7 p-7 border text-left bg-white flex flex-col lg:flex-row gap-8'>
             <Toast ref={toast} />
@@ -303,12 +296,12 @@ export function BlogsList() {
                     {choosedBlogs.length > 0 && (<Button onClick={confirmDelete} className='font-bold w-32 border-red-500 bg-red-500 hover:bg-red-600'>Xóa đã chọn</Button>)}
                 </div>
                 {loadingBlogs ? (
-                    <div className='flex justify-center items-center min-h-[100vh]'>
+                    <div className='flex justify-center items-center min-h-96'>
                         <ProgressSpinner />
                     </div>
                 ):(
                     blogs.length === 0 ? (
-                        <div className='flex flex-col items-center justify-center bg-gray-50 m-7 p-4'>
+                        <div className='flex flex-col items-center justify-center bg-gray-50 m-7 p-4 min-h-96'>
                             <span className="text-2xl font-bold text-gray-500">Không tìm thấy blog</span>
                         </div>
                     ) : (
@@ -324,7 +317,7 @@ export function BlogsList() {
                                         className="w-36 text-gray-500 text-[0.75rem] leading-[0.1rem] border-none bg-gray-50 rounded-none"
                                     />
                                 </div>
-                                <div className='text-center grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4 2xl:gap-10'>
+                                <div className='text-center grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-10'>
                                     {blogs?.map((blog) => (
                                         <div key={blog.slug}>
                                             <div className='w-full flex justify-end'>
