@@ -2,7 +2,7 @@ import { SetStateAction, useEffect, useState } from "react";
 import { Paginator } from 'primereact/paginator';
 
 import { productApi } from "@/apis";
-import { useApi, useBoolean } from "@/hooks";
+import { useApi } from "@/hooks";
 import { ICategory, IProduct } from "@/interfaces";
 
 import { ProductRow } from "./ProductRow";
@@ -11,9 +11,11 @@ type ProductTableProps = {
     category: ICategory[];
     query: string;
     filter: string;
+    toggleProductChange: () => void;
+    isProductChange: boolean;
 }
 
-export const ProductTable: React.FC<ProductTableProps> = ({category, query, filter}) => {
+export const ProductTable: React.FC<ProductTableProps> = ({category, query, filter, isProductChange, toggleProductChange}) => {
     const [first, setFirst] = useState(0);
     const onPageChange = (event: { first: SetStateAction<number>}) => {
         setFirst(event.first);
@@ -21,8 +23,6 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
 
     const { callApi: callApiManageProduct } = useApi<void>()
     const [products, setProducts] = useState<IProduct[]>([])
-    const { value: isProductChange, toggle: toggleProductChange } = useBoolean(false);
-
     const getAllProducts = async () => {
         callApiManageProduct(async () => {
             const { data } = await productApi.findAllProducts()
@@ -95,7 +95,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                 {Array.isArray(products) && filterProducts().length > 0
                 ? filterProducts()
                 .slice(first, first + 8).map((product) => (
-                <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange} setProducts={setProducts}
+                <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange}
                 category={category}/>
                 ))
                 : <div className='text-black-light opacity-80 text-center text-xl font-semibold pt-10'>Không có sản phẩm phù hợp</div>}

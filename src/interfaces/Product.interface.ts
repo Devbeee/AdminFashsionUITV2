@@ -24,7 +24,6 @@ export interface IInputProduct {
     description: string,
     numberOfColor: string
     categoryType: {value: string},
-    categoryGender: {value: string},
     colorNames: string[],
     colors: (string | undefined)[],
     sizes: string[],
