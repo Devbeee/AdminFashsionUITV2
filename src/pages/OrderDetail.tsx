@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { Column } from 'primereact/column'
@@ -18,15 +18,26 @@ import {
   PaymentMethod,
   PaymentStatus
 } from '@/utils'
+import { IToastFunctionOptions } from '@/interfaces/common.interface'
+import { Toast } from 'primereact/toast'
 
 export function OrderDetail() {
   const { orderId } = useParams<{ orderId: string }>()
   const { loading: callOrderApiLoading, callApi: callOrderApi } = useApi<void>()
   const navigate = useNavigate()
+  const toast = useRef<Toast>(null)
+
   const [order, setOrder] = useState<IOrderDetailReturn>()
   const [selectedPaymentStatus, setSelectedPaymentStatus] = useState<PaymentStatus>()
   const [selectedOrderStatus, setSelectedOrderStatus] = useState<OrderStatus>()
-
+  const showToast = (toasParams: IToastFunctionOptions) => {
+    toast.current?.show({
+      severity: toasParams.severity,
+      summary: toasParams.summary,
+      detail: toasParams.detail,
+      life: toasParams.life
+    })
+  }
   const paymentStatusDropdownOptions = [
     {
       value: PaymentStatus.Paid,
@@ -86,14 +97,17 @@ export function OrderDetail() {
         const data = await orderApi.updateOrder(order?.id, paymentStatus, orderStatus)
         if (data) {
           fetchOrder()
+          showToast({ severity: 'success', summary: 'Success', detail: 'Order updated successfully!', life: 3000 })
         } else {
-          // toast
+          showToast({ severity: 'error', summary: 'Error', detail: 'Update order failed!', life: 3000 })
         }
       })
     }
   }
   return (
     <div className='w-full h-full'>
+      <Toast ref={toast} />
+
       {order && (
         <div className='h-full w-[95%] m-auto '>
           <div className='flex flex-row w-[95%] h-fit justify-between m-auto mt-6'>
