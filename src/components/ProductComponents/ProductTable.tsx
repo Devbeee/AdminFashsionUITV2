@@ -63,9 +63,6 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
   return (
     <div className="h-full w-full">
         <DataTable 
-            onMouseDownCapture={(e) => {
-                e.stopPropagation()
-            }}
             value={Array.isArray(products) && filterProducts().length > 0 ? filterProducts() .slice(first, first + 7) : []} 
             className='text-center w-full' dataKey='id'
             emptyMessage={
