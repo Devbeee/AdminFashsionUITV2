@@ -1,14 +1,14 @@
 import { FaGear, FaRegUser } from 'react-icons/fa6'
 import { IoHomeOutline, IoSearch } from 'react-icons/io5'
-import { MdMenu, MdOutlineWatchLater, MdOutlineLibraryAdd, MdOutlineProductionQuantityLimits } from 'react-icons/md'
+import { MdMenu, MdOutlineWatchLater, MdOutlineLibraryAdd, MdOutlineProductionQuantityLimits, MdOutlineInventory2, MdOutlineImage } from 'react-icons/md'
 import { RxSlash } from 'react-icons/rx'
 import { FaPlus, FaRegTrashAlt, FaUser, FaFilter } from "react-icons/fa";
 import { CgDanger } from "react-icons/cg";
 import { HiOutlinePencilSquare } from "react-icons/hi2";
 import { LuSearch } from "react-icons/lu";
-import { IoMdClose, IoIosList } from "react-icons/io";
+import { IoMdClose, IoIosList, IoIosColorWand } from "react-icons/io";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { FiLogOut } from 'react-icons/fi'
+import { FiLogOut, FiBox, FiDollarSign, FiPercent, FiTag, FiLayers, FiGrid, FiBookOpen } from 'react-icons/fi'
 
 export const icons = {
   menu: <MdMenu />,
@@ -30,5 +30,15 @@ export const icons = {
   deleteProduct: <RiDeleteBin6Line color='red'/>,
   filter: <FaFilter color='gray'/>,
   logout: <FiLogOut />,
-  product: <MdOutlineProductionQuantityLimits/>
+  product: <MdOutlineProductionQuantityLimits/>,
+  productName: <FiBox />,
+  productPrice: <FiDollarSign />,
+  productDiscount: <FiPercent />,
+  productCategory: <FiTag />,
+  productSize: <FiLayers />,
+  numberOfColor: <FiGrid />,
+  productDescription: <FiBookOpen />,
+  productColor: <IoIosColorWand />,
+  productStock: <MdOutlineInventory2/>,
+  productImage: <MdOutlineImage />
 }

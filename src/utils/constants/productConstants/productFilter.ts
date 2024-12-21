@@ -1,6 +1,6 @@
 export const filterOptions = [
     {
-        label: 'Mặc định',
+        label: 'Default',
         value: 'default'
     },
     {
@@ -12,19 +12,19 @@ export const filterOptions = [
         value: 'name-desc'
     },
     {
-        label: 'Giá tăng dần',
+        label: 'Price Asc',
         value: 'price-asc'
     },
     {
-        label: 'Giá giảm dần',
+        label: 'Price Desc',
         value: 'price-desc'
     },
     {
-        label: 'Cũ nhất',
+        label: 'Oldest',
         value: 'date-asc'
     },
     {
-        label: 'Mới nhất',
+        label: 'Newest',
         value: 'date-desc'
     }
 ]

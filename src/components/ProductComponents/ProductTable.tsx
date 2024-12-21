@@ -1,5 +1,8 @@
 import { SetStateAction, useEffect, useState } from "react";
 import { Paginator } from 'primereact/paginator';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { ProgressSpinner } from "primereact/progressspinner";
 
 import { productApi } from "@/apis";
 import { useApi } from "@/hooks";
@@ -21,7 +24,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
         setFirst(event.first);
     };
 
-    const { callApi: callApiManageProduct } = useApi<void>()
+    const { loading, callApi: callApiManageProduct } = useApi<void>()
     const [products, setProducts] = useState<IProduct[]>([])
     const getAllProducts = async () => {
         callApiManageProduct(async () => {
@@ -34,75 +37,183 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
     }, [isProductChange])
     
     const filterProducts = () => {
-        return (filter === 'default' ? 
-            products
-         : [...products].sort((a,b) => {
-            if (filter === 'name-asc') {
-                return a.name.localeCompare(b.name)
+        const sortProducts = (products: IProduct[]) => {
+            switch (filter) {
+                case 'name-asc':
+                    return products.sort((a, b) => a.name.localeCompare(b.name));
+                case 'name-desc':
+                    return products.sort((a, b) => b.name.localeCompare(a.name));
+                case 'price-asc':
+                    return products.sort((a, b) => a.price - b.price);
+                case 'price-desc':
+                    return products.sort((a, b) => b.price - a.price);
+                case 'date-asc':
+                    return products.sort((a, b) => new Date(a.createdAt).getDate() - new Date(b.createdAt).getDate());
+                case 'date-desc':
+                    return products.sort((a, b) => new Date(b.createdAt).getDate() - new Date(a.createdAt).getDate());
+                default:
+                    return products;
             }
-            if (filter === 'name-desc') {
-                return b.name.localeCompare(a.name)
-            }
-            if (filter === 'price-asc') {
-                return a.price - b.price
-            }
-            if (filter === 'price-desc') {
-                return b.price - a.price
-            }
-            if (filter === 'date-asc') {
-                return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-            }
-            if (filter === 'date-desc') {
-                return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-            }
-            return 0
-        }))
-        .filter(product => product.name.toLowerCase().includes(query))
-    }
-  return (
-    <>
-        <div className='flex flex-col h-[690px] w-full'>
-            <div className='flex flex-row bg-white-blue h-[48px] p-[10px] gap-[10px] rounded-t-lg'>
-                <div className='w-[15%] pl-3 m-auto'>
-                    <div className='text-black-light opacity-80 text-sm font-semibold'>Tên sản phẩm</div>
-                </div>
-                <div className='w-[15%] pl-3 m-auto'>
-                    <div className='text-black-light opacity-80 text-sm font-semibold'>Mã sản phẩm</div>
-                </div>
-                <div className='w-[10%] pl-3 m-auto'>
-                    <div className='text-black-light opacity-80 text-sm font-semibold'>Danh mục</div>
-                </div>
-                <div className='w-[20%] pl-3 m-auto'>
-                    <div className='text-black-light opacity-80 text-sm font-semibold'>Mô tả</div>
-                </div>
-                <div className='w-[10%] pl-3 m-auto'>
-                    <div className='text-black-light opacity-80 text-sm font-semibold'>Giá</div>
-                </div>
-                <div className='w-[10%] pl-3 m-auto'>
-                    <div className='text-black-light opacity-80 text-sm font-semibold'>Ưu đãi</div>
-                </div>
-                <div className='w-[10%] pl-3 m-auto'>
-                    <div className='text-black-light opacity-80 text-sm font-semibold'>Tạo vào</div>
-                </div>
-                <div className='w-[10%] pl-3 m-auto'>
-                    <div className='text-black-light opacity-80 text-sm font-semibold'>Cập nhật vào</div>
-                </div>
-                <div className='w-[10%] pl-3 m-auto'>
-                    <div className='text-black-light opacity-80 text-sm font-semibold'></div>
-                </div>
-            </div>
-            <div className='divide-y-2 divide-gray-light'>
-                {Array.isArray(products) && filterProducts().length > 0
-                ? filterProducts()
-                .slice(first, first + 8).map((product) => (
-                <ProductRow key={product.id} productInfo={{...product}} toggleProductChange={toggleProductChange}
-                category={category}/>
-                ))
-                : <div className='text-black-light opacity-80 text-center text-xl font-semibold pt-10'>Không có sản phẩm phù hợp</div>}
-            </div>
-        </div>
-        <Paginator first={first} rows={8} totalRecords={filterProducts().length} onPageChange={onPageChange}/>
-    </>
+        };
     
+        return sortProducts([...products]).filter((product: IProduct) =>
+            product.name.toLowerCase().includes(query.toLowerCase())
+        );
+    };
+  return (
+    <div className="h-full w-full">
+        <DataTable 
+            onMouseDownCapture={(e) => {
+                e.stopPropagation()
+            }}
+            value={Array.isArray(products) && filterProducts().length > 0 ? filterProducts() .slice(first, first + 7) : []} 
+            className='text-center w-full' dataKey='id'
+            emptyMessage={
+                loading ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                        <ProgressSpinner />
+                        <p className="text-lg font-semibold mt-4">Loading products...</p>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center justify-center py-10 text-gray-500">
+                        <p className="text-lg font-semibold">No Products Found</p>
+                        <p className="text-sm">Try adjusting your search or filter criteria.</p>
+                    </div>
+                )
+            }
+        >
+            <Column 
+                className="w-[8%]"
+                alignHeader={'center'}
+                header='Product Name'
+                headerStyle={{
+                    fontSize: '15px',
+                    fontWeight: 'bold'
+                }}
+                body={(rowData: IProduct) => (
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                        {rowData.name}
+                    </div>
+                )}
+            />
+            <Column 
+                className="w-[8%]"
+                alignHeader={'center'}
+                header='Slug'
+                headerStyle={{
+                    fontSize: '15px',
+                    fontWeight: 'bold'
+                }}
+                body={(rowData: IProduct) => (
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                        {rowData.slug}
+                    </div>
+                )}
+            />
+            <Column                 
+                className="w-[10%]"
+                alignHeader={'center'}
+                header='Category'
+                headerStyle={{
+                    fontSize: '15px',
+                    fontWeight: 'bold'
+                }}
+                body={(rowData: IProduct) => (
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden flex items-center'>
+                        {rowData.category.gender + ' - ' + rowData.category.type}
+                    </div>
+                )}
+            />
+            <Column
+                className="w-[40%]"
+                alignHeader={'center'}
+                header='Description'
+                headerStyle={{
+                    fontSize: '15px',
+                    fontWeight: 'bold'
+                }}
+                body={(rowData: IProduct) => (
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden'>
+                        <span dangerouslySetInnerHTML={{ __html: rowData.description }}></span>
+                    </div>
+                )}
+            />
+            <Column
+                className="w-[8%]"
+                alignHeader={'center'}
+                header='Price'
+                headerStyle={{
+                    fontSize: '15px',
+                    fontWeight: 'bold'
+                }}
+                body={(rowData: IProduct) => (
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                        {rowData.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' VND'}
+                    </div>
+                )}
+            />
+            <Column
+                className="w-[8%]"
+                alignHeader={'center'}
+                header='Discount'
+                headerStyle={{
+                    fontSize: '15px',
+                    fontWeight: 'bold'
+                }}
+                body={(rowData: IProduct) => (
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                        {rowData.discount + '%'}
+                    </div>
+                )}
+            />
+            <Column
+                className="w-[8%]"
+                alignHeader={'center'}
+                header='Created At'
+                headerStyle={{
+                    fontSize: '15px',
+                    fontWeight: 'bold'
+                }}
+                body={(rowData: IProduct) => (
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                        <span>{new Date(rowData.createdAt).toLocaleString()}</span>
+                    </div>
+                )}
+            />
+            <Column
+                className="w-[8%]"
+                alignHeader={'center'}
+                header='Updated At'
+                headerStyle={{
+                    fontSize: '15px',
+                    fontWeight: 'bold'
+                }}
+                body={(rowData: IProduct) => (
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                        <span>{new Date(rowData.updatedAt).toLocaleString()}</span>
+                    </div>
+                )}
+            />
+            <Column
+                className="w-[5%]"
+                alignHeader={'center'}
+                header='Action'
+                headerStyle={{
+                    fontSize: '15px',
+                    fontWeight: 'bold'
+                }}
+                body={(rowData: IProduct) => (
+                    <div className="text-center">
+                        <ProductRow 
+                            productInfo={rowData} 
+                            category={category} 
+                            toggleProductChange={toggleProductChange} 
+                        />
+                    </div>
+                )}
+            />
+        </DataTable>
+        <Paginator first={first} rows={7} totalRecords={filterProducts().length} onPageChange={onPageChange}/>
+    </div>
   )
 }
