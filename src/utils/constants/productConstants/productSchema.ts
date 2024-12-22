@@ -1,5 +1,7 @@
 import * as yup from 'yup';
 
+const colorRegex = /^#([0-9A-F]{3}|[0-9A-F]{6})$/i;
+
 export const schema = yup.object().shape({
     name: yup.string().required('Please enter product name'),
     price: yup.number().required('Please enter product price').typeError('Price must be a number'),
@@ -13,7 +15,7 @@ export const schema = yup.object().shape({
     ).required(),
     numberOfColor: yup.string().required('Please enter number of color').typeError('Number of color must be a number'),
     colors: yup.array().of(
-        yup.string().matches(/^#([0-9A-F]{3}|[0-9A-F]{6})$/i, 'Invalid color code')
+        yup.string().matches(colorRegex, 'Invalid color code')
     ).test('unique-colors', 'Colors must be unique', 
         (value) => {
             if (!value || value.length === 0) return true;

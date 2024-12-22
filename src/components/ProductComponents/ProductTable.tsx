@@ -7,13 +7,14 @@ import { ProgressSpinner } from "primereact/progressspinner";
 import { productApi } from "@/apis";
 import { useApi } from "@/hooks";
 import { ICategory, IProduct } from "@/interfaces";
+import { sortFunctions } from "@/utils";
 
 import { ProductRow } from "./ProductRow";
 
 type ProductTableProps = {
     category: ICategory[];
     query: string;
-    filter: string;
+    filter: keyof typeof sortFunctions;
     toggleProductChange: () => void;
     isProductChange: boolean;
 }
@@ -24,6 +25,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
         setFirst(event.first);
     };
 
+    const numberWithDotRegex = /\B(?=(\d{3})+(?!\d))/g;
     const { loading, callApi: callApiManageProduct } = useApi<void>()
     const [products, setProducts] = useState<IProduct[]>([])
     const getAllProducts = async () => {
@@ -38,22 +40,8 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
     
     const filterProducts = () => {
         const sortProducts = (products: IProduct[]) => {
-            switch (filter) {
-                case 'name-asc':
-                    return products.sort((a, b) => a.name.localeCompare(b.name));
-                case 'name-desc':
-                    return products.sort((a, b) => b.name.localeCompare(a.name));
-                case 'price-asc':
-                    return products.sort((a, b) => a.price - b.price);
-                case 'price-desc':
-                    return products.sort((a, b) => b.price - a.price);
-                case 'date-asc':
-                    return products.sort((a, b) => new Date(a.createdAt).getDate() - new Date(b.createdAt).getDate());
-                case 'date-desc':
-                    return products.sort((a, b) => new Date(b.createdAt).getDate() - new Date(a.createdAt).getDate());
-                default:
-                    return products;
-            }
+            const sortFunction = sortFunctions[filter as keyof typeof sortFunctions];
+            return sortFunction ? sortFunction(products) : products;
         };
     
         return sortProducts([...products]).filter((product: IProduct) =>
@@ -69,7 +57,6 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                 loading ? (
                     <div className="flex flex-col items-center justify-center py-10 text-gray-500">
                         <ProgressSpinner />
-                        <p className="text-lg font-semibold mt-4">Loading products...</p>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center py-10 text-gray-500">
@@ -145,7 +132,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                 }}
                 body={(rowData: IProduct) => (
                     <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
-                        {rowData.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + ' VND'}
+                        {rowData.price.toString().replace(numberWithDotRegex, ".") + ' VND'}
                     </div>
                 )}
             />

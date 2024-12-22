@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, ControllerRenderProps } from "react-hook-form";
 
 import { Toast } from 'primereact/toast';
 import { IconField } from 'primereact/iconfield';
@@ -7,10 +7,11 @@ import { InputIcon } from 'primereact/inputicon';
 import { FileUpload } from 'primereact/fileupload';
 import { Editor, EditorTextChangeEvent } from 'primereact/editor';
 import { Dropdown } from 'primereact/dropdown';
-import { ColorPicker } from 'primereact/colorpicker';
+import { ColorPicker, ColorPickerChangeEvent } from 'primereact/colorpicker';
 import { Button as PrimeBtn } from 'primereact/button';
 import { Sidebar } from 'primereact/sidebar';
 import { OverlayPanel } from 'primereact/overlaypanel';
+import { Dialog } from "primereact/dialog";
 
 import { yupResolver } from "@hookform/resolvers/yup";
 
@@ -29,6 +30,22 @@ type ProductHeaderProps = {
     setFilter: (filter: string) => void;
     toggleProductChange: () => void;
 }
+type ControllerType = {
+    discount?: number | undefined;
+    stockAll?: number | undefined;
+    colorNames: string[];
+    sizes: string[];
+    colors: (string | undefined)[];
+    imgUrls: string[];
+    stocks: number[];
+    name: string;
+    price: number;
+    description: string;
+    categoryType: {
+        value: string;
+    };
+    numberOfColor: string;
+}
 
 export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery, setFilter, toggleProductChange}) => {
     const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
@@ -41,6 +58,8 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
     const {value: showStock, setFalse, setTrue} = useBoolean(false);
     const {value: isDisabled, setTrue: setDisabled, setFalse: setEnabled} = useBoolean(true);
     const op = useRef<OverlayPanel>(null);
+    const {value: showDialog, setTrue: setShowDialog, setFalse: setHideDialog} = useBoolean(false);
+    const [visibleIndex, setVisibleIndex] = useState<number | null>(null);
     const {
         control,
         handleSubmit,
@@ -60,7 +79,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
       })
     useEffect(() => {
         const colorCount = Number(watch('numberOfColor')) || 0;
-        const currentColors = watch('colors') || [];
+        const currentColors = (watch('colors') || []).map(color => color === undefined ? '#000000' : color);
         const currentColorNames = watch('colorNames') || [];
         
         if (colorCount > currentColors.length) {
@@ -79,7 +98,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
     }, [watch('numberOfColor'), setValue, watch])
 
     useEffect(() => {
-        const colors = watch('colors') || [];
+        const colors = (watch('colors') || []).map(color => color === undefined ? '#000000' : color);
         const uniqueColors = new Set(colors);
       
         if (uniqueColors.size !== colors.length) {
@@ -168,7 +187,36 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
             }
         })
     };
-
+    const handleToggleAction = (value: string) => {
+        setFilter(value);
+        if (op.current) {
+            op.current.hide();
+        }
+    }
+    const handleDeteleImage = (index: number) => {
+        const newImgUrls = [...watch('imgUrls')];
+        newImgUrls[index] = '';
+        if (fileUploadReference.current) {
+            fileUploadReference.current.clear();
+        }
+        setValue('imgUrls', newImgUrls);
+    }
+    const handleChangeColor = (e: ColorPickerChangeEvent, index: number) => {
+        const newColors = [...watch('colors')];
+        const colorCode = '#' + (e.target.value as string);
+        newColors[index] = colorCode;
+        setValue('colors', newColors);
+    }
+    const handleChangeSize = (field: ControllerRenderProps<ControllerType, "sizes"> , size: string) => {
+        const newSize = field.value.includes(size)
+        ? field.value.filter((item) => item !== size)
+        : [...field.value, size];
+        field.onChange(newSize);
+    }
+    const handleShowImage = (index: number) => {
+        setVisibleIndex(index);
+        setShowDialog();
+    }
     return (
         <div className='flex flex-row w-[95%] h-fit justify-between m-auto mt-2'>
             <Toast ref={toast} />
@@ -180,19 +228,9 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                     </PrimeBtn>
                     <OverlayPanel ref={op} className="w-[180px] bg-white border border-gray-300 shadow-lg rounded-lg">
                         {filterOptions.map((option) => (
-                            <PrimeBtn
-                                text
-                                key={option.label}
-                                className="flex w-full text-sm font-medium text-gray-700 transition-all rounded-lg"
-                                onClick={() => {
-                                    setFilter(option.value);
-                                    if (op.current) {
-                                        op.current.hide();
-                                    }
-                                }}
-                            >
-                                {option.label}
-                            </PrimeBtn>
+                            <PrimeBtn text key={option.label} className="flex w-full text-sm font-medium text-gray-700 transition-all rounded-lg"
+                                onClick={() => handleToggleAction(option.value)}
+                            >{option.label}</PrimeBtn>
                         ))}
                     </OverlayPanel>
                 </div>
@@ -266,12 +304,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                     type="checkbox"
                                                     value={size}
                                                     checked={field.value.includes(size)}
-                                                    onChange={() => {
-                                                        const newSize = field.value.includes(size)
-                                                        ? field.value.filter((item) => item !== size)
-                                                        : [...field.value, size];
-                                                        field.onChange(newSize);
-                                                    }}
+                                                    onChange={() => handleChangeSize(field, size)}
                                                     className="rounded-lg size-4"
                                                     />
                                                     <label className="ml-2 text-lg">{size}</label>
@@ -328,12 +361,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                             {...field}
                                                             format="hex"
                                                             value={field.value ? field.value : '000000'}
-                                                            onChange={(e) => {
-                                                                const newColors = [...watch('colors')];
-                                                                const colorCode = '#' + (e.target.value as string);
-                                                                newColors[index] = colorCode;
-                                                                setValue('colors', newColors);
-                                                            }}
+                                                            onChange={(e) => handleChangeColor(e, index)}
                                                         />
                                                     )}
                                                 />
@@ -382,22 +410,13 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                     <div className="w-[85px] h-[85px] relative group">
                                                         {watch(`imgUrls.${index}`) && (
                                                             <div className="relative">
-                                                                <a href={watch(`imgUrls.${index}`)} target="_blank" rel="noopener noreferrer">
-                                                                    <img src={watch(`imgUrls.${index}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md"/>
-                                                                </a>
+                                                                <img src={watch(`imgUrls.${index}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md" onClick={() => handleShowImage(index)}/>
                                                                 <button
                                                                     type="button"
-                                                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
-                                                                    onClick={() => {
-                                                                        const newImgUrls = [...watch('imgUrls')];
-                                                                        newImgUrls[index] = '';
-                                                                        if (fileUploadReference.current) {
-                                                                            fileUploadReference.current.clear();
-                                                                        }
-                                                                        setValue('imgUrls', newImgUrls);
-                                                                    }}
+                                                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                                                                    onClick={() => handleDeteleImage(index)}
                                                                 >
-                                                                    X
+                                                                    {icons.closePopup}
                                                                 </button>
                                                             </div>
                                                         )}
@@ -410,6 +429,11 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                             </div>
                             {colorErrorMessage && <div className="mt-3 text-sm text-red-500">{colorErrorMessage}</div>}
                         </div>}
+                        {visibleIndex !== null && (
+                            <Dialog header="Image Preview" visible={showDialog} onHide={setHideDialog} style={{ width: '50vw' }}>
+                                <img src={watch(`imgUrls.${visibleIndex}`)} alt={`Product ${visibleIndex}`} className="w-full rounded-md" />
+                            </Dialog>
+                        )}
                         {showStock && 
                         <>
                             <div className="mb-5">
@@ -448,9 +472,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                                                                     <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                                                                         <span className="mr-2">{icons.productImage}</span> Image
                                                                     </label>
-                                                                    <a href={watch(`imgUrls.${colorIndex}`)} target="_blank" rel="noopener noreferrer">
-                                                                        <img src={watch(`imgUrls.${colorIndex}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md"/>
-                                                                    </a>
+                                                                    <img src={watch(`imgUrls.${colorIndex}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md"/>
                                                                 </div>
                                                             )}
                                                         </div>

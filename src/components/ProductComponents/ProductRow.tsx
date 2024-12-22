@@ -1,15 +1,16 @@
 import { useRef, useEffect, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, ControllerRenderProps, useForm } from 'react-hook-form';
 
 import { Toast } from 'primereact/toast';
 import { FileUpload } from 'primereact/fileupload';
 import { Button as PrimeBtn } from 'primereact/button';
 import { Editor, EditorTextChangeEvent } from 'primereact/editor';
 import { Dropdown } from 'primereact/dropdown';
-import { ColorPicker } from 'primereact/colorpicker';
+import { ColorPicker, ColorPickerChangeEvent } from 'primereact/colorpicker';
 import { Sidebar } from 'primereact/sidebar';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { OverlayPanel } from 'primereact/overlaypanel';
+import { Dialog } from "primereact/dialog";
 
 import { productApi } from '@/apis';
 import { useBoolean, useApi } from '@/hooks';
@@ -28,6 +29,23 @@ type ProductRowProps = {
     category: ICategory[];
 }
 
+type ControllerType = {
+    discount?: number | undefined;
+    stockAll?: number | undefined;
+    colorNames: string[];
+    sizes: string[];
+    colors: (string | undefined)[];
+    imgUrls: string[];
+    stocks: number[];
+    name: string;
+    price: number;
+    description: string;
+    categoryType: {
+        value: string;
+    };
+    numberOfColor: string;
+}
+
 export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProductChange, category}) => { 
     const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
     const [colorErrorMessage, setColorErrorMessage] = useState<string>('');
@@ -39,6 +57,8 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     const {value: showStock, setFalse, setTrue} = useBoolean(true);
     const {value: isDisabled, setTrue: setDisabled, setFalse: setEnabled} = useBoolean(true);
     const op = useRef<OverlayPanel>(null);
+    const {value: showDialog, setTrue: setShowDialog, setFalse: setHideDialog} = useBoolean(false);
+    const [visibleIndex, setVisibleIndex] = useState<number | null>(null);
     const {
         control,
         handleSubmit,
@@ -96,7 +116,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
 
     useEffect(() => {
         const colorCount = Number(watch('numberOfColor')) || 0;
-        const currentColors = watch('colors') || [];
+        const currentColors = (watch('colors') || []).map(color => color === undefined ? '#000000' : color);
         const currentColorNames = watch('colorNames') || [];
         
         if (colorCount > currentColors.length) {
@@ -115,7 +135,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     }, [watch('numberOfColor'), setValue, watch])
 
     useEffect(() => {
-        const colors = watch('colors') || [];
+        const colors = (watch('colors') || []).map(color => color === undefined ? '#000000' : color);
         const uniqueColors = new Set(colors);
         
         if (uniqueColors.size !== colors.length) {
@@ -221,6 +241,36 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             }
         })
     }
+    const handleToggleAction = (action: () => void) => {
+        action();
+        if (op.current) {
+            op.current.hide();
+        }
+    }
+    const handleDeteleImage = (index: number) => {
+        const newImgUrls = [...watch('imgUrls')];
+        newImgUrls[index] = '';
+        if (fileUploadReference.current) {
+            fileUploadReference.current.clear();
+        }
+        setValue('imgUrls', newImgUrls);
+    }
+    const handleChangeColor = (e: ColorPickerChangeEvent, index: number) => {
+        const newColors = [...watch('colors')];
+        const colorCode = '#' + (e.target.value as string);
+        newColors[index] = colorCode;
+        setValue('colors', newColors);
+    }
+    const handleChangeSize = (field: ControllerRenderProps<ControllerType, "sizes"> , size: string) => {
+        const newSize = field.value.includes(size)
+        ? field.value.filter((item) => item !== size)
+        : [...field.value, size];
+        field.onChange(newSize);
+    }
+    const handleShowImage = (index: number) => {
+        setVisibleIndex(index);
+        setShowDialog();
+    }
   return (
     <div className='flex flex-row'>
         <Toast ref={toast} />
@@ -232,18 +282,10 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             </PrimeBtn>
             <OverlayPanel ref={op} className="w-[150px] bg-white border border-gray-300 shadow-lg rounded-lg">
                 <PrimeBtn text className='flex w-full transition text-sm gap-2'
-                    onClick={() =>{
-                    toggleShowProductDetail();
-                    if (op.current) {
-                        op.current.hide();
-                    }}}
+                    onClick={() => handleToggleAction(toggleShowProductDetail)}
                 >{icons.search}Detail</PrimeBtn>
                 <PrimeBtn text className='flex w-full transition text-sm text-red-500 gap-2'
-                    onClick={() => {
-                    toggleShowConfirmDelete();
-                    if (op.current) {
-                        op.current.hide();
-                    }}}
+                    onClick={() => handleToggleAction(toggleShowConfirmDelete)}
                 >{icons.deleteProduct}Delete</PrimeBtn>
             </OverlayPanel>
             <ConfirmDialog
@@ -316,12 +358,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                 type="checkbox"
                                                 value={size}
                                                 checked={field.value.includes(size)}
-                                                onChange={() => {
-                                                    const newSize = field.value.includes(size)
-                                                    ? field.value.filter((item) => item !== size)
-                                                    : [...field.value, size];
-                                                    field.onChange(newSize);
-                                                }}
+                                                onChange={() => handleChangeSize(field, size)}
                                                 className="rounded-lg size-4"
                                                 />
                                                 <label className="ml-2 text-lg">{size}</label>
@@ -376,12 +413,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                         {...field}
                                                         format="hex"
                                                         value={field.value ? field.value : '000000'}
-                                                        onChange={(e) => {
-                                                            const newColors = [...watch('colors')];
-                                                            const colorCode = '#' + (e.target.value as string);
-                                                            newColors[index] = colorCode;
-                                                            setValue('colors', newColors);
-                                                        }}
+                                                        onChange={(e) => handleChangeColor(e, index)}
                                                     />
                                                 )}
                                             />
@@ -426,22 +458,13 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                 <div className="w-[85px] h-[85px] relative group">
                                                     {watch(`imgUrls.${index}`) && (
                                                         <div className="relative">
-                                                            <a href={watch(`imgUrls.${index}`)} target="_blank" rel="noopener noreferrer">
-                                                                <img src={watch(`imgUrls.${index}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md"/>
-                                                            </a>
+                                                            <img src={watch(`imgUrls.${index}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md" onClick={() => handleShowImage(index)}/>
                                                             <button
                                                                 type="button"
-                                                                className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
-                                                                onClick={() => {
-                                                                    const newImgUrls = [...watch('imgUrls')];
-                                                                    newImgUrls[index] = '';
-                                                                    if (fileUploadReference.current) {
-                                                                        fileUploadReference.current.clear();
-                                                                    }
-                                                                    setValue('imgUrls', newImgUrls);
-                                                                }}
+                                                                className="absolute top-0 right-0 bg-red-500 text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                                                                onClick={() => handleDeteleImage(index)}
                                                             >
-                                                                X
+                                                                {icons.closePopup}
                                                             </button>
                                                         </div>
                                                     )}
@@ -454,6 +477,11 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                         </div>
                         {colorErrorMessage && <div className="mt-3 text-sm text-red-500">{colorErrorMessage}</div>}
                     </div>}
+                    {visibleIndex !== null && (
+                        <Dialog header="Image Preview" visible={showDialog} onHide={setHideDialog} style={{ width: '50vw' }}>
+                            <img src={watch(`imgUrls.${visibleIndex}`)} alt={`Product ${visibleIndex}`} className="w-full rounded-md" />
+                        </Dialog>
+                    )}
                     {showStock && 
                         <>
                             <div className="mb-5">
@@ -492,9 +520,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                                     <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
                                                                         <span className="mr-2">{icons.productImage}</span> Image
                                                                     </label>
-                                                                    <a href={watch(`imgUrls.${colorIndex}`)} target="_blank" rel="noopener noreferrer">
-                                                                        <img src={watch(`imgUrls.${colorIndex}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md"/>
-                                                                    </a>
+                                                                    <img src={watch(`imgUrls.${colorIndex}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md" />
                                                                 </div>
                                                             )}
                                                         </div>

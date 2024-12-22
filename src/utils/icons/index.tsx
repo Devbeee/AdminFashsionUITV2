@@ -25,7 +25,7 @@ export const icons = {
   watch: <MdOutlineWatchLater />,
   addProduct: <MdOutlineLibraryAdd size={20} color="white"/>,
   searchProduct: <LuSearch size={20} color="gray" className="pb-1"/>,
-  closePopup: <IoMdClose size={25} color="red"/>,
+  closePopup: <IoMdClose />,
   list: <IoIosList size={20} color="black"/>,
   deleteProduct: <RiDeleteBin6Line color='red'/>,
   filter: <FaFilter color='gray'/>,
