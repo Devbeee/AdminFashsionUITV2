@@ -7,32 +7,32 @@ import { Button as Btn } from 'primereact/button'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import { Toast } from 'primereact/toast'
 
-import { CategoryPopup, Button } from '@/components'
-import { ICategory } from '@/interfaces'
+import { Button, DiscountPopup } from '@/components'
+import { IDiscount } from '@/interfaces'
 import { icons } from '@/utils'
 import { useApi, useBoolean } from '@/hooks'
-import { manageCategoryApi } from '@/apis'
+import { discountApi } from '@/apis'
 
-export function ManageCategory() {
+export function Discount() {
   const toast = useRef<Toast>(null)
-  const { loading, errorMessage, callApi: callApiManageCategory } = useApi<void>()
-  const [categories, setCategories] = useState<ICategory[]>([])
+  const { loading, errorMessage, callApi: callApiDiscount } = useApi<void>()
+  const [discountProducts, setDiscountProducts] = useState<IDiscount[]>([])
   const { value: isModalVisible, setTrue: showModal, setFalse: hideModal } = useBoolean(false)
-  const { value: isCategoryChange, toggle: toggleCategoryChange } = useBoolean(false)
-  const [selectedCategories, setSelectedCategories] = useState<ICategory[] | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<ICategory | null>(null)
+  const { value: isDiscountProductChange, toggle: toggleDiscountProductChange } = useBoolean(false)
+  const [selectedDiscountProducts, setSelectedDiscountProducts] = useState<IDiscount[] | null>(null)
+  const [selectedDiscountProduct, setSelectedDiscountProduct] = useState<IDiscount | null>(null)
 
-  const showUpdateModal = (category: ICategory) => {
-    setSelectedCategory(category)
+  const showUpdateModal = (product: IDiscount) => {
+    setSelectedDiscountProduct(product)
     showModal()
   }
 
-  const removeCategory = async (id: string) => {
-    setCategories((prevData) => prevData.filter((item) => item.id !== id))
-    callApiManageCategory(async () => {
-      const { data } = await manageCategoryApi.delete(id)
+  const removeDiscountProduct = async (id: string) => {
+    setDiscountProducts((prevData) => prevData.filter((item) => item.id !== id))
+    callApiDiscount(async () => {
+      const { data } = await discountApi.delete(id)
       if (data) {
-        toggleCategoryChange()
+        toggleDiscountProductChange()
         toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Remove Successfully', life: 3000 })
       } else {
         toast.current?.show({ severity: 'error', summary: 'Error', detail: `${errorMessage}`, life: 3000 })
@@ -40,14 +40,14 @@ export function ManageCategory() {
     })
   }
 
-  const removeMultipleCaregories = async () => {
-    const ids = selectedCategories?.map((category) => category.id) || []
+  const removeMultipleDiscountProducts = async () => {
+    const ids = selectedDiscountProducts?.map((product) => product.id) || []
     if (ids.length)
-      callApiManageCategory(async () => {
-        const { data } = await manageCategoryApi.removeMultiple(ids)
+      callApiDiscount(async () => {
+        const { data } = await discountApi.removeMultiple(ids)
         if (data) {
-          toggleCategoryChange()
-          setSelectedCategories(null)
+          toggleDiscountProductChange()
+          setSelectedDiscountProducts(null)
           toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Remove Successfully', life: 3000 })
         } else {
           toast.current?.show({ severity: 'error', summary: 'Error', detail: `${errorMessage}`, life: 3000 })
@@ -57,39 +57,39 @@ export function ManageCategory() {
 
   const confirmRemove = (id: string) => {
     confirmDialog({
-      message: 'Do you want to remove this category?',
+      message: 'Do you want to remove this discount?',
       header: 'Confirm Removal?',
       icon: icons.danger,
       defaultFocus: 'reject',
       acceptClassName: 'p-button-danger',
       acceptLabel: 'Remove',
       rejectLabel: 'Cancel',
-      accept: () => removeCategory(id)
+      accept: () => removeDiscountProduct(id)
     })
   }
 
   const confirmRemoveMultiple = () => {
     confirmDialog({
-      message: 'Do you want to remove these categories?',
+      message: 'Do you want to remove these discounts?',
       header: 'Confirm Removal?',
       icon: icons.danger,
       defaultFocus: 'reject',
       acceptClassName: 'p-button-danger',
       acceptLabel: 'Remove',
       rejectLabel: 'Cancel',
-      accept: () => removeMultipleCaregories()
+      accept: () => removeMultipleDiscountProducts()
     })
   }
 
-  const getAllCategories = async () => {
-    callApiManageCategory(async () => {
-      const { data } = await manageCategoryApi.findAll()
-      setCategories(data)
+  const getAllDiscountProduct = async () => {
+    callApiDiscount(async () => {
+      const { data } = await discountApi.findAll()
+      setDiscountProducts(data)
     })
   }
   useEffect(() => {
-    getAllCategories()
-  }, [isCategoryChange])
+    getAllDiscountProduct()
+  }, [isDiscountProductChange])
 
   useEffect(() => {
     if (errorMessage)
@@ -104,34 +104,34 @@ export function ManageCategory() {
     <>
       <Toast ref={toast} />
       <ConfirmDialog />
-      <CategoryPopup
+      <DiscountPopup
         visible={isModalVisible}
         setHide={hideModal}
-        toggleCategoryChange={toggleCategoryChange}
-        category={selectedCategory}
-        resetUpdateCategoryValue={selectedCategory ? () => setSelectedCategory(null) : undefined}
+        toggleDiscountProductChange={toggleDiscountProductChange}
+        discountProduct={selectedDiscountProduct}
+        resetUpdateDiscountValue={selectedDiscountProduct ? () => setSelectedDiscountProduct(null) : undefined}
       />
       <Card className='m-3 min-h-[85vh]'>
         <DataTable
-          value={categories}
+          value={discountProducts}
           className='min-w-80'
           scrollable
           scrollHeight='638px'
           paginator
           rows={7}
           rowsPerPageOptions={[7, 25, 50]}
-          selection={selectedCategories}
-          onSelectionChange={(e: any) => setSelectedCategories(e.value)}
+          selection={selectedDiscountProducts}
+          onSelectionChange={(e: any) => setSelectedDiscountProducts(e.value)}
           dataKey='id'
           header={
             <div className='flex justify-between items-center'>
-              <div className='uppercase'>List Of Categories</div>
+              <div className='uppercase'>List Of Discount</div>
               <div className='flex gap-3'>
                 <Button
                   children={
                     <div className='flex items-center gap-2'>
                       {icons.add}
-                      <span>Add category</span>
+                      <span>Add discount</span>
                     </div>
                   }
                   onClick={showModal}
@@ -144,7 +144,7 @@ export function ManageCategory() {
                       <span>Remove selected items</span>
                     </div>
                   }
-                  disabled={!selectedCategories?.length}
+                  disabled={!selectedDiscountProducts?.length}
                   onClick={confirmRemoveMultiple}
                 />
               </div>
@@ -152,11 +152,34 @@ export function ManageCategory() {
           }
         >
           <Column selectionMode='multiple' headerStyle={{ width: '7%' }}></Column>
-          <Column field='gender' header='Gender' bodyClassName={'capitalize'} headerStyle={{ width: '31%' }}></Column>
-          <Column field='type' header='Type' bodyClassName={'capitalize'} headerStyle={{ width: '31%' }}></Column>
+          <Column
+            field='product.name'
+            header='Product'
+            bodyClassName={'capitalize'}
+            headerStyle={{ width: '18.6%' }}
+          ></Column>
+          <Column
+            field='discountValue'
+            header='Discount Value (%)'
+            bodyClassName={'capitalize'}
+            headerStyle={{ width: '18.6%' }}
+          ></Column>
+          <Column
+            field='timeRange'
+            header='Time Range'
+            bodyClassName={'capitalize'}
+            headerStyle={{ width: '18.6%' }}
+          ></Column>
+          <Column
+            field='date'
+            header='Date'
+            bodyClassName={'capitalize'}
+            headerStyle={{ width: '18.6%' }}
+            body={(rowData) => new Date(rowData.date).toLocaleDateString()}
+          ></Column>
           <Column
             header='Action'
-            headerStyle={{ width: '31%' }}
+            headerStyle={{ width: '18.6%' }}
             body={(rowData) => (
               <>
                 <Btn

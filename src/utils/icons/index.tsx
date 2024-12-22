@@ -7,8 +7,9 @@ import { CgDanger } from "react-icons/cg";
 import { HiOutlinePencilSquare } from "react-icons/hi2";
 import { LuSearch } from "react-icons/lu";
 import { IoMdClose, IoIosList } from "react-icons/io";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { RiDeleteBin6Line, RiDiscountPercentLine } from "react-icons/ri";
 import { FiLogOut } from 'react-icons/fi'
+import { BiCategory } from "react-icons/bi";
 
 export const icons = {
   menu: <MdMenu />,
@@ -30,5 +31,7 @@ export const icons = {
   deleteProduct: <RiDeleteBin6Line color='red'/>,
   filter: <FaFilter color='gray'/>,
   logout: <FiLogOut />,
-  product: <MdOutlineProductionQuantityLimits/>
+  product: <MdOutlineProductionQuantityLimits/>,
+  category: <BiCategory />,
+  discount: <RiDiscountPercentLine />,
 }
