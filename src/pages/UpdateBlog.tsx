@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Editor, EditorTextChangeEvent } from "primereact/editor";
-import { Panel } from 'primereact/panel';
 import { FileUpload, FileUploadFile  } from 'primereact/fileupload';
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { ProgressSpinner } from 'primereact/progressspinner';
 
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -23,18 +23,21 @@ export function UpdateBlog() {
     const fileUploadRef = useRef<FileUpload | null>(null);
     const [blog, setBlog] = useState<IBlog | null>(null);
     const {slug} = useParams<{ slug: string }>();
-    const { value: isNavigating, setTrue: startNavigating, setFalse: stopNavigating } = useBoolean(false);
+    const { value: isNavigating, setTrue: startNavigating } = useBoolean(false);
     const { errorMessage: updateErrorMessage, callApi: callUpdateApi } = useApi<void>()
+    const { errorMessage: deleteErrorMessage, callApi: callDeleteApi } = useApi<void>()
     const { callApi: callGetBlogApi } = useApi<void>();
     const navigate = useNavigate();
+    const [loadingBlog, setLoadingBlog] = useState<boolean>(false);
 
     const schema = yup.object().shape({
         title: yup.string().required("Vui lòng nhập tiêu đề!"),
-        description: yup.string().required("Vui lòng nhập nội dung!"),
+        description: yup.string().required("Vui lòng nhập mô tả!"),
+        content: yup.string().required("Vui lòng nhập nội dung!"),
         coverImage: yup.string().url("Vui lòng thêm ảnh bìa!").required("Vui lòng thêm ảnh bìa!"),
     });
 
-    const { control, setValue, handleSubmit, formState: { errors } } = useForm<IBlogForm>({
+    const { control, setValue, handleSubmit, formState: { errors, isDirty } } = useForm<IBlogForm>({
         resolver: yupResolver(schema),
     });
 
@@ -57,6 +60,7 @@ export function UpdateBlog() {
                     stream: () => file.stream(),
                     text: () => file.text(),
                     objectURL,
+                    bytes: () => file.arrayBuffer().then(buffer => new Uint8Array(buffer)),
                 };
                 fileUploadRef.current.clear();
                 fileUploadRef.current.setUploadedFiles([uploadedFile]);
@@ -65,25 +69,6 @@ export function UpdateBlog() {
         } else {
             console.error('Failed to upload image');
         }
-    };
-
-    const acceptCancel = () => {
-        navigate(`/admin/blog/detail/${blog?.slug}`);
-    };
-
-    const rejectCancel = () => {
-        toast.current?.show({ severity: 'warn', summary: 'Đã hủy', detail: 'Xác nhận tiếp tục sửa blog', life: 3000 });
-    }
-
-    const confirmCancel = () => {
-        confirmDialog({
-            message: 'Bạn có chắc muốn bỏ cập nhật blog này?',
-            header: 'Bỏ cập nhật',
-            defaultFocus: 'reject',
-            acceptClassName: 'p-button-danger',
-            accept: acceptCancel,
-            reject: rejectCancel
-        });
     };
 
     const acceptPublish = async (blogData: IBlogForm) => {
@@ -109,21 +94,51 @@ export function UpdateBlog() {
         }
     };
 
-    const rejectPublish = () => {
-        toast.current?.show({ severity: 'warn', summary: 'Đã hủy', detail: 'Xác nhận tiếp tục sửa blog', life: 3000 });
-    }
-
     const confirmPublish = (blogData: IBlogForm) => {
         confirmDialog({
             message: 'Bạn có chắc muốn cập nhật blog này?',
             header: 'Cập nhật blog',
             defaultFocus: 'accept',
             accept: () => acceptPublish(blogData),
-            reject: rejectPublish
+        });
+    };
+
+    const acceptDelete = async () => {
+        try {
+            if (blog) {
+                callDeleteApi(async () => {
+                    const res = await blogApi.delete(blog.slug);
+                    if (res.status === 204) {
+                        toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Blog này đã bị xóa', life: 3000 });
+                        startNavigating();
+                        setTimeout(() => {
+                            navigate('/admin/blog/list');
+                        }, 3000);
+                    }
+                    else {
+                        toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+                    }
+                });
+            }
+        }
+        catch (error) {
+            console.error('Failed to delete blog: ', error);
+            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+        }
+    }
+
+    const confirmDelete = () => {
+        confirmDialog({
+            message: 'Bạn có chắc muốn xóa blog này?',
+            header: 'Xóa blog',
+            defaultFocus: 'reject',
+            acceptClassName: 'p-button-danger',
+            accept: acceptDelete,
         });
     };
 
     const getBlog = async () => {
+        setLoadingBlog(true);
         if (slug) {
             callGetBlogApi(async () => {
                 const res = await blogApi.getOne(slug);
@@ -131,10 +146,12 @@ export function UpdateBlog() {
                     setBlog(res.data);
                     setValue('title', res.data.title);
                     setValue('description', res.data.description);
+                    setValue('content', res.data.content);
                     setValue('coverImage', res.data.coverImage);
                 }
             });
         }
+        setLoadingBlog(false);
     }
     
     useEffect(() => {
@@ -154,79 +171,79 @@ export function UpdateBlog() {
             <ConfirmDialog />
             <Toast ref={toast} />
             <span className="font-bold text-3xl text-gray-700">Cập nhật Blog</span>
-            <div className="flex gap-4 mt-4">
-                <div className="flex-[2] flex flex-col gap-4">
-                    <div>
-                        <Controller
-                            name="coverImage"
-                            control={control}
-                            render={({ field }) => (
-                                <FileUpload
-                                    ref={fileUploadRef}
-                                    name="coverImage"
-                                    accept="image/*"
-                                    disabled={uploading} 
-                                    customUpload
-                                    maxFileSize={1000000}
-                                    uploadHandler={async (event) => {
-                                        const imageUrl = await handleImageUpload(event.files[0]);
-                                        field.onChange(imageUrl);
-                                    }}
-                                    emptyTemplate={
-                                        <img
-                                            className="w-full h-60 object-contain z-0"
-                                            src={blog.coverImage}
-                                            alt={blog.title}
-                                        />
-                                    }
-                                />
-                            )}
-                        />
-                        {errors.coverImage && (
-                            <span className="text-red-500">{errors.coverImage.message}</span>
-                        )}
-                    </div>
-                    <div>
-                        <Input control={control} name='title' placeholder="Tiêu đề blog" className="w-full" />
-                        {errors.title && <span className='text-red-500 mt-80'>{errors.title.message}</span>}
-                    </div>
-                    <div className="h-fit">
-                        <Controller
-                            name="description"
-                            control={control}
-                            render={({ field }) => (
-                                <Editor
-                                    value={field.value}
-                                    placeholder="Nội dung"
-                                    onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
-                                    style={{ height: '350px' }}
-                                />
-                            )}
-                        />
-                        {errors.description && (
-                            <span className="text-red-500">{errors.description.message}</span>
-                        )}
-                    </div>
+            {loadingBlog ? (
+                <div className='flex justify-center items-center min-h-[100vh]'>
+                    <ProgressSpinner />
                 </div>
-                <div className="flex-[1] flex flex-col gap-4 justify-between">
-                    <Panel header="Tags">
-                        <div className="flex gap-2">
-                            <span className="m-0 p-1 border rounded-full bg-slate-200">
-                                Quần âu
-                            </span>
-                            <span className="m-0 p-1 border rounded-full bg-slate-200">
-                                Quần thời trang
-                            </span>
+            ):(
+                <div className="flex flex-col gap-4 mt-4">
+                    <div className="flex flex-col gap-4">
+                        <div>
+                            <Controller
+                                name="coverImage"
+                                control={control}
+                                render={({ field }) => (
+                                    <FileUpload
+                                        ref={fileUploadRef}
+                                        name="coverImage"
+                                        accept="image/*"
+                                        disabled={uploading || isNavigating} 
+                                        customUpload
+                                        maxFileSize={10000000}
+                                        uploadHandler={async (event) => {
+                                            const imageUrl = await handleImageUpload(event.files[0]);
+                                            field.onChange(imageUrl);
+                                        }}
+                                        onRemove={() => field.onChange('')}
+                                        onClear={() => field.onChange('')}
+                                        onBeforeSelect={() => field.onChange('')}
+                                        onBeforeDrop={() => field.onChange('')}
+                                        emptyTemplate={
+                                            <img
+                                                className="w-full h-60 object-contain z-0"
+                                                src={blog.coverImage}
+                                                alt={blog.title}
+                                            />
+                                        }
+                                    />
+                                )}
+                            />
+                            {errors.coverImage && (
+                                <span className="text-red-500">{errors.coverImage.message}</span>
+                            )}
                         </div>
-                    </Panel>
-                    <div className="flex gap-4 justify-between">
-                        <Button htmlType="reset" onClick={confirmCancel} disabled={isNavigating} className="flex-1 bg-white text-red-500 border-red-500 font-bold">Loại bỏ</Button>
-                        <Button htmlType="submit" disabled={uploading || isNavigating} className="flex-1 font-bold">
+                        <div>
+                            <Input type="text" control={control} errors={errors} name='title' placeholder="Tiêu đề blog" className="w-full" />
+                        </div>
+                        <div>
+                            <Input type="text" control={control} errors={errors} name='description' placeholder="Mô tả" className="w-full" />
+                        </div>
+                        <div className="h-fit">
+                            <Controller
+                                name="content"
+                                control={control}
+                                render={({ field }) => (
+                                    <Editor
+                                        value={field.value}
+                                        placeholder="Nội dung"
+                                        onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
+                                        style={{ height: '350px' }}
+                                    />
+                                )}
+                            />
+                            {errors.content && (
+                                <span className="text-red-500">{errors.content.message}</span>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex gap-4 sm:justify-end justify-between">
+                        <Button htmlType="button" disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
+                        <Button htmlType="submit" disabled={uploading || isNavigating || !isDirty} className="flex-1 font-bold max-w-40">
                             {uploading ? 'Đang tải...' : 'Cập nhật'}
                         </Button>
                     </div>
                 </div>
-            </div>
+            )}
         </form>
     );
 }
