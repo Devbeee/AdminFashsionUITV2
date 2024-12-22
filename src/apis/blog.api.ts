@@ -1,12 +1,19 @@
-import { IBlogForm } from "@/interfaces";
+import { IBlogForm, IGetBlogsParams } from "@/interfaces";
 import { instance as axiosClient } from "@/configs";
 
 export const blogApi = {
     create: async (blog: IBlogForm) => {
         return axiosClient.post('/blogs/create', blog);
     },
-    getAll: async (page : number, limit : number) => {
-        return axiosClient.get(`/blogs?page=${page}&limit=${limit}`);
+    getAll: async (params : IGetBlogsParams) => {
+        const { page, limit, sortStyle, authors, searchKeyWord, createDateRange } = params;
+        const authorParams = authors.map(author => `authors=${author}`).join('&');
+        const createDateRangeParams = createDateRange.map(date => `createDateRange=${date}`).join('&');
+        const url = `/blogs?keyword=${searchKeyWord}&sortStyle=${sortStyle}&page=${page}&limit=${limit}&${authorParams}&${createDateRangeParams}`;
+        return axiosClient.get(url);
+    },
+    getAuthors: async () => {
+        return axiosClient.get('/blogs/authors');
     },
     getOne: async (slug : string) => {
         return axiosClient.get(`/blogs/${slug}`);

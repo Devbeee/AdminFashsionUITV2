@@ -32,6 +32,21 @@ export const SIDE_BAR_ITEM_LIST = [
     ]
   },
   {
+    group: 'Blogs',
+    items: [
+      {
+        path: '/admin/blog/list',
+        icon: icons.blogList,
+        title: 'All Blogs'
+      },
+      {
+        path: '/admin/blog/create',
+        icon: icons.create,
+        title: 'Create Blog'
+      },
+    ]
+  },
+  {
     items: [
       {
         path: '/',
