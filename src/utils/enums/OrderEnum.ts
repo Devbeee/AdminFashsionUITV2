@@ -11,7 +11,7 @@ export enum OrderStatus {
   Delivering = 'DELIVERING',
   Confirmed = 'CONFIRMED',
   Pending = 'PENDING',
-  Canceled = 'CANCELLED'
+  Cancelled = 'CANCELLED'
 }
 
 export enum PaymentMethod {
