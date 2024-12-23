@@ -1,17 +1,23 @@
-import { FaGear, FaRegUser } from 'react-icons/fa6'
-import { IoHomeOutline, IoSearch, IoCreateOutline  } from 'react-icons/io5'
-import { MdMenu, MdOutlineWatchLater, MdOutlineLibraryAdd, MdOutlineProductionQuantityLimits } from 'react-icons/md'
+import { FaArrowDownLong, FaArrowUpLong, FaGear, FaRegUser } from 'react-icons/fa6'
+import { IoHomeOutline, IoSearch, IoWarningOutline, IoCreateOutline } from 'react-icons/io5'
+import {
+  MdMenu,
+  MdOutlineWatchLater,
+  MdOutlineLibraryAdd,
+  MdOutlineProductionQuantityLimits,
+  MdOutlineReceiptLong
+} from 'react-icons/md'
 import { RxSlash } from 'react-icons/rx'
-import { FaPlus, FaRegTrashAlt, FaUser, FaFilter } from "react-icons/fa";
-import { CgDanger } from "react-icons/cg";
-import { HiOutlinePencilSquare } from "react-icons/hi2";
-import { FaSortAmountDown } from "react-icons/fa";
-import { IoIosClose } from "react-icons/io";
-import { LuSearch } from "react-icons/lu";
-import { IoMdClose, IoIosList } from "react-icons/io";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { FaPlus, FaRegTrashAlt, FaUser, FaFilter, FaTrashRestore } from 'react-icons/fa'
+import { CgDanger } from 'react-icons/cg'
+import { HiOutlinePencilSquare } from 'react-icons/hi2'
+import { FaSortAmountDown } from 'react-icons/fa'
+import { IoIosClose } from 'react-icons/io'
+import { LuSearch } from 'react-icons/lu'
+import { IoMdClose, IoIosList } from 'react-icons/io'
+import { RiDeleteBin6Line } from 'react-icons/ri'
 import { FiLogOut } from 'react-icons/fi'
-import { CiViewList } from "react-icons/ci";
+import { CiViewList } from 'react-icons/ci'
 
 export const icons = {
   menu: <MdMenu />,
@@ -28,14 +34,19 @@ export const icons = {
   watch: <MdOutlineWatchLater />,
   sort: <FaSortAmountDown />,
   close: <IoIosClose />,
-  addProduct: <MdOutlineLibraryAdd size={20} color="white"/>,
-  searchProduct: <LuSearch size={20} color="gray" className="pb-1"/>,
-  closePopup: <IoMdClose size={25} color="red"/>,
-  list: <IoIosList size={20} color="black"/>,
-  deleteProduct: <RiDeleteBin6Line color='red'/>,
-  filter: <FaFilter color='gray'/>,
+  addProduct: <MdOutlineLibraryAdd size={20} color='white' />,
+  searchProduct: <LuSearch size={20} color='gray' className='pb-1' />,
+  closePopup: <IoMdClose size={25} color='red' />,
+  list: <IoIosList />,
+  deleteProduct: <RiDeleteBin6Line color='red' />,
+  filter: <FaFilter color='gray' />,
   logout: <FiLogOut />,
-  product: <MdOutlineProductionQuantityLimits/>,
+  product: <MdOutlineProductionQuantityLimits />,
+  orders: <MdOutlineReceiptLong />,
+  downArrow: <FaArrowDownLong />,
+  upArrow: <FaArrowUpLong />,
+  warning: <IoWarningOutline />,
+  restore: <FaTrashRestore />,
   create: <IoCreateOutline />,
-  blogList: <CiViewList />,
+  blogList: <CiViewList />
 }
