@@ -1,5 +1,5 @@
-import { IAddressReturn } from '@/interfaces/address.interface'
-import { ICurrentUser } from '@/interfaces/auth.interface'
+import { IAddressReturn } from './address.interface'
+import { ICurrentUser } from './auth.interface'
 import { OrderStatus, PaymentMethod, PaymentStatus } from '@/utils'
 
 export interface IOrder {
@@ -43,4 +43,8 @@ export interface IOrderDetailReturn extends IOrderReturn {
   paymentInvoiceId: string
   completedAt: string
   deletedAt: string
+}
+export interface IUpdateOrder {
+  paymentStatus?: PaymentStatus
+  orderStatus?: OrderStatus
 }

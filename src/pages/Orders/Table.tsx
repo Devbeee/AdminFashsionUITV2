@@ -1,20 +1,13 @@
-import { IOrderReturn } from '@/interfaces'
-import {
-  ConvertDateString,
-  ConvertTimeString,
-  getOrderStatusByEnum,
-  getPaymentStatusByEnum,
-  icons,
-  OrderStatus,
-  PaymentMethod,
-  PaymentStatus
-} from '@/utils'
+import React, { Dispatch, SetStateAction, useRef } from 'react'
+import { Link } from 'react-router-dom'
+
 import { Button } from 'primereact/button'
 import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { OverlayPanel } from 'primereact/overlaypanel'
-import React, { Dispatch, SetStateAction, useRef } from 'react'
-import { Link } from 'react-router-dom'
+
+import { IOrderReturn } from '@/interfaces'
+import { ConvertDateString, ConvertTimeString, icons, OrderStatus, PaymentMethod, PaymentStatus } from '@/utils'
 
 type TableProps = {
   orders: IOrderReturn[]
@@ -33,7 +26,12 @@ export const Table: React.FC<TableProps> = ({
   deleteConfirm
 }) => {
   const dropdownControlRef = useRef<OverlayPanel>(null)
-
+  const handleRestore = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    if (dropdownControlRef.current) {
+      dropdownControlRef.current.toggle(e)
+    }
+    handleRestoreOrder()
+  }
   return (
     <div>
       <DataTable
@@ -105,7 +103,7 @@ export const Table: React.FC<TableProps> = ({
                         : 'text-red-500'
                   }`}
                 >
-                  {getOrderStatusByEnum(data?.orderStatus)}
+                  {data?.orderStatus}
                 </div>
               }
             </div>
@@ -122,7 +120,7 @@ export const Table: React.FC<TableProps> = ({
                     data.paymentStatus === PaymentStatus.Paid ? 'text-green-500' : 'text-red-500'
                   }`}
                 >
-                  {getPaymentStatusByEnum(data.paymentStatus)}
+                  {data.paymentStatus}
                 </div>
               }
             </div>
@@ -193,12 +191,7 @@ export const Table: React.FC<TableProps> = ({
                       <Button
                         text
                         className='ring-0 px-3 py-1 flex items-center gap-2 text-green-500 select-none hover:cursor-pointer w-full'
-                        onClick={(e) => {
-                          handleRestoreOrder()
-                          if (dropdownControlRef.current) {
-                            dropdownControlRef.current.toggle(e)
-                          }
-                        }}
+                        onClick={(e) => handleRestore(e)}
                       >
                         {icons.restore} Restore
                       </Button>

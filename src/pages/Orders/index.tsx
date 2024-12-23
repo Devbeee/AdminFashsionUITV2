@@ -1,20 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { Button } from 'primereact/button'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import { Dropdown } from 'primereact/dropdown'
 import { InputText } from 'primereact/inputtext'
 import { Paginator } from 'primereact/paginator'
+import { Toast } from 'primereact/toast'
 
-import { filterEnumMapping, icons, sortByEnumMapping, FilterOptions, SortOptions } from '@/utils'
+import { icons, FilterOptions, SortOptions } from '@/utils'
 import { orderApi } from '@/apis'
 import { useApi } from '@/hooks'
-import { IOrderReturn } from '@/interfaces'
-import { Table } from '@/pages/Orders/Table'
-import { filterOptions, selectedOptionTemplate, sortOptions, sortOptionTemplate } from '@/pages/Orders/DropdownOption'
-import { Toast } from 'primereact/toast'
-import { IToastFunctionOptions } from '@/interfaces/common.interface'
+import { IOrderReturn, IQuery, IToastFunctionOptions } from '@/interfaces'
+import { Table } from './Table'
+import { filterOptions, selectedOptionTemplate, sortOptions, sortOptionTemplate } from './DropdownOption'
 
 type PaginationType = {
   totalPages?: number
@@ -22,29 +21,22 @@ type PaginationType = {
   currentPage?: number
   limit?: number
 }
-
 export function Orders() {
-  const location = useLocation()
-  const navigate = useNavigate()
   const toast = useRef<Toast>(null)
-
-  const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search])
-  const queryParamPage = parseInt(queryParams.get('page') || '1')
-  const queryParamLimit = parseInt(queryParams.get('limit') || '5')
-  const queryParamSortBy = sortByEnumMapping(queryParams.get('sortBy') ?? SortOptions.DateDecrease)
-  const queryParamFilter = filterEnumMapping(queryParams.get('filter') ?? FilterOptions.None)
-
   const { loading: callOrderApiLoading, callApi: callOrderApi } = useApi<void>()
 
+  const [searchParam, setSearchParam] = useSearchParams()
   const [orders, setOrders] = useState<IOrderReturn[]>([])
   const [selectedOrder, setSelectedOrder] = useState<IOrderReturn>()
-
   const [pagination, setPagination] = useState<PaginationType>({})
-  const [inputKeyword, setInputKeyword] = useState<string>(queryParams.get('keyword') ?? '')
-  const [currentKeyword, setCurrentKeyword] = useState<string>(queryParams.get('keyword') ?? '')
-  const [currentSortBy, setCurrentSortBy] = useState<SortOptions>(queryParamSortBy)
-  const [currentFilter, setCurrentFilter] = useState<FilterOptions>(queryParamFilter)
-
+  const [inputKeyword, setInputKeyword] = useState<string>(searchParam.get('keyword') || '')
+  const [currentSearchParams, setCurrentSearchParams] = useState<IQuery>({
+    page: parseInt(searchParam.get('page') || '1'),
+    limit: parseInt(searchParam.get('limit') || '5'),
+    sortBy: (searchParam.get('sortBy') as SortOptions) ?? SortOptions.DateDecrease,
+    filter: (searchParam.get('filter') as FilterOptions) ?? FilterOptions.None,
+    keyword: searchParam.get('keyword') ?? ''
+  })
   const showToast = (toasParams: IToastFunctionOptions) => {
     toast.current?.show({
       severity: toasParams.severity,
@@ -87,65 +79,65 @@ export function Orders() {
         }
       })
   }
-  const getNavigateParams = (limit: number = 5, keyword?: string, sortBy?: SortOptions, filter?: FilterOptions) => {
-    return {
-      sortBy: sortBy ? `&sortBy=${sortBy}` : '',
-      filter: filter ? `&filter=${filter}` : '',
-      limit: limit ? `&limit=${limit}` : '',
-      keyword: keyword ? `&keyword=${keyword}` : ''
-    }
+  const getSearchParams = (params: IQuery) => {
+    const queryString = [
+      `page=${params.page}`,
+      `limit=${params.limit}`,
+      params.keyword && `keyword=${params.keyword}`,
+      params.sortBy && `sortBy=${params.sortBy}`,
+      params.filter && `filter=${params.filter}`
+    ]
+      .filter(Boolean)
+      .join('&')
+    return `?${queryString}`
   }
-  const fetchOrders = (
-    page: number = 1,
-    limit: number = 5,
-    keyword?: string,
-    sortBy?: SortOptions,
-    filter?: FilterOptions
-  ) => {
+  const fetchOrders = (params: IQuery) => {
     callOrderApi(async () => {
-      const data = await orderApi.getOrders(page, limit, keyword, sortBy, filter)
+      const data = await orderApi.getOrders(params)
       if (data) {
         setOrders(data?.data?.orders || [])
         setPagination(data?.data?.pagination || {})
-        const param = getNavigateParams(limit, keyword, sortBy, filter)
-        navigate(
-          `?page=${data?.data?.pagination?.currentPage}${param.limit}${param.keyword}${param.sortBy}${param.filter}`
-        )
+        const search = getSearchParams(params)
+        setSearchParam(search, { replace: true })
+        setCurrentSearchParams(params)
       } else {
         showToast({ severity: 'error', summary: 'Error', detail: 'Fetch orders failed!', life: 3000 })
       }
     })
   }
   const fetchOrderWithCurrentParams = () => {
-    fetchOrders(
-      queryParamPage,
-      queryParamLimit,
-      currentKeyword ? currentKeyword : undefined,
-      currentSortBy,
-      currentFilter
-    )
+    fetchOrders(currentSearchParams)
   }
   const onChangePage = (page: number, size: number) => {
     if (page !== pagination.currentPage || size != pagination.limit) {
-      if (inputKeyword !== currentKeyword) {
-        setInputKeyword(currentKeyword)
+      if (inputKeyword !== currentSearchParams.keyword) {
+        setInputKeyword(currentSearchParams.keyword || '')
       }
-      fetchOrders(page, size, currentKeyword, currentSortBy, currentFilter)
+      fetchOrders({
+        ...currentSearchParams,
+        page,
+        limit: size
+      })
     }
   }
   const handleSearchOrder = () => {
-    if (inputKeyword !== currentKeyword) {
-      setCurrentKeyword(inputKeyword)
-      fetchOrders(1, pagination.limit, inputKeyword ? inputKeyword : undefined, currentSortBy, currentFilter)
+    if (inputKeyword !== currentSearchParams.keyword) {
+      setCurrentSearchParams({ ...currentSearchParams, keyword: inputKeyword })
+      fetchOrders({
+        ...currentSearchParams,
+        page: 1,
+        limit: pagination.limit || 5,
+        keyword: inputKeyword ? inputKeyword : undefined
+      })
     }
   }
-  const handleChangeSortOption = (value: SortOptions) => {
-    setCurrentSortBy(value)
-    fetchOrders(queryParamPage, queryParamLimit, currentKeyword, value, currentFilter)
+  const handleChangeSortOption = (sortBy: SortOptions) => {
+    setCurrentSearchParams({ ...currentSearchParams, sortBy: sortBy })
+    fetchOrders({ ...currentSearchParams, sortBy })
   }
-  const handleChangeFilterOption = (value: FilterOptions) => {
-    setCurrentFilter(value)
-    fetchOrders(queryParamPage, queryParamLimit, currentKeyword, currentSortBy, value)
+  const handleChangeFilterOption = (filter: FilterOptions) => {
+    setCurrentSearchParams({ ...currentSearchParams, filter: filter })
+    fetchOrders({ ...currentSearchParams, filter })
   }
   useEffect(() => {
     fetchOrderWithCurrentParams()
@@ -162,10 +154,11 @@ export function Orders() {
                 <div className='flex items-center gap-2'>
                   <span className='flex items-center text-lg text-black'>Filter:</span>
                   <Dropdown
-                    value={currentFilter}
+                    value={currentSearchParams.filter}
                     onChange={(e) => handleChangeFilterOption(e.value)}
                     options={filterOptions}
                     optionLabel='label'
+                    optionValue='value'
                     className='w-40'
                   />
                 </div>
@@ -174,7 +167,7 @@ export function Orders() {
                   <Dropdown
                     optionLabel='label'
                     optionValue='value'
-                    value={currentSortBy}
+                    value={currentSearchParams.sortBy}
                     onChange={(e) => handleChangeSortOption(e.value)}
                     options={sortOptions}
                     valueTemplate={selectedOptionTemplate}
@@ -197,6 +190,7 @@ export function Orders() {
                     size={'small'}
                     className={` pl-10  w-80 `}
                     onChange={(e) => setInputKeyword(e.target.value)}
+                    value={inputKeyword}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         handleSearchOrder()

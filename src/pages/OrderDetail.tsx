@@ -4,22 +4,20 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Column } from 'primereact/column'
 import { DataTable } from 'primereact/datatable'
 import { Dropdown } from 'primereact/dropdown'
+import { Toast } from 'primereact/toast'
 
 import { orderApi } from '@/apis'
 import { useApi } from '@/hooks'
-import { IOrderDetailReturn, IOrderProduct } from '@/interfaces'
+import { IOrderDetailReturn, IOrderProduct, IToastFunctionOptions, IUpdateOrder } from '@/interfaces'
 import {
   ConvertDateString,
   ConvertTimeString,
-  getOrderStatusByEnum,
   getPaymentMethodByEnum,
   OrderStatus,
   PATH,
   PaymentMethod,
   PaymentStatus
 } from '@/utils'
-import { IToastFunctionOptions } from '@/interfaces/common.interface'
-import { Toast } from 'primereact/toast'
 
 export function OrderDetail() {
   const { orderId } = useParams<{ orderId: string }>()
@@ -51,23 +49,23 @@ export function OrderDetail() {
   const orderStatusDropdownOptions = [
     {
       value: OrderStatus.Delivered,
-      label: getOrderStatusByEnum(OrderStatus.Delivered)
+      label: OrderStatus.Delivered
     },
     {
       value: OrderStatus.Delivering,
-      label: getOrderStatusByEnum(OrderStatus.Delivering)
+      label: OrderStatus.Delivering
     },
     {
       value: OrderStatus.Confirmed,
-      label: getOrderStatusByEnum(OrderStatus.Confirmed)
+      label: OrderStatus.Confirmed
     },
     {
       value: OrderStatus.Pending,
-      label: getOrderStatusByEnum(OrderStatus.Pending)
+      label: OrderStatus.Pending
     },
     {
       value: OrderStatus.Canceled,
-      label: getOrderStatusByEnum(OrderStatus.Canceled)
+      label: OrderStatus.Canceled
     }
   ]
   const fetchOrder = async () => {
@@ -84,17 +82,15 @@ export function OrderDetail() {
       })
     }
   }
-  useEffect(() => {
-    fetchOrder()
-  }, [])
-  const handleUpdateOrder = (paymentStatus?: PaymentStatus, orderStatus?: OrderStatus) => {
+
+  const handleUpdateOrder = (params: IUpdateOrder) => {
     if (
-      (paymentStatus || orderStatus) &&
-      (paymentStatus !== order?.paymentStatus || orderStatus !== order?.orderStatus) &&
+      (params.paymentStatus || params.orderStatus) &&
+      (params.paymentStatus !== order?.paymentStatus || params.orderStatus !== order?.orderStatus) &&
       order
     ) {
       callOrderApi(async () => {
-        const data = await orderApi.updateOrder(order?.id, paymentStatus, orderStatus)
+        const data = await orderApi.updateOrder(order?.id, params)
         if (data) {
           fetchOrder()
           showToast({ severity: 'success', summary: 'Success', detail: 'Order updated successfully!', life: 3000 })
@@ -104,6 +100,9 @@ export function OrderDetail() {
       })
     }
   }
+  useEffect(() => {
+    fetchOrder()
+  }, [])
   return (
     <div className='w-full h-full'>
       <Toast ref={toast} />
@@ -151,7 +150,7 @@ export function OrderDetail() {
                   <span className='text-lg font-normal'>{order?.message}</span>
                 </div>
               </div>
-              <div className='w-0 border-r-[1px] border-dashed border-slate-500'></div>
+              <div className='w-0 border-r border-dashed border-slate-500'></div>
               <div className='flex-1 flex flex-col gap-4'>
                 <div className='flex gap-4'>
                   <div className='font-semibold flex gap-2 text-xl'>
@@ -167,7 +166,7 @@ export function OrderDetail() {
                   <div className='font-semibold text-xl'>Payment status: </div>
                   <Dropdown
                     value={selectedPaymentStatus}
-                    onChange={(e) => handleUpdateOrder(e.value, undefined)}
+                    onChange={(e) => handleUpdateOrder({ paymentStatus: e.value })}
                     options={paymentStatusDropdownOptions}
                     optionLabel='label'
                     placeholder='Select a Payment status'
@@ -198,7 +197,7 @@ export function OrderDetail() {
                   <div className='font-semibold text-xl'>Order status:</div>
                   <Dropdown
                     value={selectedOrderStatus}
-                    onChange={(e) => handleUpdateOrder(undefined, e.value)}
+                    onChange={(e) => handleUpdateOrder({ orderStatus: e.value })}
                     options={orderStatusDropdownOptions}
                     optionLabel='label'
                     placeholder='Select a Order status'
@@ -226,7 +225,7 @@ export function OrderDetail() {
                 value={order?.products}
                 tableStyle={{ minWidth: '50rem' }}
                 loading={callOrderApiLoading}
-                className='rounded-lg overflow-hidden border-[1px] border-solid border-slate-200'
+                className='rounded-lg overflow-hidden border border-solid border-slate-200'
               >
                 <Column
                   alignHeader={'center'}
