@@ -1,3 +1,4 @@
+import { PATH } from '@/utils/constants/paths'
 import { icons } from '@/utils/icons'
 
 export const SIDE_BAR_ITEM_LIST = [
@@ -15,9 +16,9 @@ export const SIDE_BAR_ITEM_LIST = [
         title: 'Profit'
       },
       {
-        path: '/test/test2',
-        icon: icons.home,
-        title: 'Analytics'
+        path: PATH.orders,
+        icon: icons.orders,
+        title: 'Orders'
       }
     ]
   },
@@ -51,8 +52,7 @@ export const SIDE_BAR_ITEM_LIST = [
       {
         path: '/',
         icon: icons.logout,
-        title: 'Logout',
-        
+        title: 'Logout'
       }
     ]
   }

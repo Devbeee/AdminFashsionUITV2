@@ -1,17 +1,23 @@
-import { FaGear, FaRegUser } from 'react-icons/fa6'
-import { MdMenu, MdOutlineWatchLater, MdOutlineLibraryAdd, MdOutlineProductionQuantityLimits, MdOutlineInventory2, MdOutlineImage } from 'react-icons/md'
-import { IoHomeOutline, IoSearch, IoCreateOutline  } from 'react-icons/io5'
+import { FaArrowDownLong, FaArrowUpLong, FaGear, FaRegUser } from 'react-icons/fa6'
+import { IoHomeOutline, IoSearch, IoWarningOutline, IoCreateOutline } from 'react-icons/io5'
 import { RxSlash } from 'react-icons/rx'
-import { FaPlus, FaRegTrashAlt, FaUser, FaFilter } from "react-icons/fa";
+import { FaPlus, FaRegTrashAlt, FaUser, FaFilter, FaSortAmountDown, FaTrashRestore } from "react-icons/fa";
 import { CgDanger } from "react-icons/cg";
 import { HiOutlinePencilSquare } from "react-icons/hi2";
-import { FaSortAmountDown } from "react-icons/fa";
-import { IoIosClose } from "react-icons/io";
 import { LuSearch } from "react-icons/lu";
-import { IoMdClose, IoIosList, IoIosColorWand } from "react-icons/io";
+import { IoMdClose, IoIosList, IoIosColorWand, IoIosClose } from "react-icons/io";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { FiLogOut, FiBox, FiDollarSign, FiPercent, FiTag, FiLayers, FiGrid, FiBookOpen } from 'react-icons/fi'
 import { CiViewList } from "react-icons/ci";
+import {
+  MdMenu,
+  MdOutlineWatchLater,
+  MdOutlineLibraryAdd,
+  MdOutlineProductionQuantityLimits,
+  MdOutlineReceiptLong,
+  MdOutlineInventory2,
+  MdOutlineImage
+} from 'react-icons/md'
 
 export const icons = {
   menu: <MdMenu />,
@@ -31,7 +37,6 @@ export const icons = {
   addProduct: <MdOutlineLibraryAdd size={20} color="white"/>,
   searchProduct: <LuSearch size={20} color="gray" className="pb-1"/>,
   closePopup: <IoMdClose />,
-  list: <IoIosList size={20} color="black"/>,
   deleteProduct: <RiDeleteBin6Line color='red'/>,
   filter: <FaFilter color='gray'/>,
   logout: <FiLogOut />,
@@ -48,4 +53,10 @@ export const icons = {
   productImage: <MdOutlineImage />
   create: <IoCreateOutline />,
   blogList: <CiViewList />,
+  list: <IoIosList />,
+  orders: <MdOutlineReceiptLong />,
+  downArrow: <FaArrowDownLong />,
+  upArrow: <FaArrowUpLong />,
+  warning: <IoWarningOutline />,
+  restore: <FaTrashRestore />,
 }
