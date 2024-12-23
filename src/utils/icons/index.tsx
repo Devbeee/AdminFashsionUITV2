@@ -1,5 +1,5 @@
 import { FaArrowDownLong, FaArrowUpLong, FaGear, FaRegUser } from 'react-icons/fa6'
-import { IoHomeOutline, IoSearch, IoWarningOutline } from 'react-icons/io5'
+import { IoHomeOutline, IoSearch, IoWarningOutline, IoCreateOutline } from 'react-icons/io5'
 import {
   MdMenu,
   MdOutlineWatchLater,
@@ -11,10 +11,13 @@ import { RxSlash } from 'react-icons/rx'
 import { FaPlus, FaRegTrashAlt, FaUser, FaFilter, FaTrashRestore } from 'react-icons/fa'
 import { CgDanger } from 'react-icons/cg'
 import { HiOutlinePencilSquare } from 'react-icons/hi2'
+import { FaSortAmountDown } from 'react-icons/fa'
+import { IoIosClose } from 'react-icons/io'
 import { LuSearch } from 'react-icons/lu'
 import { IoMdClose, IoIosList } from 'react-icons/io'
 import { RiDeleteBin6Line } from 'react-icons/ri'
 import { FiLogOut } from 'react-icons/fi'
+import { CiViewList } from 'react-icons/ci'
 
 export const icons = {
   menu: <MdMenu />,
@@ -29,6 +32,8 @@ export const icons = {
   update: <HiOutlinePencilSquare />,
   faUser: <FaUser />,
   watch: <MdOutlineWatchLater />,
+  sort: <FaSortAmountDown />,
+  close: <IoIosClose />,
   addProduct: <MdOutlineLibraryAdd size={20} color='white' />,
   searchProduct: <LuSearch size={20} color='gray' className='pb-1' />,
   closePopup: <IoMdClose size={25} color='red' />,
@@ -41,5 +46,7 @@ export const icons = {
   downArrow: <FaArrowDownLong />,
   upArrow: <FaArrowUpLong />,
   warning: <IoWarningOutline />,
-  restore: <FaTrashRestore />
+  restore: <FaTrashRestore />,
+  create: <IoCreateOutline />,
+  blogList: <CiViewList />
 }

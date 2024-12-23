@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Editor, EditorTextChangeEvent } from "primereact/editor";
-import { Panel } from 'primereact/panel';
 import { FileUpload, FileUploadFile  } from 'primereact/fileupload';
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
@@ -21,18 +20,25 @@ export function CreateBlog() {
     const toast = useRef<Toast>(null);
     const [uploading, setUploading] = useState<boolean>(false);
     const fileUploadRef = useRef<FileUpload | null>(null);
-    const { value: isNavigating, setTrue: startNavigating, setFalse: stopNavigating } = useBoolean(false);
+    const { value: isNavigating, setTrue: startNavigating } = useBoolean(false);
     const { errorMessage, callApi: callCreateApi } = useApi<void>()
     const navigate = useNavigate();
 
     const schema = yup.object().shape({
         title: yup.string().required("Vui lòng nhập tiêu đề!"),
-        description: yup.string().required("Vui lòng nhập nội dung!"),
+        description: yup.string().required("Vui lòng nhập mô tả!"),
+        content: yup.string().required("Vui lòng nhập nội dung!"),
         coverImage: yup.string().url("Vui lòng thêm ảnh bìa!").required("Vui lòng thêm ảnh bìa!"),
     });
 
     const { control, handleSubmit, formState: { errors } } = useForm<IBlogForm>({
         resolver: yupResolver(schema),
+        defaultValues: {
+            title: '',
+            description: '',
+            content: '',
+            coverImage: ''
+        }
     });
 
     const handleImageUpload = async (file: File) => {
@@ -54,6 +60,7 @@ export function CreateBlog() {
                     stream: () => file.stream(),
                     text: () => file.text(),
                     objectURL,
+                    bytes: () => file.arrayBuffer().then(buffer => new Uint8Array(buffer)),
                 };
                 fileUploadRef.current.clear();
                 fileUploadRef.current.setUploadedFiles([uploadedFile]);
@@ -68,10 +75,6 @@ export function CreateBlog() {
         navigate('/admin/blog/list');
     };
 
-    const rejectCancel = () => {
-        toast.current?.show({ severity: 'warn', summary: 'Đã hủy', detail: 'Xác nhận tiếp tục tạo blog', life: 3000 });
-    }
-
     const confirmCancel = () => {
         confirmDialog({
             message: 'Bạn có chắc muốn bỏ blog này?',
@@ -79,7 +82,6 @@ export function CreateBlog() {
             defaultFocus: 'reject',
             acceptClassName: 'p-button-danger',
             accept: acceptCancel,
-            reject: rejectCancel
         });
     };
 
@@ -104,17 +106,12 @@ export function CreateBlog() {
         }
     };
 
-    const rejectPublish = () => {
-        toast.current?.show({ severity: 'warn', summary: 'Đã hủy', detail: 'Xác nhận tiếp tục tạo blog', life: 3000 });
-    }
-
     const confirmPublish = (data: IBlogForm) => {
         confirmDialog({
             message: 'Bạn có chắc muốn tạo blog này?',
             header: 'Tạo blog',
             defaultFocus: 'accept',
             accept: () => acceptPublish(data),
-            reject: rejectPublish
         });
     };
 
@@ -123,8 +120,8 @@ export function CreateBlog() {
             <ConfirmDialog />
             <Toast ref={toast} />
             <span className="font-bold text-3xl text-gray-700">Tạo Blog</span>
-            <div className="flex gap-4 mt-4">
-                <div className="flex-[2] flex flex-col gap-4">
+            <div className="flex flex-col gap-4 mt-4">
+                <div className="flex flex-col gap-4">
                     <div>
                         <Controller
                             name="coverImage"
@@ -134,13 +131,17 @@ export function CreateBlog() {
                                     ref={fileUploadRef}
                                     name="coverImage"
                                     accept="image/*"
-                                    disabled={uploading} 
+                                    disabled={uploading || isNavigating} 
                                     customUpload
-                                    maxFileSize={1000000}
+                                    maxFileSize={10000000}
                                     uploadHandler={async (event) => {
                                         const imageUrl = await handleImageUpload(event.files[0]);
                                         field.onChange(imageUrl);
                                     }}
+                                    onRemove={() => field.onChange('')}
+                                    onClear={() => field.onChange('')}
+                                    onBeforeSelect={() => field.onChange('')}
+                                    onBeforeDrop={() => field.onChange('')}
                                     emptyTemplate={<p className="m-0">Chọn một tấm ảnh bìa</p>}
                                 />
                             )}
@@ -150,14 +151,14 @@ export function CreateBlog() {
                         )}
                     </div>
                     <div>
-                        <Input control={control} name='title' placeholder="Tiêu đề blog" className="w-full" />
-                        {errors.title && (
-                            <span className='text-red-500 mt-80'>{errors.title.message}</span>
-                        )}
+                        <Input type="text" control={control} errors={errors} name='title' placeholder="Tiêu đề blog" className="w-full" />
+                    </div>
+                    <div>
+                        <Input type="text" control={control} errors={errors} name='description' placeholder="Mô tả" size="small" className="w-full" />
                     </div>
                     <div className="h-fit">
                         <Controller
-                            name="description"
+                            name="content"
                             control={control}
                             render={({ field }) => (
                                 <Editor
@@ -168,28 +169,16 @@ export function CreateBlog() {
                                 />
                             )}
                         />
-                        {errors.description && (
-                            <span className="text-red-500">{errors.description.message}</span>
+                        {errors.content && (
+                            <span className="text-red-500">{errors.content.message}</span>
                         )}
                     </div>
                 </div>
-                <div className="flex-[1] flex flex-col gap-4 justify-between">
-                    <Panel header="Tags">
-                        <div className="flex gap-2">
-                            <span className="m-0 p-1 border rounded-full bg-slate-200">
-                                Quần âu
-                            </span>
-                            <span className="m-0 p-1 border rounded-full bg-slate-200">
-                                Quần thời trang
-                            </span>
-                        </div>
-                    </Panel>
-                    <div className="flex gap-4 justify-between">
-                        <Button htmlType="reset" onClick={confirmCancel} disabled={isNavigating} className="flex-1 bg-white text-red-500 border-red-500 font-bold">Loại bỏ</Button>
-                        <Button htmlType="submit" disabled={uploading || isNavigating} className="flex-1 font-bold">
-                            {uploading ? 'Đang tải...' : 'Tạo blog'}
-                        </Button>
-                    </div>
+                <div className="flex gap-4 sm:justify-end justify-between">
+                    <Button htmlType="reset" onClick={confirmCancel} disabled={isNavigating} className="flex-1 bg-white text-red-500 border-red-500 font-bold max-w-40">Loại bỏ</Button>
+                    <Button htmlType="submit" disabled={uploading || isNavigating} className="flex-1 font-bold max-w-40">
+                        {uploading ? 'Đang tải...' : 'Tạo blog'}
+                    </Button>
                 </div>
             </div>
         </form>
