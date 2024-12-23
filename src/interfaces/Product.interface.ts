@@ -29,6 +29,7 @@ export interface IInputProduct {
     sizes: string[],
     stocks: number[],
     imgUrls: (string | undefined)[],
+    stockAll?: number
 }
 
 export interface IProductDetail {
