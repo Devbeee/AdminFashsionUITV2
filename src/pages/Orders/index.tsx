@@ -80,15 +80,8 @@ export function Orders() {
       })
   }
   const getSearchParams = (params: IQuery) => {
-    const queryString = [
-      `page=${params.page}`,
-      `limit=${params.limit}`,
-      params.keyword && `keyword=${params.keyword}`,
-      params.sortBy && `sortBy=${params.sortBy}`,
-      params.filter && `filter=${params.filter}`
-    ]
-      .filter(Boolean)
-      .join('&')
+    const filteredParams = Object.fromEntries(Object.entries(params).filter(([, value]) => value))
+    const queryString = new URLSearchParams(filteredParams as Record<string, string>).toString()
     return `?${queryString}`
   }
   const fetchOrders = (params: IQuery) => {

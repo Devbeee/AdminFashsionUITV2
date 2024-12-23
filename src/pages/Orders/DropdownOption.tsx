@@ -63,8 +63,8 @@ export const filterOptions = [
     label: FilterOptions.Pending
   },
   {
-    value: FilterOptions.Canceled,
-    label: FilterOptions.Canceled
+    value: FilterOptions.Cancelled,
+    label: FilterOptions.Cancelled
   },
   {
     value: FilterOptions.None,

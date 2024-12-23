@@ -64,8 +64,8 @@ export function OrderDetail() {
       label: OrderStatus.Pending
     },
     {
-      value: OrderStatus.Canceled,
-      label: OrderStatus.Canceled
+      value: OrderStatus.Cancelled,
+      label: OrderStatus.Cancelled
     }
   ]
   const fetchOrder = async () => {
