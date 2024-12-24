@@ -1,14 +1,14 @@
 import { FaArrowDownLong, FaArrowUpLong, FaGear, FaRegUser } from 'react-icons/fa6'
 import { IoHomeOutline, IoSearch, IoWarningOutline, IoCreateOutline } from 'react-icons/io5'
 import { RxSlash } from 'react-icons/rx'
-import { FaPlus, FaRegTrashAlt, FaUser, FaFilter, FaSortAmountDown, FaTrashRestore } from "react-icons/fa";
-import { CgDanger } from "react-icons/cg";
-import { HiOutlinePencilSquare } from "react-icons/hi2";
-import { LuSearch } from "react-icons/lu";
-import { IoMdClose, IoIosList, IoIosColorWand, IoIosClose } from "react-icons/io";
-import { RiDeleteBin6Line } from "react-icons/ri";
+import { FaPlus, FaRegTrashAlt, FaUser, FaFilter, FaSortAmountDown, FaTrashRestore } from 'react-icons/fa'
+import { CgDanger } from 'react-icons/cg'
+import { HiOutlinePencilSquare } from 'react-icons/hi2'
+import { LuSearch } from 'react-icons/lu'
+import { IoMdClose, IoIosList, IoIosColorWand, IoIosClose } from 'react-icons/io'
+import { RiDeleteBin6Line } from 'react-icons/ri'
 import { FiLogOut, FiBox, FiDollarSign, FiPercent, FiTag, FiLayers, FiGrid, FiBookOpen } from 'react-icons/fi'
-import { CiViewList } from "react-icons/ci";
+import { CiViewList } from 'react-icons/ci'
 import {
   MdMenu,
   MdOutlineWatchLater,
@@ -34,13 +34,13 @@ export const icons = {
   watch: <MdOutlineWatchLater />,
   sort: <FaSortAmountDown />,
   close: <IoIosClose />,
-  addProduct: <MdOutlineLibraryAdd size={20} color="white"/>,
-  searchProduct: <LuSearch size={20} color="gray" className="pb-1"/>,
+  addProduct: <MdOutlineLibraryAdd size={20} color='white' />,
+  searchProduct: <LuSearch size={20} color='gray' className='pb-1' />,
   closePopup: <IoMdClose />,
-  deleteProduct: <RiDeleteBin6Line color='red'/>,
-  filter: <FaFilter color='gray'/>,
+  deleteProduct: <RiDeleteBin6Line color='red' />,
+  filter: <FaFilter color='gray' />,
   logout: <FiLogOut />,
-  product: <MdOutlineProductionQuantityLimits/>,
+  product: <MdOutlineProductionQuantityLimits />,
   productName: <FiBox />,
   productPrice: <FiDollarSign />,
   productDiscount: <FiPercent />,
@@ -49,8 +49,8 @@ export const icons = {
   numberOfColor: <FiGrid />,
   productDescription: <FiBookOpen />,
   productColor: <IoIosColorWand />,
-  productStock: <MdOutlineInventory2/>,
-  productImage: <MdOutlineImage />
+  productStock: <MdOutlineInventory2 />,
+  productImage: <MdOutlineImage />,
   create: <IoCreateOutline />,
   blogList: <CiViewList />,
   list: <IoIosList />,
@@ -58,5 +58,5 @@ export const icons = {
   downArrow: <FaArrowDownLong />,
   upArrow: <FaArrowUpLong />,
   warning: <IoWarningOutline />,
-  restore: <FaTrashRestore />,
+  restore: <FaTrashRestore />
 }

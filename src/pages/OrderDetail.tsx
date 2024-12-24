@@ -9,15 +9,7 @@ import { Toast } from 'primereact/toast'
 import { orderApi } from '@/apis'
 import { useApi } from '@/hooks'
 import { IOrderDetailReturn, IOrderProduct, IToastFunctionOptions, IUpdateOrder } from '@/interfaces'
-import {
-  ConvertDateString,
-  ConvertTimeString,
-  getPaymentMethodByEnum,
-  OrderStatus,
-  PATH,
-  PaymentMethod,
-  PaymentStatus
-} from '@/utils'
+import { ConvertDateString, ConvertTimeString, OrderStatus, PATH, PaymentMethod, PaymentStatus } from '@/utils'
 
 export function OrderDetail() {
   const { orderId } = useParams<{ orderId: string }>()
@@ -39,11 +31,11 @@ export function OrderDetail() {
   const paymentStatusDropdownOptions = [
     {
       value: PaymentStatus.Paid,
-      label: 'Đã thanh toán'
+      label: PaymentStatus.Paid
     },
     {
       value: PaymentStatus.Unpaid,
-      label: 'Chưa thanh toán'
+      label: PaymentStatus.Unpaid
     }
   ]
   const orderStatusDropdownOptions = [
@@ -158,7 +150,7 @@ export function OrderDetail() {
                     <span
                       className={`text-lg font-normal ${order?.paymentMethod === PaymentMethod.Stripe ? 'text-blue-500' : 'text-amber-500'}`}
                     >
-                      {order?.paymentMethod && getPaymentMethodByEnum(order?.paymentMethod)}
+                      {order?.paymentMethod}
                     </span>
                   </div>
                 </div>
@@ -170,7 +162,7 @@ export function OrderDetail() {
                     options={paymentStatusDropdownOptions}
                     optionLabel='label'
                     placeholder='Select a Payment status'
-                    className={`h-10 w-56 px-2 flex items-center justify-between`}
+                    className={`h-10 w-40 px-2 flex items-center justify-between`}
                     loading={callOrderApiLoading}
                   />
                 </div>
