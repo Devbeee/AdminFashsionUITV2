@@ -29,28 +29,28 @@ export function BlogDetail() {
                 callDeleteApi(async () => {
                     const res = await blogApi.delete(blog.slug);
                     if (res.status === 204) {
-                        toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Blog này đã bị xóa', life: 3000 });
+                        toast.current?.show({ severity: 'info', summary: 'Success', detail: 'This blog has been deleted', life: 3000 });
                         startNavigating();
                         setTimeout(() => {
                             navigate('/admin/blog/list');
                         }, 3000);
                     }
                     else {
-                        toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+                        toast.current?.show({ severity: 'error', summary: 'Failed', detail: `${deleteErrorMessage}`, life: 3000 });
                     }
                 });
             }
         }
         catch (error) {
             console.error('Failed to delete blog: ', error);
-            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Failed', detail: `${deleteErrorMessage}`, life: 3000 });
         }
     }
 
     const confirmDelete = () => {
         confirmDialog({
-            message: 'Bạn có chắc muốn xóa blog này?',
-            header: 'Xóa blog',
+            message: 'Are you sure you want to delete this blog?',
+            header: 'Delete Blog',
             defaultFocus: 'reject',
             acceptClassName: 'p-button-danger',
             accept: acceptDelete,
@@ -103,16 +103,16 @@ export function BlogDetail() {
                                 <div className="flex justify-center my-7">
                                     <img src={blog.coverImage} alt="cover" className="w-full h-auto object-contain rounded-md" />
                                 </div>
-                                <div dangerouslySetInnerHTML={{ __html: blog.content }} className="flex flex-col items-start mt-2"></div>
+                                <div dangerouslySetInnerHTML={{ __html: blog.content }} className=""></div>
                             </div>
                             <div className='flex flex-wrap flex-col xs:flex-row justify-end gap-4 w-full'>
-                                <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
-                                <Button disabled={isNavigating} to={'/admin/blog/update/' + blog.slug} className="font-bold w-40">Cập nhật</Button>
+                                <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Delete</Button>
+                                <Button disabled={isNavigating} to={'/admin/blog/update/' + blog.slug} className="font-bold w-40">Update</Button>
                             </div>
                         </div>
                     ) : (
                         <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
-                            <span className="text-2xl font-bold text-primary">Không tìm thấy blog</span>
+                            <span className="text-2xl font-bold text-primary">Blog not found</span>
                         </div>
                     )
                 )}

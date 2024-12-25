@@ -95,28 +95,28 @@ export function BlogsList() {
                 callDeleteApi(async () => {
                     const res = await blogApi.multiDelete(choosedBlogs);
                     if (res.status === 204) {
-                        toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Đã xóa các blog được chọn', life: 3000 });
+                        toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Selected blogs have been deleted', life: 3000 });
                         setChoosedBlogs([]);
                         setToFirstPage();
                         getBlogs(1, limit);
                         getAuthors();
                     }
                     else {
-                        toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+                        toast.current?.show({ severity: 'error', summary: 'Failure', detail: `${deleteErrorMessage}`, life: 3000 });
                     }
                 });
             }
         }
         catch (error) {
             console.error('Failed to delete blog: ', error);
-            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Failure', detail: `${deleteErrorMessage}`, life: 3000 });
         }
     }
 
     const confirmDelete = () => {
         confirmDialog({
-            message: 'Bạn có chắc muốn xóa những blog này?',
-            header: 'Xóa blog',
+            message: 'Are you sure you want to delete these blogs?',
+            header: 'Delete Blog',
             defaultFocus: 'reject',
             acceptClassName: 'p-button-danger',
             accept: acceptDelete,
@@ -241,14 +241,14 @@ export function BlogsList() {
                             control={control}
                             errors={errors}
                             size='small'
-                            placeholder='Tìm kiếm blog'
+                            placeholder='Search blog'
                         />
                     </form>
                 </div>
                 <div className='flex flex-col gap-8 sm:flex-row lg:flex-col'>
                 <div className='w-full p-4 bg-gray-100 text-gray-500 rounded border'>
                     <div className="flex flex-col justify-center gap-2">
-                        <span className='font-bold uppercase'>Ngày tạo blog</span>
+                        <span className='font-bold uppercase'>Creation date</span>
                         <div className='flex justify-center items-center gap-1'>
                             <Calendar
                                 value={createDateRange}
@@ -257,7 +257,7 @@ export function BlogsList() {
                                 readOnlyInput
                                 hideOnRangeSelection
                                 maxDate={new Date()}
-                                placeholder='Chọn khoảng thời gian' 
+                                placeholder='Choose a date range' 
                             />
                             <span onClick={clearDateRange} className='text-3xl rounded-full text-gray-500 hover:bg-white m-0 p-0'>{icons.close}</span>
                         </div>
@@ -265,7 +265,7 @@ export function BlogsList() {
                 </div>
                 <div className='w-full p-4 bg-gray-100 text-gray-500 rounded border'>
                     <div className="flex flex-col justify-center items-start gap-2">
-                        <span className='font-bold uppercase'>Tác giả</span>
+                        <span className='font-bold uppercase'>Authors</span>
                         {loadingAuthors ? (
                             <div className='flex justify-center items-center w-full'>
                                 <ProgressSpinner className='w-10 h-10' />
@@ -293,7 +293,7 @@ export function BlogsList() {
             <div className='flex-[4] h-full'>
                 <div className='h-20 bg-gray-100 py-4 px-2 border-y-2 flex justify-between items-center'>
                     <span className='font-bold text-3xl text-gray-700'>Blogs</span>
-                    {choosedBlogs.length > 0 && (<Button onClick={confirmDelete} className='font-bold w-32 border-red-500 bg-red-500 hover:bg-red-600'>Xóa đã chọn</Button>)}
+                    {choosedBlogs.length > 0 && (<Button onClick={confirmDelete} className='font-bold w-40 border-red-500 bg-red-500 hover:bg-red-600'>Delete Selected</Button>)}
                 </div>
                 {loadingBlogs ? (
                     <div className='flex justify-center items-center min-h-96'>
@@ -302,13 +302,13 @@ export function BlogsList() {
                 ):(
                     blogs.length === 0 ? (
                         <div className='flex flex-col items-center justify-center bg-gray-50 m-7 p-4 min-h-96'>
-                            <span className="text-2xl font-bold text-gray-500">Không tìm thấy blog</span>
+                            <span className="text-2xl font-bold text-gray-500">Blog not found</span>
                         </div>
                     ) : (
                         <div className='flex flex-col justify-between min-h-[100vh]'>
                             <div className='flex flex-col justify-center flex-wrap items-center mt-7 gap-4'>
                                 <div className="w-full flex justify-end items-center gap-1">
-                                    <span className="text-gray-500 flex items-center gap-1">{icons.sort}Sắp xếp:</span>
+                                    <span className="text-gray-500 flex items-center gap-1">{icons.sort}Sort:</span>
                                     <Dropdown
                                         value={selectedSortStyle}
                                         onChange={(event: DropdownChangeEvent) => handleChangeSortStyle(event)}

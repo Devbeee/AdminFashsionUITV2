@@ -31,10 +31,10 @@ export function UpdateBlog() {
     const [loadingBlog, setLoadingBlog] = useState<boolean>(false);
 
     const schema = yup.object().shape({
-        title: yup.string().required("Vui lòng nhập tiêu đề!"),
-        description: yup.string().required("Vui lòng nhập mô tả!"),
-        content: yup.string().required("Vui lòng nhập nội dung!"),
-        coverImage: yup.string().url("Vui lòng thêm ảnh bìa!").required("Vui lòng thêm ảnh bìa!"),
+        title: yup.string().required("Please enter the title!"),
+        description: yup.string().required("Please enter the description!"),
+        content: yup.string().required("Please enter the content!"),
+        coverImage: yup.string().url("Please add a cover image!").required("Please add a cover image!"),
     });
 
     const { control, setValue, handleSubmit, formState: { errors, isDirty } } = useForm<IBlogForm>({
@@ -77,13 +77,13 @@ export function UpdateBlog() {
                 callUpdateApi(async () => {
                     const dataRes = await blogApi.update(blog.slug, blogData);
                     if (dataRes.status === 200) {
-                        toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Blog đã được cập nhật thành công', life: 3000 });
+                        toast.current?.show({ severity: 'success', summary: 'Success', detail: 'The blog has been successfully updated', life: 3000 });
                         startNavigating();
                         setTimeout(() => {
                             navigate('/admin/blog/list');
                         }, 3000);
                     } else {
-                        toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${updateErrorMessage}`, life: 3000 });
+                        toast.current?.show({ severity: 'error', summary: 'Failed', detail: `${updateErrorMessage}`, life: 3000 });
                     }
                 });
             }
@@ -96,8 +96,8 @@ export function UpdateBlog() {
 
     const confirmPublish = (blogData: IBlogForm) => {
         confirmDialog({
-            message: 'Bạn có chắc muốn cập nhật blog này?',
-            header: 'Cập nhật blog',
+            message: 'Are you sure you want to update this blog?',
+            header: 'Update Blog',
             defaultFocus: 'accept',
             accept: () => acceptPublish(blogData),
         });
@@ -109,28 +109,28 @@ export function UpdateBlog() {
                 callDeleteApi(async () => {
                     const res = await blogApi.delete(blog.slug);
                     if (res.status === 204) {
-                        toast.current?.show({ severity: 'info', summary: 'Thành công', detail: 'Blog này đã bị xóa', life: 3000 });
+                        toast.current?.show({ severity: 'info', summary: 'Success', detail: 'This blog has been deleted', life: 3000 });
                         startNavigating();
                         setTimeout(() => {
                             navigate('/admin/blog/list');
                         }, 3000);
                     }
                     else {
-                        toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+                        toast.current?.show({ severity: 'error', summary: 'Failed', detail: `${deleteErrorMessage}`, life: 3000 });
                     }
                 });
             }
         }
         catch (error) {
             console.error('Failed to delete blog: ', error);
-            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${deleteErrorMessage}`, life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Failed', detail: `${deleteErrorMessage}`, life: 3000 });
         }
     }
 
     const confirmDelete = () => {
         confirmDialog({
-            message: 'Bạn có chắc muốn xóa blog này?',
-            header: 'Xóa blog',
+            message: 'Are you sure you want to delete this blog?',
+            header: 'Delete Blog',
             defaultFocus: 'reject',
             acceptClassName: 'p-button-danger',
             accept: acceptDelete,
@@ -162,7 +162,7 @@ export function UpdateBlog() {
         <form onSubmit={handleSubmit(confirmPublish)} className="rounded-xl m-7 p-7 border h-max bg-white">
             <ConfirmDialog />
             <Toast ref={toast} />
-            <span className="font-bold text-3xl text-gray-700">Cập nhật Blog</span>
+            <span className="font-bold text-3xl text-gray-700">Update Blog</span>
             {loadingBlog ? (
                 <div className='flex justify-center items-center min-h-[100vh]'>
                     <ProgressSpinner />
@@ -206,10 +206,10 @@ export function UpdateBlog() {
                                 )}
                             </div>
                             <div>
-                                <Input type="text" control={control} errors={errors} name='title' placeholder="Tiêu đề blog" className="w-full" />
+                                <Input type="text" control={control} errors={errors} name='title' placeholder="Blog title" className="w-full" />
                             </div>
                             <div>
-                                <Input type="text" control={control} errors={errors} name='description' placeholder="Mô tả" className="w-full" />
+                                <Input type="text" control={control} errors={errors} name='description' placeholder="Description" className="w-full" />
                             </div>
                             <div className="h-fit">
                                 <Controller
@@ -218,7 +218,7 @@ export function UpdateBlog() {
                                     render={({ field }) => (
                                         <Editor
                                             value={field.value}
-                                            placeholder="Nội dung"
+                                            placeholder="Content"
                                             onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
                                             style={{ height: '350px' }}
                                         />
@@ -230,15 +230,15 @@ export function UpdateBlog() {
                             </div>
                         </div>
                         <div className="flex gap-4 sm:justify-end justify-between">
-                            <Button htmlType="button" disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
+                            <Button htmlType="button" disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Delete</Button>
                             <Button htmlType="submit" disabled={uploading || isNavigating || !isDirty} className="flex-1 font-bold max-w-40">
-                                {uploading ? 'Đang tải...' : 'Cập nhật'}
+                                {uploading ? 'Uploading...' : 'Update'}
                             </Button>
                         </div>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
-                        <span className="text-2xl font-bold text-primary">Không tìm thấy blog</span>
+                        <span className="text-2xl font-bold text-primary">Blog not found</span>
                     </div>
                 )
             )}
