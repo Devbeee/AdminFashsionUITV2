@@ -1,12 +1,16 @@
 import { useRef, useEffect, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, ControllerRenderProps, useForm } from 'react-hook-form';
 
 import { Toast } from 'primereact/toast';
 import { FileUpload } from 'primereact/fileupload';
 import { Button as PrimeBtn } from 'primereact/button';
 import { Editor, EditorTextChangeEvent } from 'primereact/editor';
 import { Dropdown } from 'primereact/dropdown';
-import { ColorPicker } from 'primereact/colorpicker';
+import { ColorPicker, ColorPickerChangeEvent } from 'primereact/colorpicker';
+import { Sidebar } from 'primereact/sidebar';
+import { ConfirmDialog } from 'primereact/confirmdialog';
+import { OverlayPanel } from 'primereact/overlaypanel';
+import { Dialog } from "primereact/dialog";
 
 import { productApi } from '@/apis';
 import { useBoolean, useApi } from '@/hooks';
@@ -25,16 +29,36 @@ type ProductRowProps = {
     category: ICategory[];
 }
 
+type ControllerType = {
+    discount?: number | undefined;
+    stockAll?: number | undefined;
+    colorNames: string[];
+    sizes: string[];
+    colors: (string | undefined)[];
+    imgUrls: string[];
+    stocks: number[];
+    name: string;
+    price: number;
+    description: string;
+    categoryType: {
+        value: string;
+    };
+    numberOfColor: string;
+}
+
 export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProductChange, category}) => { 
     const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
     const [colorErrorMessage, setColorErrorMessage] = useState<string>('');
     const toast = useRef<Toast>(null);
     const fileUploadReference = useRef<FileUpload>(null);
-    const { value: showDropDown, toggle: toggleShowDropDown } = useBoolean(false);
     const { value: showProductDetail, toggle: toggleShowProductDetail } = useBoolean(false);
-    const { value: showConfirmDelete, toggle: toggleShowConfirmDelete } = useBoolean(false);
+    const { value: showConfirmDelete, toggle: toggleShowConfirmDelete, setFalse: hideConfirmDelete } = useBoolean(false);
     const { loading, errorMessage, callApi: callApiManageProduct } = useApi<void>()
-    
+    const {value: showStock, setFalse, setTrue} = useBoolean(true);
+    const {value: isDisabled, setTrue: setDisabled, setFalse: setEnabled} = useBoolean(true);
+    const op = useRef<OverlayPanel>(null);
+    const {value: showDialog, setTrue: setShowDialog, setFalse: setHideDialog} = useBoolean(false);
+    const [visibleIndex, setVisibleIndex] = useState<number | null>(null);
     const {
         control,
         handleSubmit,
@@ -54,7 +78,6 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     })
     const handleToggle = () => {
         toggleShowProductDetail();
-        toggleShowDropDown();
         resetProductForm();
         setValue('sizes', []);
         setValue('colors', []);
@@ -69,8 +92,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             const sizeIndex = watch('sizes').indexOf(detail.size);
             const colorIndex = watch('colors').indexOf(detail.color);
             const index = sizeIndex * watch('colors').length + colorIndex;
-            
-            setValue(`imgUrls.${index}`, detail.imgUrl);
+            setValue(`imgUrls.${colorIndex}`, detail.imgUrl);
             setValue(`stocks.${index}`, detail.stock);
         });
         resetProductForm({
@@ -94,7 +116,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
 
     useEffect(() => {
         const colorCount = Number(watch('numberOfColor')) || 0;
-        const currentColors = watch('colors') || [];
+        const currentColors = (watch('colors') || []).map(color => color === undefined ? '#000000' : color);
         const currentColorNames = watch('colorNames') || [];
         
         if (colorCount > currentColors.length) {
@@ -113,13 +135,13 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     }, [watch('numberOfColor'), setValue, watch])
 
     useEffect(() => {
-        const colors = watch('colors') || [];
+        const colors = (watch('colors') || []).map(color => color === undefined ? '#000000' : color);
         const uniqueColors = new Set(colors);
         
         if (uniqueColors.size !== colors.length) {
-            setColorErrorMessage('Màu sắc không được trùng nhau.');
+          setColorErrorMessage('Product colors must be unique');
         } else {
-            setColorErrorMessage('');
+          setColorErrorMessage('');
         }
     }, [watch('numberOfColor'), watch('colors')]);
 
@@ -144,6 +166,24 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
     },[watch('sizes'), watch('numberOfColor')])
 
     useEffect(() => {
+        if (watch('sizes').length > 0 && watch('colors').length > 0 && colorErrorMessage === '') {
+            setEnabled();
+        }
+        else {
+            setDisabled();
+            setFalse();
+        }
+    }, [watch('sizes'), watch('colors'), watch('numberOfColor'), colorErrorMessage])
+
+    useEffect(() => {
+        const stockAll = watch('stockAll');
+        if (stockAll && stockAll > 0) {
+            const stocks = Array.from({ length: watch('sizes').length * watch('colors').length }).map(() => stockAll as number);
+            setValue('stocks', stocks as number[]);
+        }
+    }, [watch('stockAll')])
+
+    useEffect(() => {
         const options = Array.from(category).map(cate => 
           `${cate.gender} - ${cate.type}`
         );
@@ -161,9 +201,9 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             const { data } = await productApi.deleteProduct(productId)
             if (data) {
                 toggleProductChange()
-                toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Xóa thành công', life: 3000 });
+                toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Delete Successfully', life: 3000 });
             } else {
-                toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
+                toast.current?.show({ severity: 'error', summary: 'Failed', detail: `${errorMessage}`, life: 3000 });
             }
         })
     }
@@ -175,7 +215,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
             updateProductData.sizes.forEach((size, sizeIndex) => {
                 updateProductData.colors.forEach((color, colorIndex) => {
                     const colorName = updateProductData.colorNames[colorIndex];
-                    const imgUrl = updateProductData.imgUrls[colorIndex + sizeIndex * updateProductData.colors.length] || '';
+                    const imgUrl = updateProductData.imgUrls[colorIndex] || '';
                     const stock = updateProductData.stocks[colorIndex + sizeIndex * updateProductData.colors.length];
                     color = color || '#000000';
                     productDetails.push({size, colorName, color, imgUrl, stock})
@@ -189,215 +229,208 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                 if (data) {
                     handleToggle()
                     toggleProductChange()
-                    toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Cập nhật sản phẩm thành công', life: 3000 });
+                    toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Update Product Successfully', life: 3000 });
                 }
             } catch {
                 toast.current?.show({
                     severity: 'error',
-                    summary: 'Lỗi',
+                    summary: 'Error',
                     detail: `${errorMessage}`,
                     life: 3000,
                 });
             }
         })
     }
+    const handleToggleAction = (action: () => void) => {
+        action();
+        if (op.current) {
+            op.current.hide();
+        }
+    }
+    const handleDeteleImage = (index: number) => {
+        const newImgUrls = [...watch('imgUrls')];
+        newImgUrls[index] = '';
+        if (fileUploadReference.current) {
+            fileUploadReference.current.clear();
+        }
+        setValue('imgUrls', newImgUrls);
+    }
+    const handleChangeColor = (e: ColorPickerChangeEvent, index: number) => {
+        const newColors = [...watch('colors')];
+        const colorCode = '#' + (e.target.value as string);
+        newColors[index] = colorCode;
+        setValue('colors', newColors);
+    }
+    const handleChangeSize = (field: ControllerRenderProps<ControllerType, "sizes"> , size: string) => {
+        const newSize = field.value.includes(size)
+        ? field.value.filter((item) => item !== size)
+        : [...field.value, size];
+        field.onChange(newSize);
+    }
+    const handleShowImage = (index: number) => {
+        setVisibleIndex(index);
+        setShowDialog();
+    }
   return (
-    <div className='flex flex-row h-[80px] p-[10px] gap-[10px]'>
+    <div className='flex flex-row'>
         <Toast ref={toast} />
-        {[
-            { width: '15%', value: productInfo.name },
-            { width: '15%', value: productInfo.slug },
-            { width: '10%', value: productInfo.category.gender + ' - ' + productInfo.category.type },
-            { width: '20%', value: productInfo.description },
-            { width: '10%', value: `${productInfo.price} VND` },
-            { width: '10%', value: productInfo.discount || 0 },
-            { width: '10%', value: new Date(productInfo.createdAt).toLocaleDateString() },
-            { width: '10%', value: new Date(productInfo.updatedAt).toLocaleDateString() },
-        ].map((item, value) => (
-            <div key={value} className={`w-[${item.width}] pl-3 m-auto`}>
-                <div className='text-black-light opacity-80 text-sm font-semibold max-h-[60px] overflow-hidden'>
-                    <span dangerouslySetInnerHTML={{ __html: item.value }}></span>
-                </div>
-            </div>
-        ))}
-        <div className='w-[10%] pl-3 m-auto flex justify-center items-center'>
-            <div className="relative">
-                <PrimeBtn text onClick={toggleShowDropDown}>
+        <div className='flex justify-center items-center'>
+            <PrimeBtn text onClick={(e) => op.current && op.current.toggle(e)}>
+                <div className='items-center justify-center flex'>
                     {icons.list}
-                </PrimeBtn>
-                {showDropDown && (
-                    <>
-                        <div className='fixed inset-0 z-0' onClick={toggleShowDropDown}></div>
-                        <div className="absolute right-0 mt-3 p-1 w-[130px] bg-white border border-gray-200 rounded-md shadow-lg z-10" onClick={(e) => e.stopPropagation()}>
-                            <div className="absolute top-[-6px] right-4 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[6px] border-b-white"></div>
-                            <PrimeBtn onClick={toggleShowProductDetail} text className='flex w-full transition text-sm gap-2'>{icons.search}Chi tiết</PrimeBtn>
-                            <PrimeBtn onClick={toggleShowConfirmDelete} text className='flex w-full transition text-sm text-red-500 gap-2'>{icons.deleteProduct}Xóa</PrimeBtn>
-                        </div>
-                    </>
-                )}
-            </div>
-            {showConfirmDelete && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowConfirmDelete}>
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-fit" onClick={(e) => e.stopPropagation()}>
-                        <div className="text-lg font-bold mb-4">
-                            Xác nhận xóa sản phẩm
-                        </div>
-                        <div className="mb-4">
-                            Bạn có chắc chắn muốn xóa sản phẩm này không?
-                        </div>
-                        <div className="flex flex-row justify-between gap-4 w-[60%] m-auto">
-                            <PrimeBtn onClick={() => deleteProduct(productInfo.id)} className="w-[180px] justify-center items-center bg-red-500 border-red-500 text-white rounded-lg py-2 hover:bg-red-800 transition"
-                                disabled={loading} loading={loading}>
-                                Xóa
-                            </PrimeBtn>
-                            <PrimeBtn onClick={toggleShowConfirmDelete} className="w-[180px] justify-center items-center bg-green-500 border-green-500 text-white rounded-lg py-2 hover:bg-green-800 transition">
-                                Hủy bỏ
-                            </PrimeBtn>
-                        </div>
-                    </div>
                 </div>
-            )}
-            {showProductDetail && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex justify-center items-center z-50" onClick={toggleShowProductDetail}>
-                <div className="relative bg-white rounded-lg shadow-lg p-6 h-fit max-h-screen w-[70%]" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex flex-row text-xl font-bold mb-4 justify-between">
-                        <h3 className="flex justify-center items-center text-2xl">Thông tin sản phẩm</h3>
-                        <PrimeBtn text onClick={toggleShowProductDetail} className="absolute right-2 top-2">
-                            {icons.closePopup}
-                        </PrimeBtn>
+            </PrimeBtn>
+            <OverlayPanel ref={op} className="w-[150px] bg-white border border-gray-300 shadow-lg rounded-lg">
+                <PrimeBtn text className='flex w-full transition text-sm gap-2'
+                    onClick={() => handleToggleAction(toggleShowProductDetail)}
+                >{icons.search}Detail</PrimeBtn>
+                <PrimeBtn text className='flex w-full transition text-sm text-red-500 gap-2'
+                    onClick={() => handleToggleAction(toggleShowConfirmDelete)}
+                >{icons.deleteProduct}Delete</PrimeBtn>
+            </OverlayPanel>
+            <ConfirmDialog
+                visible={showConfirmDelete}
+                onHide={hideConfirmDelete}
+                message="Are you sure you want to delete this product?"
+                header="Delete Confirmation"
+                accept={() => deleteProduct(productInfo.id)}
+                reject={hideConfirmDelete}
+                acceptLabel="Delete"
+                rejectLabel="Cancel"
+                acceptClassName="p-button-danger"
+            />
+            <Sidebar visible={showProductDetail} onHide={handleToggle} position="right" className="w-2/5">
+                <h2 className="text-2xl font-bold mb-6 text-gray-800">Product Detail</h2>
+                <form onSubmit={handleSubmit(updateProduct)}>
+                    <div className="mb-5">
+                        <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            <span className="mr-2">{icons.productName}</span> Product Name
+                        </label>
+                        <Input control={control} errors={errors} name="name" className="w-full rounded-lg"/>
                     </div>
-                    <form onSubmit={handleSubmit(updateProduct)}>
-                        <div className="flex flex-col gap-4">
-                            <div className="w-full flex flex-row gap-4">
-                                <div className="w-[70%] h-fit flex flex-col gap-5">
-                                    <div className="w-full h-fit flex flex-row gap-4 justify-between">
-                                        <Input control={control} errors={errors} name="name" placeholder="Tên sản phẩm" className="w-full rounded-lg"/>
-                                        <Input control={control} errors={errors} name="price" placeholder="Giá sản phẩm" className="w-full rounded-lg"/>
-                                        <Input control={control} errors={errors} name="discount" placeholder="Giảm giá" className="w-full rounded-lg"/>
-                                    </div>
-                                    <div className="h-fit w-full">
+                    <div className="mb-5 flex flex-row gap-4">
+                        <div className="w-1/2">
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                <span className="mr-2">{icons.productPrice}</span> Product Price
+                            </label>
+                            <Input control={control} errors={errors} name="price" className="w-full rounded-lg"/>
+                        </div>
+                        <div className="w-1/2">
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                <span className="mr-2">{icons.productDiscount}</span> Product Discount
+                            </label>
+                            <Input control={control} errors={errors} name="discount" className="w-full rounded-lg"/>
+                        </div>
+                    </div>
+                    <div className="mb-5">
+                        <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            <span className="mr-2">{icons.productCategory}</span> Category
+                        </label>
+                        <Controller
+                            name="categoryType"
+                            control={control}
+                            render={({ field }) => (
+                                <Dropdown 
+                                value={field.value?.value || ''} 
+                                onChange={(val) => field.onChange({ value: val.target.value })} 
+                                options={categoryOptions} optionLabel="name" 
+                                placeholder="Select Category" 
+                                className="w-full md:w-14rem" 
+                                />
+                                )}
+                        />
+                        {errors.categoryType?.value && <span className="text-red-500">{errors.categoryType.value.message}</span>}
+                    </div>
+                    <div className="mb-5 flex flex-row gap-4">
+                        <div className="w-2/3">
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                <span className="mr-2">{icons.productSize}</span> Sizes
+                            </label>
+                            <div className={`flex flex-row gap-4 border border-gray-300 rounded-md p-[9px] ${errors.sizes ? "border-red-500":''}`}>
+                                {sizes.map((size) => (
+                                    <div key={size}>
                                         <Controller
-                                            name="description"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Editor
-                                                    value={field.value}
-                                                    placeholder="Mô tả sản phẩm"
-                                                    onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
-                                                    style={{ height: '375px', width: '100%' }}
+                                        name="sizes"
+                                        control={control}
+                                        render={({ field }) => (
+                                            <>
+                                                <input
+                                                type="checkbox"
+                                                value={size}
+                                                checked={field.value.includes(size)}
+                                                onChange={() => handleChangeSize(field, size)}
+                                                className="rounded-lg size-4"
                                                 />
+                                                <label className="ml-2 text-lg">{size}</label>
+                                            </>
                                             )}
                                         />
-                                        {errors.description && (
-                                            <span className="text-red-500">{errors.description.message}</span>
-                                        )}
                                     </div>
-                                </div>
-                                <div className="w-[30%] h-fit flex flex-col gap-4">
-                                    <div className="h-fit w-full flex flex-col">
-                                        <Controller
-                                            name="categoryType"
-                                            control={control}
-                                            render={({ field }) => (
-                                                <Dropdown 
-                                                    value={field.value?.value || ''} 
-                                                    onChange={(val) => field.onChange({ value: val.target.value })} 
-                                                    options={categoryOptions} optionLabel="name" 
-                                                    placeholder="Chọn loại sản phẩm" 
-                                                    className="w-full md:w-14rem p-inputtext-lg" 
+                                ))}
+                            </div>
+                            {errors.sizes && <span className="text-red-500">{errors.sizes.message}</span>}
+                        </div>
+                        <div className="w-1/3">
+                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                <span className="mr-2">{icons.numberOfColor}</span> Number of Colors
+                            </label>
+                            <Input control={control} errors={errors} name="numberOfColor" className="w-full rounded-lg"/>
+                        </div>
+                    </div>
+                    <div className="mb-5">
+                        <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                            <span className="mr-2">{icons.productDescription}</span> Product Description
+                        </label>
+                        <Controller
+                            name="description"
+                            control={control}
+                            render={({ field }) => (
+                                <Editor
+                                    value={field.value}
+                                    placeholder="Product Description"
+                                    onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
+                                    style={{ height: '375px', width: '100%' }}
+                                />
+                            )}
+                        />
+                        {errors.description &&<span className="text-red-500">{errors.description.message}</span>}
+                    </div>
+                    {Number(watch('numberOfColor')) > 0 && <div className="mb-5">
+                        <div className={`${Number(watch('numberOfColor')) > 2 ? 'overflow-y-scroll h-[280px]' : ''} 
+                        bg-gray-50 rounded-lg p-4 border border-gray-200`}>
+                            {Array.from({ length: Number(watch('numberOfColor')) }).map((_, index) => (
+                                <div key={index} className="flex flex-col space-y-3 mb-4 last:mb-0">
+                                    <div>
+                                        <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                            <span className="mr-2">{icons.productColor}</span> Color {index + 1}
+                                        </label>
+                                        <div className="flex items-center justify-between space-x-4">
+                                            <Controller
+                                                name={`colors.${index}`}
+                                                control={control}
+                                                render={({ field }) => (
+                                                    <ColorPicker
+                                                        {...field}
+                                                        format="hex"
+                                                        value={field.value ? field.value : '000000'}
+                                                        onChange={(e) => handleChangeColor(e, index)}
                                                     />
-                                            )}
-                                        />
-                                        {errors.categoryType?.value && (
-                                            <span className="text-red-500">{errors.categoryType.value.message}</span>
-                                        )}
-                                    </div>
-                                    <div className={`flex flex-col gap-4 border border-gray-400 rounded-md p-3 ${errors.sizes ? "border-red-500":''}`}>
-                                        <label className="font-semibold text-xl">Chọn kích thước</label>
-                                        <div className="flex flex-row w-full gap-5">
-                                            {sizes.map((size) => (
-                                                <div key={size}>
-                                                    <Controller
-                                                    name="sizes"
+                                                )}
+                                            />
+                                            <div>
+                                                <Input
+                                                    name={`colorNames.${index}`}
                                                     control={control}
-                                                    render={({ field }) => (
-                                                        <>
-                                                            <input
-                                                            type="checkbox"
-                                                            value={size}
-                                                            checked={field.value.includes(size)}
-                                                            onChange={() => {
-                                                                const newSize = field.value.includes(size)
-                                                                ? field.value.filter((item) => item !== size)
-                                                                : [...field.value, size];
-                                                                field.onChange(newSize);
-                                                            }}
-                                                            className="rounded-lg size-4"
-                                                            />
-                                                            <label className="ml-2 text-xl">{size}</label>
-                                                        </>
-                                                        )}
-                                                    />
-                                                    
-                                                </div>
-                                                ))}
-                                        </div>
-                                        {errors.sizes && <span className="text-red-500">{errors.sizes.message}</span>}
-                                    </div>
-                                    <div className="flex flex-col gap-2 p-2 w-full">
-                                        <label className="font-semibold text-xl">Số lượng màu sản phẩm</label>
-                                        <Input control={control} errors={errors} type="text" name="numberOfColor" placeholder="Số màu" className="w-full rounded-lg"/>
-                                        {showProductDetail && <div className={`${Number(watch('numberOfColor')) > 2 ? 'overflow-y-scroll h-[150px]' : ''}`}>
-                                            {Array.from({ length: Number(watch('numberOfColor')) }).map((_, index) => (
-                                                <div key={index} className="flex flex-row w-full justify-between">
-                                                    <label className="font-semibold flex flex-col items-center">
-                                                        <p>Màu sắc {index + 1}</p>
-                                                        <Controller
-                                                            name={`colors.${index}`}
-                                                            control={control}
-                                                            render={({ field }) => (
-                                                                <ColorPicker {...field} 
-                                                                    format="hex" 
-                                                                    value={field.value ? field.value : '000000'} 
-                                                                    onChange={(e) => {
-                                                                        const newColors = [...watch('colors')];
-                                                                        const colorCode = '#' + e.target.value as string;
-                                                                        newColors[index] = colorCode;
-                                                                        setValue('colors', newColors);
-                                                                }} />
-                                                            )}
-                                                        />
-                                                    </label>
-                                                    <label className="font-semibold">
-                                                        <p>Tên màu sắc {index + 1}</p>
-                                                        <Input name={`colorNames.${index}`} control={control} errors={errors}/>
-                                                        {errors.colorNames?.[index] && !watch(`colorNames.${index}`) && (
-                                                            <span className="text-red-500 font-normal">{errors.colorNames[index].message}</span>
-                                                        )}
-                                                    </label>
-                                                </div>
-                                            ))}
-                                        </div>}
-                                        {colorErrorMessage && (<div className="text-red-500">{colorErrorMessage}</div>)}
-                                    </div>
-                                </div>
-                            </div> 
-                            <div className={`${Number(watch('numberOfColor')) >= 1 && watch('sizes').length !==0 
-                                ? 'overflow-y-scroll h-fit max-h-[250px]' : ''}`}>
-                            {watch('colors').map((_,colorIndex) => (
-                                    <div key={colorIndex} className="mb-4">
-                                        {watch('sizes').map((size, sizeIndex) => {
-                                            const index = sizeIndex * watch('colors').length + colorIndex;
-                                            return (
-                                                <div key={index} className="flex flex-row gap-32 justify-center items-center mb-5">
-                                                    <div className="flex flex-row min-w-[400px] font-semibold text-xl text-black text-left justify-between">
-                                                    <span className="w-[50%]">{`Màu ${watch('colorNames')[colorIndex] ? watch('colorNames')[colorIndex] : `${colorIndex+1}`}`}</span>
-                                                    <span className="mr-3">-</span>
-                                                    <span className="w-[60%] text-right">{`Kích thước ${size}`}</span>
-                                                </div>
-                                                <div className="flex flex-row gap-2 justify-center items-center">
-                                                    {!watch(`imgUrls.${index}`) &&
-                                                        <Controller
+                                                    errors={errors}
+                                                    className="flex-1"
+                                                    placeholder="Color Name"
+                                                />
+                                                {errors.colorNames?.[index] && !watch(`colorNames.${index}`) && 
+                                                <span className="text-sm text-red-500">{errors.colorNames[index].message}</span>}
+                                            </div>
+                                            <div className="flex flex-row gap-4 items-center">
+                                                {!watch(`imgUrls.${index}`) && (
+                                                    <Controller
                                                         name={`imgUrls.${index}`}
                                                         control={control}
                                                         render={({ field }) => (
@@ -415,64 +448,117 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                                                                             field.onChange(url);
                                                                         }
                                                                     }}
-                                                                    chooseLabel="Chọn ảnh"
+                                                                    chooseLabel="Upload"
                                                                 />
-                                                                {errors.imgUrls?.[index] && <span className="text-red-500">{errors.imgUrls[index].message}</span>}
+                                                                {errors.imgUrls?.[index] && <span className="text-red-500 text-sm mt-2">{errors.imgUrls[index].message}</span>}
                                                             </div>
                                                         )}
-                                                        />
-                                                    }
-                                                    <div className="w-[85px] h-[85px] relative group">
-                                                        {watch(`imgUrls.${index}`) && (
-                                                            <div className="relative">
-                                                                <a href={watch(`imgUrls.${index}`)} target="_blank" rel="noopener noreferrer">
-                                                                    <img src={watch(`imgUrls.${index}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2" />
-                                                                </a>
-                                                                <button
-                                                                    type="button"
-                                                                    className="absolute top-0 right-0 bg-red-500 text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                                    onClick={() => {
-                                                                        const newImgUrls = [...watch('imgUrls')];
-                                                                        newImgUrls[index] = '';
-                                                                        if (fileUploadReference.current) {
-                                                                            fileUploadReference.current.clear();
-                                                                        }
-                                                                        setValue('imgUrls', newImgUrls);
-                                                                    }}
-                                                                >
-                                                                    X
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="w-[400px] h-fit">
-                                                    <Input name={`stocks.${index}`} control={control} errors={errors.stocks} placeholder="Số lượng sản phẩm" />
-                                                    {errors.stocks?.[index] && <span className="text-red-500">{errors.stocks[index].message}</span>}
+                                                    />
+                                                )}
+                                                <div className="w-[85px] h-[85px] relative group">
+                                                    {watch(`imgUrls.${index}`) && (
+                                                        <div className="relative">
+                                                            <img src={watch(`imgUrls.${index}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md" onClick={() => handleShowImage(index)}/>
+                                                            <button
+                                                                type="button"
+                                                                className="absolute top-0 right-0 bg-red-500 text-white rounded-md p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                                                                onClick={() => handleDeteleImage(index)}
+                                                            >
+                                                                {icons.closePopup}
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-                                            )
-                                            
-                                        })} 
+                                        </div>
                                     </div>
-                                ))}
+                                </div>
+                            ))}
+                        </div>
+                        {colorErrorMessage && <div className="mt-3 text-sm text-red-500">{colorErrorMessage}</div>}
+                    </div>}
+                    {visibleIndex !== null && (
+                        <Dialog header="Image Preview" visible={showDialog} onHide={setHideDialog} style={{ width: '50vw' }}>
+                            <img src={watch(`imgUrls.${visibleIndex}`)} alt={`Product ${visibleIndex}`} className="w-full rounded-md" />
+                        </Dialog>
+                    )}
+                    {showStock && 
+                        <>
+                            <div className="mb-5">
+                                <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                    <span className="mr-2">{icons.productStock}</span> Stock for all product
+                                </label>
+                                <Input control={control} errors={errors} name="stockAll" className="w-full rounded-lg"/>
                             </div>
-                            {errorMessage && <span className='text-red-500 mb-2 text-lg'>{errorMessage}</span>}
-                        </div>
-                        <div className="flex flex-row w-[50%] ml-auto gap-5 justify-end items-center">
-                            <Button onClick={toggleShowProductDetail} className="w-[27%] bg-gray-500 border-gray-500 text-white rounded-lg py-2 hover:bg-gray-800 transition text-xl">
-                                Quay lại
-                            </Button>
-                            <Button 
+                            <div className="flex flex-col gap-4 mb-5">
+                                <div className={`${Number(watch('numberOfColor')) >= 1 && watch('sizes').length !== 0
+                                            ? 'overflow-y-scroll h-fit max-h-[250px] bg-gray-50 rounded-lg p-4 border border-gray-200'
+                                            : ''}`}>
+                                    {watch('colors').map((_, colorIndex) => (
+                                        <div key={colorIndex} className="mb-6">
+                                            {watch('sizes').map((size, sizeIndex) => {
+                                                const index = sizeIndex * watch('colors').length + colorIndex;
+                                                return (
+                                                    <div key={index} className="flex flex-col md:flex-row gap-6 md:gap-8 justify-between mb-5 p-4">
+                                                        <div className="flex flex-col w-fit font-medium text-lg text-gray-700 justify-between items-start">
+                                                            <label className="flex items-center text-sm mb-2">
+                                                                <span className="mr-2">{icons.product}</span> Product
+                                                            </label>
+                                                            <div className="flex flex-row">
+                                                                <span className="w-full md:w-[50%]">
+                                                                    {`${watch('colorNames')[colorIndex]
+                                                                            ? watch('colorNames')[colorIndex]
+                                                                            : `${colorIndex + 1}`}`}
+                                                                </span>
+                                                                <span className="hidden md:block mx-3">-</span>
+                                                                <span className="w-full md:w-[60%] text-left md:text-right">{`${size}`}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="w-[85px] h-[75px]">
+                                                            {watch(`imgUrls.${colorIndex}`) && (
+                                                                <div>
+                                                                    <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                                                        <span className="mr-2">{icons.productImage}</span> Image
+                                                                    </label>
+                                                                    <img src={watch(`imgUrls.${colorIndex}`)} alt={`Product ${index}`} className="w-[85px] h-[85px] object-cover mt-2 rounded-md" />
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="w-full md:w-[400px]">
+                                                            <label className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                                                                <span className="mr-2">{icons.productStock}</span> Stock
+                                                            </label>
+                                                            <Input name={`stocks.${index}`} control={control} errors={errors.stocks} className="border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-300"/>
+                                                            {errors.stocks?.[index] && <span className="text-red-500 text-sm mt-2">{errors.stocks[index].message}</span>}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ))}
+                                </div>
+                                {errorMessage && <span className="text-red-500 mb-2 text-lg">{errorMessage}</span>}
+                            </div>
+                        </>}
+                    {showStock && 
+                        <Button 
                             htmlType="submit" 
-                            disabled={loading || !isDirty} loading={loading}
-                            className="w-[27%] bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition text-xl">
-                                Cập nhật
-                            </Button>
-                        </div>
-                    </form>
-                </div>
-            </div>)}
+                            disabled={loading || !isDirty}
+                            loading={loading}
+                            className="w-fit bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition text-xl"
+                        >
+                        Update Product
+                        </Button>}
+                </form>
+                {!showStock && 
+                <Button 
+                    onClick={setTrue}
+                    disabled={isDisabled}
+                    className="w-fit bg-primary border-primary text-white rounded-lg py-2 hover:bg-primary-dark transition text-xl"
+                >
+                Provide Stock
+                </Button>}
+            </Sidebar>
         </div>
     </div>
     )
