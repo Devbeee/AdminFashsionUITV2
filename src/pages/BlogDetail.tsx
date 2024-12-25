@@ -60,7 +60,7 @@ export function BlogDetail() {
     const getBlog = async () => {
         setLoadingBlog(true);
         if (slug) {
-            callGetBlogApi(async () => {
+            await callGetBlogApi(async () => {
                 const res = await blogApi.getOne(slug);
                 if (res.status === 200) {
                     setBlog(res.data);
@@ -74,14 +74,6 @@ export function BlogDetail() {
         getBlog();
     },[]);
 
-    if (!blog) {
-      return (
-        <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
-            <span className="text-2xl font-bold text-primary">Không tìm thấy blog</span>
-        </div>
-      );
-    }
-
     return (
         <div className="flex flex-col items-center justify-start bg-white rounded-xl m-7 p-7 border min-h-[80vh]">
             <Toast ref={toast} />
@@ -91,7 +83,7 @@ export function BlogDetail() {
                         <ProgressSpinner />
                     </div>
                 ):(
-                    blog && (
+                    blog ? (
                         <div className="flex flex-wrap md:flex-row gap-6 justify-between w-full">
                             <div className='w-full'>
                                 <div className="w-full flex justify-between items-start text-left flex-col sm:flex-row">
@@ -117,6 +109,10 @@ export function BlogDetail() {
                                 <Button disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
                                 <Button disabled={isNavigating} to={'/admin/blog/update/' + blog.slug} className="font-bold w-40">Cập nhật</Button>
                             </div>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
+                            <span className="text-2xl font-bold text-primary">Không tìm thấy blog</span>
                         </div>
                     )
                 )}

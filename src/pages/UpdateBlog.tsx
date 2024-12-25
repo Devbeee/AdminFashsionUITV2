@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Editor, EditorTextChangeEvent } from "primereact/editor";
-import { FileUpload, FileUploadFile  } from 'primereact/fileupload';
+import { FileUpload, FileUploadFile } from 'primereact/fileupload';
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { ProgressSpinner } from 'primereact/progressspinner';
@@ -22,7 +22,7 @@ export function UpdateBlog() {
     const [uploading, setUploading] = useState<boolean>(false);
     const fileUploadRef = useRef<FileUpload | null>(null);
     const [blog, setBlog] = useState<IBlog | null>(null);
-    const {slug} = useParams<{ slug: string }>();
+    const { slug } = useParams<{ slug: string }>();
     const { value: isNavigating, setTrue: startNavigating } = useBoolean(false);
     const { errorMessage: updateErrorMessage, callApi: callUpdateApi } = useApi<void>()
     const { errorMessage: deleteErrorMessage, callApi: callDeleteApi } = useApi<void>()
@@ -140,7 +140,7 @@ export function UpdateBlog() {
     const getBlog = async () => {
         setLoadingBlog(true);
         if (slug) {
-            callGetBlogApi(async () => {
+            await callGetBlogApi(async () => {
                 const res = await blogApi.getOne(slug);
                 if (res.status === 200) {
                     setBlog(res.data);
@@ -153,18 +153,10 @@ export function UpdateBlog() {
         }
         setLoadingBlog(false);
     }
-    
+
     useEffect(() => {
         getBlog();
-    },[]);
-
-    if (!blog) {
-        return (
-          <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
-              <span className="text-2xl font-bold text-primary">Không tìm thấy blog</span>
-          </div>
-        );
-    }
+    }, []);
 
     return (
         <form onSubmit={handleSubmit(confirmPublish)} className="rounded-xl m-7 p-7 border h-max bg-white">
@@ -175,74 +167,80 @@ export function UpdateBlog() {
                 <div className='flex justify-center items-center min-h-[100vh]'>
                     <ProgressSpinner />
                 </div>
-            ):(
-                <div className="flex flex-col gap-4 mt-4">
-                    <div className="flex flex-col gap-4">
-                        <div>
-                            <Controller
-                                name="coverImage"
-                                control={control}
-                                render={({ field }) => (
-                                    <FileUpload
-                                        ref={fileUploadRef}
-                                        name="coverImage"
-                                        accept="image/*"
-                                        disabled={uploading || isNavigating} 
-                                        customUpload
-                                        maxFileSize={10000000}
-                                        uploadHandler={async (event) => {
-                                            const imageUrl = await handleImageUpload(event.files[0]);
-                                            field.onChange(imageUrl);
-                                        }}
-                                        onRemove={() => field.onChange('')}
-                                        onClear={() => field.onChange('')}
-                                        onBeforeSelect={() => field.onChange('')}
-                                        onBeforeDrop={() => field.onChange('')}
-                                        emptyTemplate={
-                                            <img
-                                                className="w-full h-60 object-contain z-0"
-                                                src={blog.coverImage}
-                                                alt={blog.title}
-                                            />
-                                        }
-                                    />
+            ) : (
+                blog ? (
+                    <div className="flex flex-col gap-4 mt-4">
+                        <div className="flex flex-col gap-4">
+                            <div>
+                                <Controller
+                                    name="coverImage"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <FileUpload
+                                            ref={fileUploadRef}
+                                            name="coverImage"
+                                            accept="image/*"
+                                            disabled={uploading || isNavigating}
+                                            customUpload
+                                            maxFileSize={10000000}
+                                            uploadHandler={async (event) => {
+                                                const imageUrl = await handleImageUpload(event.files[0]);
+                                                field.onChange(imageUrl);
+                                            }}
+                                            onRemove={() => field.onChange('')}
+                                            onClear={() => field.onChange('')}
+                                            onBeforeSelect={() => field.onChange('')}
+                                            onBeforeDrop={() => field.onChange('')}
+                                            emptyTemplate={
+                                                <img
+                                                    className="w-full h-60 object-contain z-0"
+                                                    src={blog.coverImage}
+                                                    alt={blog.title}
+                                                />
+                                            }
+                                        />
+                                    )}
+                                />
+                                {errors.coverImage && (
+                                    <span className="text-red-500">{errors.coverImage.message}</span>
                                 )}
-                            />
-                            {errors.coverImage && (
-                                <span className="text-red-500">{errors.coverImage.message}</span>
-                            )}
-                        </div>
-                        <div>
-                            <Input type="text" control={control} errors={errors} name='title' placeholder="Tiêu đề blog" className="w-full" />
-                        </div>
-                        <div>
-                            <Input type="text" control={control} errors={errors} name='description' placeholder="Mô tả" className="w-full" />
-                        </div>
-                        <div className="h-fit">
-                            <Controller
-                                name="content"
-                                control={control}
-                                render={({ field }) => (
-                                    <Editor
-                                        value={field.value}
-                                        placeholder="Nội dung"
-                                        onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
-                                        style={{ height: '350px' }}
-                                    />
+                            </div>
+                            <div>
+                                <Input type="text" control={control} errors={errors} name='title' placeholder="Tiêu đề blog" className="w-full" />
+                            </div>
+                            <div>
+                                <Input type="text" control={control} errors={errors} name='description' placeholder="Mô tả" className="w-full" />
+                            </div>
+                            <div className="h-fit">
+                                <Controller
+                                    name="content"
+                                    control={control}
+                                    render={({ field }) => (
+                                        <Editor
+                                            value={field.value}
+                                            placeholder="Nội dung"
+                                            onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
+                                            style={{ height: '350px' }}
+                                        />
+                                    )}
+                                />
+                                {errors.content && (
+                                    <span className="text-red-500">{errors.content.message}</span>
                                 )}
-                            />
-                            {errors.content && (
-                                <span className="text-red-500">{errors.content.message}</span>
-                            )}
+                            </div>
+                        </div>
+                        <div className="flex gap-4 sm:justify-end justify-between">
+                            <Button htmlType="button" disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
+                            <Button htmlType="submit" disabled={uploading || isNavigating || !isDirty} className="flex-1 font-bold max-w-40">
+                                {uploading ? 'Đang tải...' : 'Cập nhật'}
+                            </Button>
                         </div>
                     </div>
-                    <div className="flex gap-4 sm:justify-end justify-between">
-                        <Button htmlType="button" disabled={isNavigating} onClick={confirmDelete} className="font-bold border-red-500 bg-red-500 hover:bg-red-600 w-40">Xóa</Button>
-                        <Button htmlType="submit" disabled={uploading || isNavigating || !isDirty} className="flex-1 font-bold max-w-40">
-                            {uploading ? 'Đang tải...' : 'Cập nhật'}
-                        </Button>
+                ) : (
+                    <div className="flex flex-col items-center justify-center bg-white rounded-xl m-7 p-7 border">
+                        <span className="text-2xl font-bold text-primary">Không tìm thấy blog</span>
                     </div>
-                </div>
+                )
             )}
         </form>
     );

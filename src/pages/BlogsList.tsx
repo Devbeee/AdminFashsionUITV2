@@ -148,7 +148,7 @@ export function BlogsList() {
                 limit: limit,
                 sortStyle: searchParams.get(initFilters.sortStyle.name) || '',
                 authors: searchParams.get(initFilters.authors.name)?.split(',') || [],
-                searchKeyWord: searchParams.get(initFilters.search.name) || '',
+                keyword: searchParams.get(initFilters.search.name) || '',
                 createDateRange: searchParams.get(initFilters.createDateRange.name)?.split(',').map(date => new Date(date)) || [],
             }
             setFirst((params.page - 1)*limit);
@@ -156,8 +156,8 @@ export function BlogsList() {
             setSelectedSortStyle(sortStyle.find(style => style.code === params.sortStyle) || sortStyle[0]);
             setChoosedAuthors(params.authors);
             !createDateRange && setCreateDateRange(params.createDateRange);
-            setValue('searchValue', params.searchKeyWord);
-            callGetBlogsApi(async () => {
+            setValue('searchValue', params.keyword);
+            await callGetBlogsApi(async () => {
                 const response = await blogApi.getAll(params);
                 setBlogs(response.data.data);
                 setTotalRecords(response.data.total);
@@ -174,7 +174,7 @@ export function BlogsList() {
     const getAuthors = async () => {
         try {
             setLoadingAuthors(true);
-            callGetBlogsApi(async () => {
+            await callGetBlogsApi(async () => {
                 const response = await blogApi.getAuthors();
                 setAllAuthors(response.data);
             });
