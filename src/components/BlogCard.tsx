@@ -22,8 +22,8 @@ export function BlogCard({ blog }: NewsCardProps) {
                 </div>
                 <div className="h-44 overflow-hidden py-2 px-3 -mt-10 border rounded-md shadow-md z-50 w-11/12 bg-white">
                     <span className="text-center ">
-                        <Link to={`/admin/blog/detail/${blog.slug}`} title={blog.title} className='font-bold line-clamp-2'>
-                            <span className='text-blue-cyan hover:text-primary transition duration-300 ease-in-out'>{blog.title}</span>
+                        <Link to={`/admin/blog/detail/${blog.slug}`} title={blog.title} className='font-bold h-12 flex items-center justify-center'>
+                            <span className='text-blue-cyan hover:text-primary transition duration-300 ease-in-out line-clamp-2'>{blog.title}</span>
                         </Link>
                     </span>
                     <div className="text-xs text-gray-600 text-center my-2 relative">

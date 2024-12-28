@@ -32,6 +32,6 @@ export interface IGetBlogsParams {
     limit: number, 
     sortStyle: string, 
     authors: string[], 
-    searchKeyWord: string | undefined, 
+    keyword: string | undefined, 
     createDateRange: Date[]
 }
