@@ -25,10 +25,10 @@ export function CreateBlog() {
     const navigate = useNavigate();
 
     const schema = yup.object().shape({
-        title: yup.string().required("Vui lòng nhập tiêu đề!"),
-        description: yup.string().required("Vui lòng nhập mô tả!"),
-        content: yup.string().required("Vui lòng nhập nội dung!"),
-        coverImage: yup.string().url("Vui lòng thêm ảnh bìa!").required("Vui lòng thêm ảnh bìa!"),
+        title: yup.string().required("Please enter the title!"),
+        description: yup.string().required("Please enter the description!"),
+        content: yup.string().required("Please enter the content!"),
+        coverImage: yup.string().url("Please add a cover image!").required("Please add a cover image!"),
     });
 
     const { control, handleSubmit, formState: { errors } } = useForm<IBlogForm>({
@@ -77,8 +77,8 @@ export function CreateBlog() {
 
     const confirmCancel = () => {
         confirmDialog({
-            message: 'Bạn có chắc muốn bỏ blog này?',
-            header: 'Bỏ blog',
+            message: 'Are you sure you want to discard this blog?',
+            header: 'Discard Blog',
             defaultFocus: 'reject',
             acceptClassName: 'p-button-danger',
             accept: acceptCancel,
@@ -90,26 +90,26 @@ export function CreateBlog() {
             callCreateApi(async () => {
                 const dataRes = await blogApi.create(data);
                 if (dataRes.status === 201) {
-                    toast.current?.show({ severity: 'success', summary: 'Thành công', detail: 'Blog đã được tạo thành công', life: 3000 });
+                    toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Blog created successfully', life: 3000 });
                     startNavigating();
                     setTimeout(() => {
                         navigate('/admin/blog/list');
                     }, 3000);
                 } else {
-                    toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
+                    toast.current?.show({ severity: 'error', summary: 'Failure', detail: `${errorMessage}`, life: 3000 });
                 }
             });
         }
         catch (error) {
             console.error('Failed to create blog: ', error);
-            toast.current?.show({ severity: 'error', summary: 'Thất bại', detail: `${errorMessage}`, life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Failure', detail: `${errorMessage}`, life: 3000 });
         }
     };
 
     const confirmPublish = (data: IBlogForm) => {
         confirmDialog({
-            message: 'Bạn có chắc muốn tạo blog này?',
-            header: 'Tạo blog',
+            message: 'Are you sure you want to create this blog?',
+            header: 'Create Blog',
             defaultFocus: 'accept',
             accept: () => acceptPublish(data),
         });
@@ -119,7 +119,7 @@ export function CreateBlog() {
         <form onSubmit={handleSubmit(confirmPublish)} className="rounded-xl m-7 p-7 border bg-white">
             <ConfirmDialog />
             <Toast ref={toast} />
-            <span className="font-bold text-3xl text-gray-700">Tạo Blog</span>
+            <span className="font-bold text-3xl text-gray-700">Create Blog</span>
             <div className="flex flex-col gap-4 mt-4">
                 <div className="flex flex-col gap-4">
                     <div>
@@ -142,7 +142,7 @@ export function CreateBlog() {
                                     onClear={() => field.onChange('')}
                                     onBeforeSelect={() => field.onChange('')}
                                     onBeforeDrop={() => field.onChange('')}
-                                    emptyTemplate={<p className="m-0">Chọn một tấm ảnh bìa</p>}
+                                    emptyTemplate={<p className="m-0">Select a cover image</p>}
                                 />
                             )}
                         />
@@ -151,10 +151,10 @@ export function CreateBlog() {
                         )}
                     </div>
                     <div>
-                        <Input type="text" control={control} errors={errors} name='title' placeholder="Tiêu đề blog" className="w-full" />
+                        <Input type="text" control={control} errors={errors} name='title' placeholder="Blog title" className="w-full" />
                     </div>
                     <div>
-                        <Input type="text" control={control} errors={errors} name='description' placeholder="Mô tả" size="small" className="w-full" />
+                        <Input type="text" control={control} errors={errors} name='description' placeholder="Description" size="small" className="w-full" />
                     </div>
                     <div className="h-fit">
                         <Controller
@@ -163,7 +163,7 @@ export function CreateBlog() {
                             render={({ field }) => (
                                 <Editor
                                     value={field.value}
-                                    placeholder="Nội dung"
+                                    placeholder="Content"
                                     onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
                                     style={{ height: '350px' }}
                                 />
@@ -175,9 +175,9 @@ export function CreateBlog() {
                     </div>
                 </div>
                 <div className="flex gap-4 sm:justify-end justify-between">
-                    <Button htmlType="reset" onClick={confirmCancel} disabled={isNavigating} className="flex-1 bg-white text-red-500 border-red-500 font-bold max-w-40">Loại bỏ</Button>
+                    <Button htmlType="reset" onClick={confirmCancel} disabled={isNavigating} className="flex-1 bg-white text-red-500 border-red-500 font-bold max-w-40">Discard</Button>
                     <Button htmlType="submit" disabled={uploading || isNavigating} className="flex-1 font-bold max-w-40">
-                        {uploading ? 'Đang tải...' : 'Tạo blog'}
+                        {uploading ? 'Uploading...' : 'Create Blog'}
                     </Button>
                 </div>
             </div>

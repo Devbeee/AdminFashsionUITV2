@@ -1,32 +1,35 @@
 import * as yup from 'yup';
 
+const colorRegex = /^#([0-9A-F]{3}|[0-9A-F]{6})$/i;
+
 export const schema = yup.object().shape({
-    name: yup.string().required('Tên sản phẩm không được để trống'),
-    price: yup.number().required('Giá sản phẩm không được để trống').typeError('Giá sản phẩm phải là số'),
-    discount: yup.number().typeError('Giảm giá phải là số').transform((value, originalValue) => originalValue === '' ? 0 : value).min(0, 'Giảm giá phải là số hợp lệ'),
-    description: yup.string().required('Mô tả sản phẩm không được để trống'),
+    name: yup.string().required('Please enter product name'),
+    price: yup.number().required('Please enter product price').typeError('Price must be a number'),
+    discount: yup.number().typeError('Discount must be a number').transform((value, originalValue) => originalValue === '' ? 0 : value).min(0, 'Discount must be a valid number'),
+    description: yup.string().required('Please enter product description'),
     categoryType: yup.object({
-        value: yup.string().required("Vui lòng chọn loại sản phẩm"),
+        value: yup.string().required("Please select a category"),
       }),
-    sizes: yup.array().min(1, "Vui lòng chọn ít nhất 1 kích thước").of(
-        yup.string().required("Vui lòng chọn ít nhất 1 kích thước")
+    sizes: yup.array().min(1, "Please select a size").of(
+        yup.string().required("Please select a size")
     ).required(),
-    numberOfColor: yup.string().required('Số lượng màu sắc không được để trống').typeError('Số lượng màu sắc phải là số'),
+    numberOfColor: yup.string().required('Please enter number of color').typeError('Number of color must be a number'),
     colors: yup.array().of(
-        yup.string().matches(/^#([0-9A-F]{3}|[0-9A-F]{6})$/i, 'Màu sắc phải là mã màu hợp lệ')
-    ).test('unique-colors', 'Màu sắc không được trùng nhau', 
+        yup.string().matches(colorRegex, 'Invalid color code')
+    ).test('unique-colors', 'Colors must be unique', 
         (value) => {
             if (!value || value.length === 0) return true;
             const uniqueColors = new Set(value);
             return uniqueColors.size === value.length;
         }).required(),
     colorNames: yup.array().of(
-        yup.string().required("Vui lòng cung cấp tên màu sắc")
+        yup.string().required("Please enter color name")
     ).required(),
     imgUrls: yup.array().of(
-        yup.string().url("Đường dẫn hình ảnh không hợp lệ").defined("Vui lòng cung cấp hình ảnh")
-    ).required("Vui lòng cung cấp hình ảnh"),
+        yup.string().url("Invalid image").defined("Plase provide image").notOneOf([""], "Please provide image")
+    ).required("Please provide image"),
     stocks: yup.array().of(
-        yup.number().min(0, "Số lượng hàng phải hợp lệ").required("Vui lòng cung cấp số lượng hàng").typeError("Số lượng hàng phải là số")
-    ).required("Vui lòng cung cấp số lượng hàng")
+        yup.number().min(0, "Product stock must be valid").required("Please enter stock").typeError("Stock must be a number")
+    ).required("Please enter stock"),
+    stockAll: yup.number().min(0, "Product stock must be valid").typeError("Stock must be a number"),
 });

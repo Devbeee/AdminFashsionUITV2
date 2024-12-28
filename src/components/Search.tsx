@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller } from 'react-hook-form'
+
 import { InputText } from 'primereact/inputtext'
 import { Button } from 'primereact/button'
 
@@ -38,10 +39,10 @@ export const Search: React.FC<SearchProps> = ({
   ${className} 
   ${inputSizes[size]} 
   `
-  const ErrorHandler = () => {
-    errors?.['searchValue'] ? setIsInvalid(true) : setIsInvalid(false)
-    return undefined
-  }
+
+  useEffect(() => {
+    setIsInvalid(!!errors?.['searchValue'])
+  }, [errors])
 
   return (
     <Controller
@@ -64,8 +65,6 @@ export const Search: React.FC<SearchProps> = ({
             {...field}
             invalid={isInvalid}
           />
-
-          {ErrorHandler()}
         </div>
       )}
     />

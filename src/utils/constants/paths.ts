@@ -7,6 +7,8 @@ export const PATH = {
   blogCreate: '/admin/blog/create',
   blogDetail: '/admin/blog/detail/:slug',
   blogUpdate: '/admin/blog/update/:slug',
+  orders: '/admin/orders',
+  orderDetail: '/admin/order-detail/:orderId',
   discount: 'discount',
   notFound: '*'
 }
