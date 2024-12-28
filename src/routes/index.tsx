@@ -10,7 +10,8 @@ import {
   UpdateBlog,
   Login,
   NotFound,
-  Product,
+  Product, 
+  Discount,
   Orders,
   OrderDetail
 } from '@/pages'
@@ -57,6 +58,10 @@ export const router = createBrowserRouter([
       {
         path: PATH.product,
         element: <Product />
+      },
+      {
+        path: PATH.discount,
+        element: <Discount />
       }
     ]
   },

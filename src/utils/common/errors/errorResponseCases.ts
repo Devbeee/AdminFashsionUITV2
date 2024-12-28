@@ -12,5 +12,7 @@ export const errorResponseCases: Record<ErrorCode | string, string> = {
   [ErrorCode.INVITATION_NOT_FOUND]: 'Không tìm thấy lời mời!',
   [ErrorCode.CATEGORY_ALREADY_EXIST]: 'Danh mục đã tồn tại!',
   [ErrorCode.CATEGORY_NOT_FOUND]: 'Không tìm thấy danh mục!',
+  [ErrorCode.DISCOUNT_ALREADY_EXIST]: 'Sản phẩm này đã có giảm giá!',
+  [ErrorCode.DISCOUNT_NOT_FOUND]: 'Không tìm thấy giảm giá cho sản phẩm này!',
   All: 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại'
 }

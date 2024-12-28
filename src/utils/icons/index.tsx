@@ -6,7 +6,7 @@ import { CgDanger } from 'react-icons/cg'
 import { HiOutlinePencilSquare } from 'react-icons/hi2'
 import { LuSearch } from 'react-icons/lu'
 import { IoMdClose, IoIosList, IoIosColorWand, IoIosClose } from 'react-icons/io'
-import { RiDeleteBin6Line } from 'react-icons/ri'
+import { RiDeleteBin6Line, RiDiscountPercentLine } from 'react-icons/ri'
 import { FiLogOut, FiBox, FiDollarSign, FiPercent, FiTag, FiLayers, FiGrid, FiBookOpen } from 'react-icons/fi'
 import { CiViewList } from 'react-icons/ci'
 import {
@@ -18,6 +18,7 @@ import {
   MdOutlineInventory2,
   MdOutlineImage
 } from 'react-icons/md'
+import { BiCategory } from "react-icons/bi";
 
 export const icons = {
   menu: <MdMenu />,
@@ -58,5 +59,7 @@ export const icons = {
   downArrow: <FaArrowDownLong />,
   upArrow: <FaArrowUpLong />,
   warning: <IoWarningOutline />,
-  restore: <FaTrashRestore />
+  restore: <FaTrashRestore />,
+  category: <BiCategory />,
+  discount: <RiDiscountPercentLine />,
 }

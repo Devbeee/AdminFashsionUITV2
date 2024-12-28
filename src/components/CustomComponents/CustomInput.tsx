@@ -4,6 +4,8 @@ import { Controller, ControllerRenderProps } from 'react-hook-form'
 import { InputNumber } from 'primereact/inputnumber'
 import { InputText } from 'primereact/inputtext'
 import { Password } from 'primereact/password'
+import { Dropdown } from 'primereact/dropdown'
+import { Calendar } from 'primereact/calendar'
 
 type CustomInputProps = {
   name: string
@@ -14,10 +16,13 @@ type CustomInputProps = {
   floatLabel?: boolean
   size?: 'large' | 'medium' | 'small'
   className?: string
-  type?: 'text' | 'password' | 'number'
+  type?: 'text' | 'password' | 'number' | 'select' | 'calendar'
   onChange?: (e: any) => void
   disabled?: boolean
   status?: 'error' | 'warning'
+  options?: any[]
+  optionLabel?: string
+  optionValue?: string
 }
 
 export const Input: React.FC<CustomInputProps> = ({
@@ -33,6 +38,9 @@ export const Input: React.FC<CustomInputProps> = ({
   onChange,
   disabled = false,
   status,
+  options = [],
+  optionValue,
+  optionLabel
 }) => {
   const isInvalid = status === 'error' || !!errors?.[name]
   const inputSizes = {
@@ -66,7 +74,7 @@ export const Input: React.FC<CustomInputProps> = ({
             onBlur={field.onBlur}
             onValueChange={(e) => field.onChange(e)}
             inputClassName={inputClassNames}
-            className={inputClassNames}
+            className={inputClassNames.replace('py-2', '')}
             useGrouping={false}
           />
         ) : (
@@ -79,8 +87,26 @@ export const Input: React.FC<CustomInputProps> = ({
           />
         )
       case 'password':
+        return <Password {...elementProps} inputClassName={inputClassNames} feedback={false} toggleMask />
+      case 'select':
         return (
-          <Password {...elementProps} inputClassName={inputClassNames} feedback={false} toggleMask/>
+          <Dropdown
+            {...elementProps}
+            options={options}
+            className={inputClassNames}
+            optionValue={optionValue}
+            optionLabel={optionLabel}
+            filter
+          />
+        )
+      case 'calendar':
+        return (
+          <Calendar
+            {...elementProps}
+            className={inputClassNames}
+            dateFormat='dd/mm/yy'
+            showIcon
+          />
         )
       case 'text':
       default:

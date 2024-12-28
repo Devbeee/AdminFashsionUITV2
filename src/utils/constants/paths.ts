@@ -9,6 +9,6 @@ export const PATH = {
   blogUpdate: '/admin/blog/update/:slug',
   orders: '/admin/orders',
   orderDetail: '/admin/order-detail/:orderId',
-
+  discount: 'discount',
   notFound: '*'
 }

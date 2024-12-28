@@ -29,6 +29,16 @@ export const SIDE_BAR_ITEM_LIST = [
         path: '/admin/product',
         icon: icons.product,
         title: 'All Products'
+      },
+      {
+        path: '/admin/manage-category',
+        icon: icons.category,
+        title: 'Category'
+      },
+      {
+        path: '/admin/discount',
+        icon: icons.discount,
+        title: 'Discount'
       }
     ]
   },
