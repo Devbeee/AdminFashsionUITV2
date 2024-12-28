@@ -19,7 +19,7 @@ export function Discount() {
   const [discountProducts, setDiscountProducts] = useState<IDiscount[]>([])
   const { value: isModalVisible, setTrue: showModal, setFalse: hideModal } = useBoolean(false)
   const { value: isDiscountProductChange, toggle: toggleDiscountProductChange } = useBoolean(false)
-  const [selectedDiscountProducts, setSelectedDiscountProducts] = useState<IDiscount[] | null>(null)
+  const [selectedDiscountProducts, setSelectedDiscountProducts] = useState<IDiscount[]>([])
   const [selectedDiscountProduct, setSelectedDiscountProduct] = useState<IDiscount | null>(null)
 
   const showUpdateModal = (product: IDiscount) => {
@@ -33,6 +33,7 @@ export function Discount() {
       const { data } = await discountApi.delete(id)
       if (data) {
         toggleDiscountProductChange()
+        setSelectedDiscountProducts((prevItems) => (prevItems.filter((item) => item.id !== id)))
         toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Remove Successfully', life: 3000 })
       } else {
         toast.current?.show({ severity: 'error', summary: 'Error', detail: `${errorMessage}`, life: 3000 })
@@ -47,7 +48,7 @@ export function Discount() {
         const { data } = await discountApi.removeMultiple(ids)
         if (data) {
           toggleDiscountProductChange()
-          setSelectedDiscountProducts(null)
+          setSelectedDiscountProducts([])
           toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Remove Successfully', life: 3000 })
         } else {
           toast.current?.show({ severity: 'error', summary: 'Error', detail: `${errorMessage}`, life: 3000 })
@@ -120,7 +121,7 @@ export function Discount() {
           paginator
           rows={7}
           rowsPerPageOptions={[7, 25, 50]}
-          selection={selectedDiscountProducts}
+          selection={selectedDiscountProducts.length ? selectedDiscountProducts : null}
           onSelectionChange={(e: any) => setSelectedDiscountProducts(e.value)}
           dataKey='id'
           header={

@@ -19,7 +19,7 @@ export function ManageCategory() {
   const [categories, setCategories] = useState<ICategory[]>([])
   const { value: isModalVisible, setTrue: showModal, setFalse: hideModal } = useBoolean(false)
   const { value: isCategoryChange, toggle: toggleCategoryChange } = useBoolean(false)
-  const [selectedCategories, setSelectedCategories] = useState<ICategory[] | null>(null)
+  const [selectedCategories, setSelectedCategories] = useState<ICategory[]>([])
   const [selectedCategory, setSelectedCategory] = useState<ICategory | null>(null)
 
   const showUpdateModal = (category: ICategory) => {
@@ -33,6 +33,7 @@ export function ManageCategory() {
       const { data } = await manageCategoryApi.delete(id)
       if (data) {
         toggleCategoryChange()
+        setSelectedCategories((prevItems) => (prevItems.filter((item) => item.id !== id)))
         toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Remove Successfully', life: 3000 })
       } else {
         toast.current?.show({ severity: 'error', summary: 'Error', detail: `${errorMessage}`, life: 3000 })
@@ -47,7 +48,7 @@ export function ManageCategory() {
         const { data } = await manageCategoryApi.removeMultiple(ids)
         if (data) {
           toggleCategoryChange()
-          setSelectedCategories(null)
+          setSelectedCategories([])
           toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Remove Successfully', life: 3000 })
         } else {
           toast.current?.show({ severity: 'error', summary: 'Error', detail: `${errorMessage}`, life: 3000 })
@@ -120,7 +121,7 @@ export function ManageCategory() {
           paginator
           rows={7}
           rowsPerPageOptions={[7, 25, 50]}
-          selection={selectedCategories}
+          selection={selectedCategories.length ? selectedCategories : null}
           onSelectionChange={(e: any) => setSelectedCategories(e.value)}
           dataKey='id'
           header={
