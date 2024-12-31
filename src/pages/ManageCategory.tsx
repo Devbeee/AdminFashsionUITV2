@@ -6,13 +6,13 @@ import { Column } from 'primereact/column'
 import { Button as Btn } from 'primereact/button'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import { Toast } from 'primereact/toast'
+import { ProgressSpinner } from 'primereact/progressspinner'
 
 import { CategoryPopup, Button } from '@/components'
 import { ICategory } from '@/interfaces'
 import { icons } from '@/utils'
 import { useApi, useBoolean } from '@/hooks'
 import { manageCategoryApi } from '@/apis'
-import { ProgressSpinner } from 'primereact/progressspinner'
 
 export function ManageCategory() {
   const toast = useRef<Toast>(null)
