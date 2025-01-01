@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 import { BreadCrumb } from 'primereact/breadcrumb'
 import { Button } from 'primereact/button'
@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({ toggleSideBar }) => {
     handleSubmit,
     reset
   } = useForm({ defaultValues, resolver: yupResolver(schema) })
-  const onSubmit = (data: FormData) => {
+  const onSubmit = () => {
     reset()
   }
   const breadCrumItems = getBreadCrumLabel(location)
@@ -61,7 +61,12 @@ export const Header: React.FC<HeaderProps> = ({ toggleSideBar }) => {
         <div className='text-gray-600'>{icons.setting}</div>
         <Button className='p-0 ring-0' rounded text>
           <span className='px-2'>Hi {currentUser?.fullName}!</span>
-          <Avatar icon={icons.user} image={currentUser?.avatar} className='text-white bg-partial-primary-500' shape='circle' />
+          <Avatar
+            icon={icons.user}
+            image={currentUser?.avatar}
+            className='text-white bg-partial-primary-500'
+            shape='circle'
+          />
         </Button>
       </div>
     </div>
