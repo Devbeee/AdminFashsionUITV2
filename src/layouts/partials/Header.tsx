@@ -14,9 +14,6 @@ import { useAuthStore } from '@/stores'
 type HeaderProps = {
   toggleSideBar: () => void
 }
-type FormData = {
-  searchValue: string
-}
 export const Header: React.FC<HeaderProps> = ({ toggleSideBar }) => {
   const { currentUser } = useAuthStore()
   const defaultValues = {
