@@ -24,7 +24,7 @@ type PaginationType = {
 export function Orders() {
   const toast = useRef<Toast>(null)
   const { loading: callOrderApiLoading, callApi: callOrderApi } = useApi<void>()
-
+  console.log(1)
   const [searchParam, setSearchParam] = useSearchParams()
   const [orders, setOrders] = useState<IOrderReturn[]>([])
   const [selectedOrder, setSelectedOrder] = useState<IOrderReturn>()
