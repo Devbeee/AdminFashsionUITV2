@@ -6,6 +6,7 @@ import { Column } from 'primereact/column'
 import { Button as Btn } from 'primereact/button'
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog'
 import { Toast } from 'primereact/toast'
+import { ProgressSpinner } from 'primereact/progressspinner'
 
 import { CategoryPopup, Button } from '@/components'
 import { ICategory } from '@/interfaces'
@@ -33,7 +34,7 @@ export function ManageCategory() {
       const { data } = await manageCategoryApi.delete(id)
       if (data) {
         toggleCategoryChange()
-        setSelectedCategories((prevItems) => (prevItems.filter((item) => item.id !== id)))
+        setSelectedCategories((prevItems) => prevItems.filter((item) => item.id !== id))
         toast.current?.show({ severity: 'success', summary: 'Success', detail: 'Remove Successfully', life: 3000 })
       } else {
         toast.current?.show({ severity: 'error', summary: 'Error', detail: `${errorMessage}`, life: 3000 })
@@ -119,6 +120,18 @@ export function ManageCategory() {
           scrollable
           scrollHeight='638px'
           paginator
+          emptyMessage={
+            loading ? (
+              <div className='flex flex-col items-center justify-center py-10 text-gray-500'>
+                <ProgressSpinner />
+              </div>
+            ) : (
+              <div className='flex flex-col items-center justify-center py-10 text-gray-500'>
+                <p className='text-lg font-semibold'>No Category Found</p>
+                <p className='text-sm'>Try adjusting your search or filter criteria.</p>
+              </div>
+            )
+          }
           rows={7}
           rowsPerPageOptions={[7, 25, 50]}
           selection={selectedCategories.length ? selectedCategories : null}

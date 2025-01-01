@@ -10,10 +10,11 @@ import {
   UpdateBlog,
   Login,
   NotFound,
-  Product, 
+  Product,
   Discount,
   Orders,
-  OrderDetail
+  OrderDetail,
+  Dashboard
 } from '@/pages'
 
 import { ProtectedRoute } from './ProtectedRoute'
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
+      {
+        path: PATH.dashboard,
+        element: <Dashboard />
+      },
       {
         path: PATH.orders,
         element: <Orders />
