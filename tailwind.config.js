@@ -24,7 +24,7 @@ export default {
         1200: '1200px'
       },
       screens: {
-        xs: '480px'
+        xs: '275px'
       },
       willChange: {
         opacity: 'opacity'

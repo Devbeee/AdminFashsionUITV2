@@ -17,14 +17,9 @@ export const SIDE_BAR_ITEM_LIST: SideBarMenuItemProps[] = [
     group: 'DASHBOARDS',
     items: [
       {
-        path: '/',
+        path: PATH.dashboard,
         icon: icons.home,
         title: 'Dashboard'
-      },
-      {
-        path: '/test',
-        icon: icons.home,
-        title: 'Profit'
       },
       {
         path: PATH.orders,

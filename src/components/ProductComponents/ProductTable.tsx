@@ -14,7 +14,7 @@ import { ProductRow } from "./ProductRow";
 type ProductTableProps = {
     category: ICategory[];
     query: string;
-    filter: keyof typeof sortFunctions;
+    filter: string;
     toggleProductChange: () => void;
     isProductChange: boolean;
 }
