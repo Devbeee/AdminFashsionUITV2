@@ -117,7 +117,7 @@ export function OrderDetail() {
             <div className='flex gap-6 mb-2'>
               <div className='flex-1 flex flex-col gap-4'>
                 <div className='font-semibold flex gap-2 text-xl'>
-                  Consignee:<span className='text-lg font-normal'>{order?.address.name}</span>
+                  Consignee:<span className='text-lg font-normal'>{order?.address?.name}</span>
                 </div>
                 <div>
                   <div className='font-semibold flex gap-2 text-xl'>
@@ -210,91 +210,93 @@ export function OrderDetail() {
               </div>
             </div>
             <div>
-              <DataTable
-                onMouseDownCapture={(e) => {
-                  e.stopPropagation()
-                }}
-                value={order?.products}
-                tableStyle={{ minWidth: '50rem' }}
-                loading={callOrderApiLoading}
-                className='rounded-lg overflow-hidden border border-solid border-slate-200'
-              >
-                <Column
-                  alignHeader={'center'}
-                  header='Product ID'
-                  body={(data: IOrderProduct) => <div className='text-left font-semibold'>{data?.id}</div>}
-                />
-                <Column
-                  alignHeader={'center'}
-                  header='Product Image'
-                  body={(data: IOrderProduct) => (
-                    <div className=' flex items-center justify-center'>
-                      <img className='w-20 h-auto' src={`${data.imgUrl}`} />
-                    </div>
-                  )}
-                />
-                <Column
-                  alignHeader={'center'}
-                  header='Product name'
-                  body={(data: IOrderProduct) => <div className='text-center'>{data?.name}</div>}
-                />
-                <Column
-                  alignHeader={'center'}
-                  header='Size'
-                  body={(data: IOrderProduct) => <div className='text-center'>{data?.size}</div>}
-                />
-                <Column
-                  alignHeader={'left'}
-                  header='Color'
-                  body={(data: IOrderProduct) => (
-                    <div className={`text-center flex items-center gap-2 justify-start`}>
-                      {data?.color && (
-                        <div
-                          style={{ backgroundColor: data?.color }}
-                          className={`w-4 h-4 border-[1px] border-solid border-black indent-10`}
-                        ></div>
-                      )}
-                      {data?.colorName}
-                    </div>
-                  )}
-                />
-                <Column
-                  alignHeader={'center'}
-                  header='Original price'
-                  body={(data: IOrderProduct) => (
-                    <div className='text-center'>{data?.price.toLocaleString('de-De')}đ</div>
-                  )}
-                />
-                <Column
-                  alignHeader={'center'}
-                  header='Discount'
-                  body={(data: IOrderProduct) => <div className='text-center'>{data?.discount}%</div>}
-                />
-                <Column
-                  alignHeader={'center'}
-                  header='Price'
-                  body={(data: IOrderProduct) => (
-                    <div className='text-center'>
-                      {((data?.price * (100 - data?.discount)) / 100).toLocaleString('de-De')}đ
-                    </div>
-                  )}
-                />
+              {order.products.length > 0 && (
+                <DataTable
+                  onMouseDownCapture={(e) => {
+                    e.stopPropagation()
+                  }}
+                  value={order?.products}
+                  tableStyle={{ minWidth: '50rem' }}
+                  loading={callOrderApiLoading}
+                  className='rounded-lg overflow-hidden border border-solid border-slate-200'
+                >
+                  <Column
+                    alignHeader={'center'}
+                    header='Product ID'
+                    body={(data: IOrderProduct) => <div className='text-left font-semibold'>{data?.id}</div>}
+                  />
+                  <Column
+                    alignHeader={'center'}
+                    header='Product Image'
+                    body={(data: IOrderProduct) => (
+                      <div className=' flex items-center justify-center'>
+                        <img className='w-20 h-auto' src={`${data.imgUrl}`} />
+                      </div>
+                    )}
+                  />
+                  <Column
+                    alignHeader={'center'}
+                    header='Product name'
+                    body={(data: IOrderProduct) => <div className='text-center'>{data?.name}</div>}
+                  />
+                  <Column
+                    alignHeader={'center'}
+                    header='Size'
+                    body={(data: IOrderProduct) => <div className='text-center'>{data?.size}</div>}
+                  />
+                  <Column
+                    alignHeader={'left'}
+                    header='Color'
+                    body={(data: IOrderProduct) => (
+                      <div className={`text-center flex items-center gap-2 justify-start capitalize`}>
+                        {data?.color && (
+                          <div
+                            style={{ backgroundColor: data?.color }}
+                            className={`w-4 h-4 border-[1px] border-solid border-black indent-10 `}
+                          ></div>
+                        )}
+                        {data?.colorName}
+                      </div>
+                    )}
+                  />
+                  <Column
+                    alignHeader={'center'}
+                    header='Original price'
+                    body={(data: IOrderProduct) => (
+                      <div className='text-center'>{data?.price.toLocaleString('de-De')}đ</div>
+                    )}
+                  />
+                  <Column
+                    alignHeader={'center'}
+                    header='Discount'
+                    body={(data: IOrderProduct) => <div className='text-center'>{data?.discount}%</div>}
+                  />
+                  <Column
+                    alignHeader={'center'}
+                    header='Price'
+                    body={(data: IOrderProduct) => (
+                      <div className='text-center'>
+                        {((data?.price * (100 - data?.discount)) / 100).toLocaleString('de-De')}đ
+                      </div>
+                    )}
+                  />
 
-                <Column
-                  alignHeader={'center'}
-                  header='Quantity'
-                  body={(data: IOrderProduct) => <div className='text-center'>{data?.quantity}</div>}
-                />
-                <Column
-                  alignHeader={'center'}
-                  header='Total Price'
-                  body={(data: IOrderProduct) => (
-                    <div className='text-center text-red-500 font-semibold'>
-                      {(((data?.price * (100 - data?.discount)) / 100) * data.quantity).toLocaleString('de-De')}đ
-                    </div>
-                  )}
-                />
-              </DataTable>
+                  <Column
+                    alignHeader={'center'}
+                    header='Quantity'
+                    body={(data: IOrderProduct) => <div className='text-center'>{data?.quantity}</div>}
+                  />
+                  <Column
+                    alignHeader={'center'}
+                    header='Total Price'
+                    body={(data: IOrderProduct) => (
+                      <div className='text-center text-red-500 font-semibold'>
+                        {(((data?.price * (100 - data?.discount)) / 100) * data.quantity).toLocaleString('de-De')}đ
+                      </div>
+                    )}
+                  />
+                </DataTable>
+              )}
             </div>
           </div>
         </div>

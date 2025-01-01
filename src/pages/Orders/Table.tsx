@@ -41,7 +41,7 @@ export const Table: React.FC<TableProps> = ({
         value={orders}
         tableStyle={{ minWidth: '50rem' }}
         loading={callOrderApiLoading}
-        className='rounded-lg overflow-hidden'
+        className='rounded-t-lg overflow-hidden'
       >
         <Column
           alignHeader={'center'}
@@ -69,7 +69,7 @@ export const Table: React.FC<TableProps> = ({
               <img className='w-20 h-auto' src={data?.products[0]?.imgUrl}></img>
               <div className='flex flex-col '>
                 <div className='max-w-48 line-clamp-2 font-semibold'>{data?.products[0]?.name}</div>
-                <div>
+                <div className='capitalize'>
                   {data?.products[0]?.colorName} / {data?.products[0]?.size}
                 </div>
                 <div className={`font-semibold text-red-500 ${data.deletedAt && 'line-through'}`}>
