@@ -79,12 +79,12 @@ export function BlogDetail() {
             <Toast ref={toast} />
             <ConfirmDialog />
                 {loadingBlog ? (
-                    <div className='flex justify-center items-center min-h-[100vh]'>
+                    <div className='flex justify-center items-center min-h-[100vh] max-w-[1200px]'>
                         <ProgressSpinner />
                     </div>
                 ):(
                     blog ? (
-                        <div className="flex flex-wrap md:flex-row gap-6 justify-between w-full">
+                        <div className="flex flex-wrap md:flex-row gap-6 justify-between w-full max-w-[1200px]">
                             <div className='w-full'>
                                 <div className="w-full flex justify-between items-start text-left flex-col sm:flex-row">
                                     <div className="flex flex-col gap-2 justify-start items-start">
