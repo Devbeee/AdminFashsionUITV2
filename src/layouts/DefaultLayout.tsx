@@ -29,7 +29,7 @@ export function DefaultLayout() {
     <div>
       <SideBar sideBarVisible={sideBarVisible} />
 
-      <div className='bg-slate-200 min-h-screen'>
+      <div className='bg-[#eef3f8] min-h-screen'>
         <Header toggleSideBar={sideBarVisible.toggle} />
         <Outlet />
       </div>
