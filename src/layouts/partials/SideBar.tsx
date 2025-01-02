@@ -11,7 +11,7 @@ type ISideBar = {
 
 export const SideBar: React.FC<ISideBar> = ({ sideBarVisible }) => {
   const sideBarItems = SIDE_BAR_ITEM_LIST.map((item) => ({
-    template: <SideBarMenuItem onClick={() => sideBarVisible.setFalse()} {...item} />
+    template: <SideBarMenuItem sideBarVisible={sideBarVisible} {...item} />
   }))
 
   return (

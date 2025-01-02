@@ -5,7 +5,7 @@ type SideBarItemProps = {
   path: string
   icon: ReactElement
   title: string
-  onClick: (data: any) => void
+  onClick: (data?: unknown) => void
 }
 export const SideBarItem: React.FC<SideBarItemProps> = ({ path, icon, title, onClick }) => {
   const location = useLocation()

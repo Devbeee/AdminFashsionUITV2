@@ -61,7 +61,6 @@ export function CreateBlog() {
                     stream: () => file.stream(),
                     text: () => file.text(),
                     objectURL,
-                    bytes: () => file.arrayBuffer().then(buffer => new Uint8Array(buffer)),
                 };
                 fileUploadRef.current.clear();
                 fileUploadRef.current.setUploadedFiles([uploadedFile]);

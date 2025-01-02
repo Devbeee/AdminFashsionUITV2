@@ -24,7 +24,6 @@ type PaginationType = {
 export function Orders() {
   const toast = useRef<Toast>(null)
   const { loading: callOrderApiLoading, callApi: callOrderApi } = useApi<void>()
-
   const [searchParam, setSearchParam] = useSearchParams()
   const [orders, setOrders] = useState<IOrderReturn[]>([])
   const [selectedOrder, setSelectedOrder] = useState<IOrderReturn>()
@@ -138,59 +137,57 @@ export function Orders() {
   return (
     <div className='w-full h-full'>
       <Toast ref={toast} />
-      <div className='h-full w-[95%] m-auto '>
-        <div>
-          <div className='flex flex-row w-[95%] h-fit justify-between m-auto mt-6'>
-            <div className='text-black-light text-2xl font-bold leading-tight text-left'>Order List</div>
-            <div>
-              <div className='flex items-end gap-4'>
-                <div className='flex items-center gap-2'>
-                  <span className='flex items-center text-lg text-black'>Filter:</span>
-                  <Dropdown
-                    value={currentSearchParams.filter}
-                    onChange={(e) => handleChangeFilterOption(e.value)}
-                    options={filterOptions}
-                    optionLabel='label'
-                    optionValue='value'
-                    className='w-40'
-                  />
-                </div>
-                <div className='flex items-center gap-2'>
-                  <span className='flex items-center text-lg text-black'>Sort:</span>
-                  <Dropdown
-                    optionLabel='label'
-                    optionValue='value'
-                    value={currentSearchParams.sortBy}
-                    onChange={(e) => handleChangeSortOption(e.value)}
-                    options={sortOptions}
-                    valueTemplate={selectedOptionTemplate}
-                    itemTemplate={sortOptionTemplate}
-                    className='w-36'
-                  />
-                </div>
-                <div className={`relative flex items-center gap-2 `}>
-                  <Button
-                    size='small'
-                    className='absolute w-10 h-10 p-2 text-2xl text-gray-500 ring-0 left-1'
-                    type='submit'
-                    rounded
-                    text
-                    icon={icons.search}
-                    onClick={handleSearchOrder}
-                  ></Button>
-                  <InputText
-                    placeholder='Order ID, Product name,...'
-                    size={'small'}
-                    className={` pl-10  w-80 `}
-                    onChange={(e) => setInputKeyword(e.target.value)}
-                    value={inputKeyword}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSearchOrder()
-                      }
-                    }}
-                  />
-                </div>
+      <div className='h-full w-[95%] m-auto'>
+        <div className='flex flex-row w-[95%] h-fit justify-between m-auto mt-6   mb-4'>
+          <div className='text-black-light text-2xl font-bold leading-tight text-left'>Order List</div>
+          <div>
+            <div className='flex items-end gap-4'>
+              <div className='flex items-center gap-2'>
+                <span className='flex items-center text-lg text-black'>Filter:</span>
+                <Dropdown
+                  value={currentSearchParams.filter}
+                  onChange={(e) => handleChangeFilterOption(e.value)}
+                  options={filterOptions}
+                  optionLabel='label'
+                  optionValue='value'
+                  className='w-40'
+                />
+              </div>
+              <div className='flex items-center gap-2'>
+                <span className='flex items-center text-lg text-black'>Sort:</span>
+                <Dropdown
+                  optionLabel='label'
+                  optionValue='value'
+                  value={currentSearchParams.sortBy}
+                  onChange={(e) => handleChangeSortOption(e.value)}
+                  options={sortOptions}
+                  valueTemplate={selectedOptionTemplate}
+                  itemTemplate={sortOptionTemplate}
+                  className='w-36'
+                />
+              </div>
+              <div className={`relative flex items-center gap-2 `}>
+                <Button
+                  size='small'
+                  className='absolute w-10 h-10 p-2 text-2xl text-gray-500 ring-0 left-1'
+                  type='submit'
+                  rounded
+                  text
+                  icon={icons.search}
+                  onClick={handleSearchOrder}
+                ></Button>
+                <InputText
+                  placeholder='Order ID, Product name,...'
+                  size={'small'}
+                  className={` pl-10  w-80 `}
+                  onChange={(e) => setInputKeyword(e.target.value)}
+                  value={inputKeyword}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearchOrder()
+                    }
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -203,7 +200,7 @@ export function Orders() {
           handleRestoreOrder={handleRestoreOrder}
           deleteConfirm={deleteConfirm}
         />
-        <div className=' bg-white mt-4 rounded-lg'>
+        <div className=' bg-white rounded-b-lg'>
           <div>
             <Paginator
               rows={pagination?.limit}

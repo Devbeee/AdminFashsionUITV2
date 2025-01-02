@@ -1,7 +1,18 @@
 import { PATH } from '@/utils/constants/paths'
 import { icons } from '@/utils/icons'
+import { ReactElement } from 'react'
 
-export const SIDE_BAR_ITEM_LIST = [
+type SideBarItemType = {
+  path: string
+  icon: ReactElement
+  title: string
+  onClick?: (data?: any) => void
+}
+type SideBarMenuItemProps = {
+  group?: string
+  items: SideBarItemType[]
+}
+export const SIDE_BAR_ITEM_LIST: SideBarMenuItemProps[] = [
   {
     group: 'DASHBOARDS',
     items: [
@@ -49,15 +60,18 @@ export const SIDE_BAR_ITEM_LIST = [
         path: '/admin/blog/create',
         icon: icons.create,
         title: 'Create Blog'
-      },
+      }
     ]
   },
   {
     items: [
       {
-        path: '/',
+        path: '/admin',
         icon: icons.logout,
-        title: 'Logout'
+        title: 'Logout',
+        onClick: () => {
+          console.log('Logout')
+        }
       }
     ]
   }

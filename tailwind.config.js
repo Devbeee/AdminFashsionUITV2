@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
-const colors = require('tailwindcss/colors')
+import colors from 'tailwindcss/colors';
+
 export default {
   darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -50,11 +51,9 @@ export default {
           '0%': {
             left: '0px'
           },
-
           '50%': {
             left: '3%'
           },
-
           '100%': {
             left: '0px'
           }
@@ -110,7 +109,7 @@ export default {
             backgroundColor: '#6366f1'
           }
         }
-      })
+      });
     }
   ]
-}
+};
