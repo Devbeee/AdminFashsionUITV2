@@ -7,12 +7,19 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { Dialog } from 'primereact/dialog'
 import { Toast } from 'primereact/toast'
 
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+
 import { useApi } from '@/hooks'
 import { discountApi, productApi } from '@/apis'
 import { IDiscount, IDiscountInput, IProduct } from '@/interfaces'
 
 import { Button } from './CustomComponents/CustomButton'
 import { Input } from './CustomComponents/CustomInput'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
 
 type DialogComp = {
   visible: boolean
@@ -75,8 +82,13 @@ export const DiscountPopup: React.FC<DialogComp> = ({
   }
 
   const handleAddDiscount = (discountData: IDiscountInput) => {
+    const adjustedDiscountData = {
+      ...discountData,
+      date: dayjs(discountData.date).tz('UTC', true).toDate()
+    }
+
     callApiDiscount(async () => {
-      const { data } = await discountApi.create(discountData)
+      const { data } = await discountApi.create(adjustedDiscountData)
       if (data) {
         reset()
         setHide()
@@ -92,8 +104,12 @@ export const DiscountPopup: React.FC<DialogComp> = ({
   }
 
   const handleUpdateDiscount = (id: string, discountData: IDiscountInput) => {
+    const adjustedDiscountData = {
+      ...discountData,
+      date: dayjs(discountData.date).tz('UTC', true).toDate()
+    }
     callApiDiscount(async () => {
-      const { data } = await discountApi.update(id, discountData)
+      const { data } = await discountApi.update(id, adjustedDiscountData)
       if (data) {
         reset()
         setHide()
