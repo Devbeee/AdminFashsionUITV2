@@ -7,7 +7,7 @@ import { Toast } from 'primereact/toast';
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 import { Button } from "@/components";
-import { convertStringDate } from '@/utils/helpers';
+import { convertStringDate, PATH } from '@/utils';
 import { blogApi } from "@/apis";
 import { IBlog } from "@/interfaces";
 import { useBoolean, useApi } from "@/hooks";
@@ -32,7 +32,7 @@ export function BlogDetail() {
                         toast.current?.show({ severity: 'info', summary: 'Success', detail: 'This blog has been deleted', life: 3000 });
                         startNavigating();
                         setTimeout(() => {
-                            navigate('/admin/blog/list');
+                            navigate(PATH.blogList);
                         }, 3000);
                     }
                     else {
@@ -95,7 +95,7 @@ export function BlogDetail() {
                                         </div>
                                     </div>
                                     <div className="flex flex-col min-w-fit items-center justify-start gap-1">
-                                        <Avatar image={blog.author.avatar} className="p-0.5" size="xlarge" shape="circle" />
+                                        <Avatar image={blog.author.avatar} icon={icons.faUser} className="p-0.5" size="xlarge" shape="circle" />
                                         <span className="text-gray-800 font-semibold">{blog.author.fullName}</span>
                                     </div>
                                 </div>

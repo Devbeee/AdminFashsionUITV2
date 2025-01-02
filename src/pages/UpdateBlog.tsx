@@ -6,13 +6,14 @@ import { FileUpload, FileUploadFile } from 'primereact/fileupload';
 import { Toast } from "primereact/toast";
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { ProgressSpinner } from 'primereact/progressspinner';
+import Quill from "quill"; 
 
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
 import { Button, Input } from "@/components";
-import { uploadToCloudinary } from '@/utils/helpers';
+import { uploadToCloudinary, PATH } from '@/utils';
 import { IBlog, IBlogForm } from "@/interfaces";
 import { blogApi } from "@/apis";
 import { useBoolean, useApi } from "@/hooks";
@@ -41,13 +42,13 @@ export function UpdateBlog() {
         resolver: yupResolver(schema),
     });
 
-    const handleImageUpload = async (file: File) => {
+    const handleImageUpload = async (file: File, _target: 'fileupload' | 'editor') => {
         setUploading(true);
         const imageUrl = await uploadToCloudinary(file);
         setUploading(false);
 
         if (imageUrl) {
-            if (fileUploadRef.current) {
+            if (fileUploadRef.current && _target === 'fileupload') {
                 const objectURL = URL.createObjectURL(file);
                 const uploadedFile: FileUploadFile = {
                     name: file.name,
@@ -80,7 +81,7 @@ export function UpdateBlog() {
                         toast.current?.show({ severity: 'success', summary: 'Success', detail: 'The blog has been successfully updated', life: 3000 });
                         startNavigating();
                         setTimeout(() => {
-                            navigate('/admin/blog/list');
+                            navigate(PATH.blogList);
                         }, 3000);
                     } else {
                         toast.current?.show({ severity: 'error', summary: 'Failed', detail: `${updateErrorMessage}`, life: 3000 });
@@ -112,7 +113,7 @@ export function UpdateBlog() {
                         toast.current?.show({ severity: 'info', summary: 'Success', detail: 'This blog has been deleted', life: 3000 });
                         startNavigating();
                         setTimeout(() => {
-                            navigate('/admin/blog/list');
+                            navigate(PATH.blogList);
                         }, 3000);
                     }
                     else {
@@ -154,6 +155,68 @@ export function UpdateBlog() {
         setLoadingBlog(false);
     }
 
+    const editorRef = useRef<Editor>(null);
+
+    const handleInsertImage = async (file: File): Promise<void> => {
+        try {
+            const imageUrl = await handleImageUpload(file,"editor"); 
+            const quillEditor = editorRef.current?.getQuill() as Quill;
+            const range = quillEditor.getSelection(); 
+            if (range) {
+                quillEditor.insertEmbed(range.index, "image", imageUrl);
+            }
+        } catch (error) {
+            console.error("Image upload failed", error);
+        }
+    };
+
+    const imageHandler = (): void => {
+        const input = document.createElement("input");
+        input.setAttribute("type", "file");
+        input.setAttribute("accept", "image/*");
+        input.click();
+
+        input.onchange = async () => {
+            const file = input.files?.[0];
+            if (file) {
+                await handleInsertImage(file);
+            }
+        };
+    };
+    
+    const modules = {
+          toolbar: {
+            container: [
+              [{ header: [1, 2, 3, 4, 5, 6, false] }],
+              [{ font: [] }],
+              ["bold", "italic", "underline", "strike"],
+              [{ color: [] }, { background: [] }],
+              [{ script: "sub" }, { script: "super" }],
+              ["blockquote", "code-block"],
+              [{ list: "ordered" }, { list: "bullet" }],
+    
+              [
+                { indent: "-1" },
+                { indent: "+1" },
+                { align: [] },
+              ],
+              [{ direction: "rtl" }],
+              [{ size: ["small", false, "large", "huge"] }],
+              ["link", "image"],
+              ["clean"],
+            ],
+    
+            handlers: {
+              image: imageHandler,
+            },
+            history: {
+              delay: 500,
+              maxStack: 100,
+              userOnly: true,
+            },
+          },
+        }
+
     useEffect(() => {
         getBlog();
     }, []);
@@ -184,7 +247,7 @@ export function UpdateBlog() {
                                             customUpload
                                             maxFileSize={10000000}
                                             uploadHandler={async (event) => {
-                                                const imageUrl = await handleImageUpload(event.files[0]);
+                                                const imageUrl = await handleImageUpload(event.files[0], 'fileupload');
                                                 field.onChange(imageUrl);
                                             }}
                                             onRemove={() => field.onChange('')}
@@ -217,10 +280,13 @@ export function UpdateBlog() {
                                     control={control}
                                     render={({ field }) => (
                                         <Editor
+                                            ref={editorRef}
                                             value={field.value}
                                             placeholder="Content"
                                             onTextChange={(e: EditorTextChangeEvent) => field.onChange(e.htmlValue || '')}
-                                            style={{ height: '350px' }}
+                                            style={{ height: '800px' }}
+                                            modules={modules} 
+                                            showHeader={false}
                                         />
                                     )}
                                 />
