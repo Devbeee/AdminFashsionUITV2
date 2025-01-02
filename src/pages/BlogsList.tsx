@@ -295,6 +295,16 @@ export function BlogsList() {
                     <span className='font-bold text-3xl text-gray-700'>Blogs</span>
                     {choosedBlogs.length > 0 && (<Button onClick={confirmDelete} className='font-bold w-40 border-red-500 bg-red-500 hover:bg-red-600'>Delete Selected</Button>)}
                 </div>
+                <div className="w-full flex justify-end items-center gap-1 mt-4">
+                    <span className="text-gray-500 flex items-center gap-1">{icons.sort}Sort:</span>
+                    <Dropdown
+                        value={selectedSortStyle}
+                        onChange={(event: DropdownChangeEvent) => handleChangeSortStyle(event)}
+                        options={sortStyle}
+                        optionLabel="name"
+                        className="w-36 text-gray-500 text-[0.75rem] leading-[0.1rem] border-none bg-gray-50 rounded-none"
+                    />
+                </div>
                 {loadingBlogs ? (
                     <div className='flex justify-center items-center min-h-96'>
                         <ProgressSpinner />
@@ -306,17 +316,7 @@ export function BlogsList() {
                         </div>
                     ) : (
                         <div className='flex flex-col justify-between min-h-[100vh]'>
-                            <div className='flex flex-col justify-center flex-wrap items-center mt-7 gap-4'>
-                                <div className="w-full flex justify-end items-center gap-1">
-                                    <span className="text-gray-500 flex items-center gap-1">{icons.sort}Sort:</span>
-                                    <Dropdown
-                                        value={selectedSortStyle}
-                                        onChange={(event: DropdownChangeEvent) => handleChangeSortStyle(event)}
-                                        options={sortStyle}
-                                        optionLabel="name"
-                                        className="w-36 text-gray-500 text-[0.75rem] leading-[0.1rem] border-none bg-gray-50 rounded-none"
-                                    />
-                                </div>
+                            <div className='flex flex-col justify-center flex-wrap items-center mt-4 gap-4'>
                                 <div className='text-center grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-10'>
                                     {blogs?.map((blog) => (
                                         <div key={blog.slug}>
@@ -334,17 +334,18 @@ export function BlogsList() {
                                     ))}
                                 </div>
                             </div>
-                            <div className='mt-4'>
-                                <Paginator
-                                    first={first}
-                                    rows={limit}
-                                    totalRecords={totalRecords}
-                                    onPageChange={onPageChange}
-                                />
-                            </div>
                         </div>
                     )
                 )}
+                <div className='mt-4'>
+                    <Paginator
+                        first={first}
+                        rows={limit}
+                        totalRecords={totalRecords}
+                        onPageChange={onPageChange}
+                        alwaysShow={false}
+                    />
+                </div>
             </div>
         </div>
     )
