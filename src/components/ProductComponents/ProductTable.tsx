@@ -25,7 +25,6 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
         setFirst(event.first);
     };
 
-    const numberWithDotRegex = /\B(?=(\d{3})+(?!\d))/g;
     const { loading, callApi: callApiManageProduct } = useApi<void>()
     const [products, setProducts] = useState<IProduct[]>([])
     const getAllProducts = async () => {
@@ -75,7 +74,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     fontWeight: 'bold'
                 }}
                 body={(rowData: IProduct) => (
-                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden'>
                         {rowData.name}
                     </div>
                 )}
@@ -89,7 +88,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     fontWeight: 'bold'
                 }}
                 body={(rowData: IProduct) => (
-                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden'>
                         {rowData.slug}
                     </div>
                 )}
@@ -103,8 +102,8 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     fontWeight: 'bold'
                 }}
                 body={(rowData: IProduct) => (
-                    <div className='text-sm font-semibold h-[58px] overflow-hidden flex items-center'>
-                        {rowData.category.gender + ' - ' + rowData.category.type}
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden flex justify-center items-center'>
+                        {rowData.category.gender.charAt(0).toUpperCase() + rowData.category.gender.slice(1) + ' - ' + rowData.category.type.charAt(0).toUpperCase() + rowData.category.type.slice(1)}
                     </div>
                 )}
             />
@@ -131,8 +130,8 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     fontWeight: 'bold'
                 }}
                 body={(rowData: IProduct) => (
-                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
-                        {rowData.price.toString().replace(numberWithDotRegex, ".") + ' VND'}
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden flex justify-center items-center'>
+                        {rowData.price.toLocaleString('de-DE')}₫
                     </div>
                 )}
             />
@@ -145,7 +144,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     fontWeight: 'bold'
                 }}
                 body={(rowData: IProduct) => (
-                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden flex justify-center items-center'>
                         {rowData.discount + '%'}
                     </div>
                 )}
@@ -159,7 +158,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     fontWeight: 'bold'
                 }}
                 body={(rowData: IProduct) => (
-                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden flex justify-center items-center'>
                         <span>{new Date(rowData.createdAt).toLocaleString()}</span>
                     </div>
                 )}
@@ -173,7 +172,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     fontWeight: 'bold'
                 }}
                 body={(rowData: IProduct) => (
-                    <div className='text-sm font-semibold h-[58px] overflow-hidden text-center flex items-center justify-center'>
+                    <div className='text-sm font-semibold h-[58px] overflow-hidden flex justify-center items-center'>
                         <span>{new Date(rowData.updatedAt).toLocaleString()}</span>
                     </div>
                 )}
@@ -187,7 +186,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({category, query, filt
                     fontWeight: 'bold'
                 }}
                 body={(rowData: IProduct) => (
-                    <div className="text-center">
+                    <div className="flex justify-center items-center">
                         <ProductRow 
                             productInfo={rowData} 
                             category={category} 
