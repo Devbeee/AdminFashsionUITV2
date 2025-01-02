@@ -77,9 +77,7 @@ export const SIDE_BAR_ITEM_LIST: SideBarMenuItemProps[] = [
           localStorage.removeItem(LOCAL_STORAGE_KEYS.isLoggedIn)
           const isLoggedIn = localStorage.getItem(LOCAL_STORAGE_KEYS.isLoggedIn)
           if (response && !isLoggedIn) {
-            setTimeout(() => {
-              func()
-            }, 0)
+            func()
           }
         }
       }

@@ -21,7 +21,7 @@ export const Login = () => {
   const navigate = useNavigate()
   const { value: isRememberMe, toggle: toggleRememberMe } = useBoolean(false)
   const [loginMessage, setLoginMessage] = useState<string | undefined>(undefined)
-  const { isLoggedIn, setCurrentUser, resetMessage } = useAuthStore()
+  const { isLoggedIn, setCurrentUser, resetMessage, currentUser } = useAuthStore()
 
   const { loading, errorMessage, callApi: callApiLogin } = useApi<void>()
 
@@ -58,8 +58,10 @@ export const Login = () => {
   }
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isLoggedIn && currentUser) {
       navigate(PATH.dashboard)
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.isLoggedIn)
     }
   }, [isLoggedIn, navigate])
 

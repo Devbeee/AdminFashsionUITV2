@@ -17,8 +17,8 @@ export const SideBarItem: React.FC<SideBarItemProps> = ({ path, icon, title, onC
   const { setCurrentUser } = useAuthStore()
 
   const handleLogout = () => {
-    navigate(PATH.login)
     setCurrentUser(null)
+    navigate(PATH.login)
   }
   return (
     <div>
