@@ -221,12 +221,21 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
         <div className='flex flex-row w-[95%] h-fit justify-between m-auto mt-2'>
             <Toast ref={toast} />
             <div className='text-black-light text-2xl font-bold leading-tight text-left'>Products</div>
-            <div className="flex flex-row gap-5">
+            <div className="flex flex-row gap-3">
+                <IconField iconPosition="left">
+                    <InputIcon>
+                        {icons.searchProduct}
+                    </InputIcon>
+                    <Input name="search" placeholder="Search" className="rounded-lg h-full w-[350px] text-[16px]" onChange={(e) => setQuery(e.target.value)}/>
+                </IconField>
                 <div>
-                    <PrimeBtn text onClick={(e) => op.current && op.current.toggle(e)}>
-                        {icons.filter}
+                    <PrimeBtn onClick={(e) => op.current && op.current.toggle(e)}>
+                        <div className='flex items-center justify-center gap-2'>
+                            {icons.filter}
+                            <span>Filter</span>
+                        </div>
                     </PrimeBtn>
-                    <OverlayPanel ref={op} className="w-[180px] bg-white border border-gray-300 shadow-lg rounded-lg">
+                    <OverlayPanel ref={op} className="w-fit p-1 bg-white border border-gray-300 shadow-lg rounded-lg">
                         {filterOptions.map((option) => (
                             <PrimeBtn text key={option.label} className="flex w-full text-sm font-medium text-gray-700 transition-all rounded-lg"
                                 onClick={() => handleToggleAction(option.value)}
@@ -234,14 +243,11 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({category, setQuery,
                         ))}
                     </OverlayPanel>
                 </div>
-                <IconField iconPosition="left">
-                    <InputIcon>
-                        {icons.searchProduct}
-                    </InputIcon>
-                    <Input name="search" placeholder="Search" className="rounded-lg w-[270px]" onChange={(e) => setQuery(e.target.value)}/>
-                </IconField>
-                <Button className="rounded-lg" onClick={toggleAddProduct}>
-                    {icons.addProduct}
+                <Button className="rounded-md" onClick={toggleAddProduct}>
+                    <div className='flex items-center justify-center gap-2'>
+                      {icons.add}
+                      <span>Add product</span>
+                    </div>
                 </Button>
                 <Sidebar visible={addProduct} onHide={handleToggle} position="right" className="w-2/5">
                     <h2 className="text-2xl font-bold mb-6 text-gray-800">Add New Product</h2>
