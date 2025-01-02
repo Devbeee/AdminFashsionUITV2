@@ -280,7 +280,7 @@ export const ProductRow: React.FC<ProductRowProps> = ({productInfo, toggleProduc
                     {icons.list}
                 </div>
             </PrimeBtn>
-            <OverlayPanel ref={op} className="w-[150px] bg-white border border-gray-300 shadow-lg rounded-lg">
+            <OverlayPanel ref={op} className="w-fit bg-white border border-gray-300 shadow-lg rounded-lg p-1">
                 <PrimeBtn text className='flex w-full transition text-sm gap-2'
                     onClick={() => handleToggleAction(toggleShowProductDetail)}
                 >{icons.search}Detail</PrimeBtn>
