@@ -1,6 +1,7 @@
 export const PATH = {
   dashboard: '/admin',
   login: '/admin/login',
+  logout: '/admin/logout',
   manageCategory: '/admin/manage-category',
   product: '/admin/product',
   blogList: '/admin/blog/list',

@@ -21,7 +21,7 @@ import { ProtectedRoute } from './ProtectedRoute'
 
 export const router = createBrowserRouter([
   {
-    path: '/admin',
+    path: '/',
     element: (
       <ProtectedRoute role='admin'>
         <DefaultLayout />
