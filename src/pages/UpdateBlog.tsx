@@ -94,6 +94,12 @@ export function UpdateBlog() {
         }
     };
 
+    useEffect(() => {
+        if(updateErrorMessage) {
+            toast.current?.show({ severity: 'error', summary: 'Failed', detail: `${updateErrorMessage}`, life: 3000 });
+        }
+    }, [updateErrorMessage]);
+
     const confirmPublish = (blogData: IBlogForm) => {
         confirmDialog({
             message: 'Are you sure you want to update this blog?',
