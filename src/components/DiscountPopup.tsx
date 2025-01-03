@@ -84,7 +84,7 @@ export const DiscountPopup: React.FC<DialogComp> = ({
   const handleAddDiscount = (discountData: IDiscountInput) => {
     const adjustedDiscountData = {
       ...discountData,
-      date: dayjs(discountData.date).tz('UTC', true).toDate()
+      date: dayjs(discountData.date).hour(0).minute(0).second(0).millisecond(0).tz('UTC', true).toDate()
     }
 
     callApiDiscount(async () => {
@@ -106,7 +106,7 @@ export const DiscountPopup: React.FC<DialogComp> = ({
   const handleUpdateDiscount = (id: string, discountData: IDiscountInput) => {
     const adjustedDiscountData = {
       ...discountData,
-      date: dayjs(discountData.date).tz('UTC', true).toDate()
+      date: dayjs(discountData.date).hour(0).minute(0).second(0).millisecond(0).tz('UTC', true).toDate()
     }
     callApiDiscount(async () => {
       const { data } = await discountApi.update(id, adjustedDiscountData)
