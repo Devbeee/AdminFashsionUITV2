@@ -1,5 +1,5 @@
 import * as yup from 'yup'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { Checkbox } from 'primereact/checkbox'
@@ -20,8 +20,8 @@ const loginSchema = yup.object().shape({
 export const Login = () => {
   const navigate = useNavigate()
   const { value: isRememberMe, toggle: toggleRememberMe } = useBoolean(false)
-
-  const { isLoggedIn, setCurrentUser, resetMessage } = useAuthStore()
+  const [loginMessage, setLoginMessage] = useState<string | undefined>(undefined)
+  const { isLoggedIn, setCurrentUser, resetMessage, currentUser } = useAuthStore()
 
   const { loading, errorMessage, callApi: callApiLogin } = useApi<void>()
 
@@ -31,25 +31,37 @@ export const Login = () => {
     reset,
     formState: { errors }
   } = useForm({
-    resolver: yupResolver(loginSchema)
+    resolver: yupResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: ''
+    }
   })
 
   const handleLogin = (loginData: ILoginData) => {
     resetMessage()
+    setLoginMessage(undefined)
     callApiLogin(async () => {
       const { data } = await authApi.login(loginData)
       if (data) {
-        reset()
-        navigate(PATH.dashboard)
-        setCurrentUser(data.currentUser)
-        localStorage.setItem(LOCAL_STORAGE_KEYS.isLoggedIn, 'true')
+        if (data.currentUser.role === 'admin') {
+          reset()
+          navigate(PATH.dashboard)
+          setCurrentUser(data.currentUser)
+          localStorage.setItem(LOCAL_STORAGE_KEYS.isLoggedIn, 'true')
+        } else {
+          reset()
+          setLoginMessage('This account is not admin-authorized!')
+        }
       }
     })
   }
 
   useEffect(() => {
-    if (isLoggedIn) {
+    if (isLoggedIn && currentUser) {
       navigate(PATH.dashboard)
+    } else {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.isLoggedIn)
     }
   }, [isLoggedIn, navigate])
 
@@ -62,6 +74,8 @@ export const Login = () => {
             <span className='text-gray-500 font-medium'>Please enter your details</span>
           </div>
           {errorMessage && <span className='text-red-500 mb-2 text-lg'>{errorMessage}</span>}
+          {loginMessage && <span className='text-red-500 mb-2 text-lg'>{loginMessage}</span>}
+
           <div className='mt-6'>
             <form onSubmit={handleSubmit(handleLogin)} className='p-fluid flex flex-col gap-y-6 bg-white rounded-lg'>
               <Input
@@ -72,6 +86,7 @@ export const Login = () => {
                 placeholder='Email'
                 className='h-12 text-base text-slate-800'
               />
+
               <Input
                 errors={errors}
                 control={control}
