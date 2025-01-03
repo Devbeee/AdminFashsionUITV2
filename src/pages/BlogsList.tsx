@@ -258,6 +258,7 @@ export function BlogsList() {
                                 hideOnRangeSelection
                                 maxDate={new Date()}
                                 placeholder='Choose a date range' 
+                                dateFormat="dd/mm/yy"
                             />
                             <span onClick={clearDateRange} className='text-3xl rounded-full text-gray-500 hover:bg-white m-0 p-0'>{icons.close}</span>
                         </div>

@@ -14,5 +14,6 @@ export const errorResponseCases: Record<ErrorCode | string, string> = {
   [ErrorCode.CATEGORY_NOT_FOUND]: 'Không tìm thấy danh mục!',
   [ErrorCode.DISCOUNT_ALREADY_EXIST]: 'Sản phẩm này đã có giảm giá!',
   [ErrorCode.DISCOUNT_NOT_FOUND]: 'Không tìm thấy giảm giá cho sản phẩm này!',
+  [ErrorCode.BLOG_ALREADY_EXISTS]: 'Blog already exists',
   All: 'Đã có lỗi xảy ra. Vui lòng kiểm tra lại'
 }

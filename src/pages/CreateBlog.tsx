@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { Editor, EditorTextChangeEvent } from "primereact/editor";
@@ -105,6 +105,12 @@ export function CreateBlog() {
             toast.current?.show({ severity: 'error', summary: 'Failure', detail: `${errorMessage}`, life: 3000 });
         }
     };
+
+    useEffect(() => {
+        if(errorMessage) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: `${errorMessage}`, life: 3000 });
+        }
+    }, [errorMessage]);
 
     const confirmPublish = (data: IBlogForm) => {
         confirmDialog({
